@@ -1,5 +1,5 @@
 # drug_repo
-* a repository of Python scripts for drug repositioning *
+__a repository of Python scripts for drug repositioning__
 
 
 Find here Python scripts for a drug repositiong bio-/chemoinformatics project
