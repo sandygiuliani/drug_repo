@@ -36,12 +36,18 @@ def processchembl():
   #splits header row according to tab separators
   headersplit = lines[0].split("\t")
   #print(headersplit[3] == "DEVELOPMENT_PHASE")
-  column = 0
-  while not (headersplit[column] == "DEVELOPMENT_PHASE"):
-    column = column +1
-  #the value column now refers to the index of the development_phase: print out which column we are referring to  
-  print('The column with the development_phase info is the '+str(column+1)+'th.')
+  col_phase = 0
+  while not (headersplit[col_phase] == "DEVELOPMENT_PHASE"):
+    col_phase = col_phase +1
+  col_type = 0
+  while not (headersplit[col_type] == "DRUG_TYPE"):
+    col_type = col_type +1
+  #the value col_phase now refers to the index of the development_phase, the value col_type to the drug_type: print out which column we are referring to 
+  print('The column with the development_phase info is the '+str(col_phase+1)+'th; the column with the drug_type info is the '+str(col_type+1)+'th.')
   
+
+  #CLINICAL PHASE FILTER
+
   ##this bit counts the drugs in the 4+1 classes of clinical phase
   #set counters for clinical phases to zero
   phase1 = 0
@@ -53,18 +59,16 @@ def processchembl():
   for i in range(1,len(lines)):
     #tab separate each row
     rowsplit = lines[i].split("\t")
-    if (rowsplit[column] == '1'):# or (rowsplit[column] == '2')):
+    if (rowsplit[col_phase] == '1'):
       phase1 = phase1 + 1
-    elif (rowsplit[column] == '2'):
+    elif (rowsplit[col_phase] == '2'):
       phase2 = phase2 + 1
-    elif (rowsplit[column] == '3'):
+    elif (rowsplit[col_phase] == '3'):
       phase3 = phase3 + 1
-    elif (rowsplit[column] == '4'):
+    elif (rowsplit[col_phase] == '4'):
       phase4 = phase4 + 1
     else:
       phase_unknown = phase_unknown + 1
-
-    #return lines[i]
 
   print('Number of drugs in phase 1 is: '+ str(phase1)+'; in phase 2 is: ' +str(phase2)+'; in phase 3 is: ' +str(phase3)+'; in phase 4 is: ' +str(phase4)+'; in unknown phase is: ' +str(phase_unknown)+'.')
 
@@ -77,7 +81,7 @@ def processchembl():
     #tab separate each row
     rowsplit2 = lines[y].split("\t")
     #check if they are phase 3, 4 or unkown phase
-    if (rowsplit2[column] == '3') or (rowsplit2[column] == '4') or (rowsplit2[column] == ''):
+    if (rowsplit2[col_phase] == '3') or (rowsplit2[col_phase] == '4') or (rowsplit2[col_phase] == ''):
       #increase the useless counter
       total_stripped_lines = total_stripped_lines + 1
       #write to the file the stripped lines
@@ -85,7 +89,26 @@ def processchembl():
       #print(rowsplit2[column])
   #print friendly statement
   print('We have written to the file chembl_stripped.txt only the entries in phase 3, 4 or with unkown phase, for a total number of '+ str(total_stripped_lines)+' drugs.')
-
+  #close the file we wrote to
+  stripped.close()
+  
+  #we open the stripped file for reading
+  stripped2 = open('chembldrugs_stripped.txt', 'r')
+  #reading lines
+  lines2 = stripped2.readlines()
+  #closing the stripped file
+  stripped2.close()
+  #look over, note here there is no header
+  for x in range(len(lines2)):
+    #tab separate
+    rowsplit3 = lines2[x].split("\t")
+    drug_type = ''
+    typecount = 0
+    if rowsplit3[col_type] == drug_type:
+      typecount = typecount +1
+  
+  print(typecount)
+  
 
 ###
 #END OF MAIN FUNCTION
