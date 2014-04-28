@@ -79,8 +79,8 @@ def processchembl():
   for y in range(1,len(lines)):
     #tab separate each row
     rowsplit2 = lines[y].split("\t")
-    #check if they are phase 3, 4 or unkown phase
-    if (rowsplit2[col_phase] == '3') or (rowsplit2[col_phase] == '4') or (rowsplit2[col_phase] == ''):
+    #check if they are phase 4 or unknown. can also include phase 3 from here in the future
+    if (rowsplit2[col_phase] == '4') or (rowsplit2[col_phase] == ''): # or (rowsplit2[col_phase] == '3'):
       #increase the useless counter
       total_stripped_lines = total_stripped_lines + 1
       #write to the file the stripped lines
@@ -97,15 +97,15 @@ def processchembl():
   lines2 = stripped2.readlines()
   #closing the stripped file
   stripped2.close()
+  typecount = 0
   #look over, note here there is no header
   for x in range(len(lines2)):
     #tab separate
     rowsplit3 = lines2[x].split("\t")
-    drug_type = ''
-    typecount = 0
-    if rowsplit3[col_type] == drug_type:
+    #drug_type = ''
+    if not rowsplit3[col_type] == 'Synthetic Small Molecule':
       typecount = typecount +1
-  
+      print(rowsplit3[col_type])
   print(typecount)
   
 
