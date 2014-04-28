@@ -16,8 +16,7 @@ import sys, re, string, os, fnmatch, shutil
 ###
 
 def processchembl():
-  '''(str)->str
-  reads chembl drug input file and returns information on number of drugs and headers'''
+  '''reads chembl drug input file and returns information on number of drugs and headers'''
   #opens chembldrugs.txt for reading
   input_file = open('chembldrugs.txt', 'r') 
   lines = input_file.readlines()
