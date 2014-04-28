@@ -1,0 +1,41 @@
+Hi Nick,
+
+Presuming you've unpacked the data, this is what you do next.
+
+1. Download the dummy CATHPARAM file at:
+
+    http://www.ebi.ac.uk/~roman/CATHPARAM_archindex
+
+Rename the file CATHPARAM.
+
+2. Edit it to point to the directories where all your data files live.
+
+3. When you run archindex, make sure you either have the CATHPARAM
+file in the working directory or use setenv to define a parameter
+called $CATHPARAM which points to the CATHPARAM file.
+
+4. Attached is the relevant source code of archindex:
+
+    archindex.c
+    archindex.h
+    common.c
+    common.h
+    reapar.c
+    reapar.h
+
+5. Compile as follows:
+
+cc -c archindex.c
+cc -c common.c
+cc -c reapar.c
+cc -o archindex archindex.o common.o reapar.o -lm -lz
+
+Or, for optimization, replace the first compile with:-
+
+cc -O2 -funroll-loops -c archindex.c
+
+6. Run it and see what happens!
+
+Cheers,
+
+Roman.
