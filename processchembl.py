@@ -1,9 +1,11 @@
-#Copyright 2014 Sandra Giuliani
-#processchembl.py reads and extracts information from chembl drug file chembldrugs.txt
-#make sure the input file matches the one downloaded from chembl, from the drug tab
-#the txt file is tab separated and has a first line of headers
-#the header with the drug development phase information (phase 1,2,3 or 4) must be called 'DEVELOPMENT_PHASE'
-#the column with the development_phase info should be the 4th (3rd index), but in case they change it in future releases, the program makes no assumption about the number and searches for the string.
+#Copyright 2014 Sandra Giuliani processchembl.py reads and extracts
+#information from chembl drug file chembldrugs.txt make sure the input file
+#matches the one downloaded from chembl, from the drug tab the txt file is tab
+#separated and has a first line of headers the header with the drug
+#development phase information (phase 1,2,3 or 4) must be called
+#'DEVELOPMENT_PHASE' the column with the development_phase info should be the
+#4th (3rd index), but in case they change it in future releases, the program
+#makes no assumption about the number and searches for the string.
 
 #in chembl_18 release (April 2014) the total number of drugs listed is 10,406
 
@@ -16,7 +18,8 @@ import sys, re, string, os, fnmatch, shutil
 ###
 
 def processchembl():
-  '''reads chembl drug input file and returns information on number of drugs and headers'''
+  '''reads chembl drug input file and returns information on number of drugs 
+  and headers'''
   #opens chembldrugs.txt for reading
   input_file = open('chembldrugs.txt', 'r') 
   lines = input_file.readlines()
@@ -41,7 +44,9 @@ def processchembl():
   col_type = 0
   while not (headersplit[col_type] == "DRUG_TYPE"):
     col_type = col_type +1
-  #the value col_phase now refers to the index of the development_phase, the value col_type to the drug_type: print out which column we are referring to 
+  #the value col_phase now refers to the index of the development_phase,
+  #the value col_type to the drug_type
+  #print out which column we are referring to 
   print('The column with the development_phase info is the '+str(col_phase+1)+'th; the column with the drug_type info is the '+str(col_type+1)+'th.')
   
 
@@ -79,8 +84,9 @@ def processchembl():
   for y in range(1,len(lines)):
     #tab separate each row
     rowsplit2 = lines[y].split("\t")
-    #check if they are phase 4 or unknown. can also include phase 3 from here in the future
-    if (rowsplit2[col_phase] == '4') or (rowsplit2[col_phase] == ''): # or (rowsplit2[col_phase] == '3'):
+    #check if they are phase 4 or unknown
+    #can also add phase 3 from here rowsplit2[col_phase] == '3')
+    if (rowsplit2[col_phase] == '4') or (rowsplit2[col_phase] == ''): 
       #increase the useless counter
       total_stripped_lines = total_stripped_lines + 1
       #write to the file the stripped lines
