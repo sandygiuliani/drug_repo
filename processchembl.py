@@ -15,15 +15,40 @@
 #import modules
 import sys, re, string, os, fnmatch, shutil
 
-#define constant variable CHEMBL_INPUT for chembldrugs input
+# define constant variable CHEMBL_INPUT for chembldrugs input
 CHEMBL_INPUT = 'chembldrugs.txt'
+
+
+# HEADER_TAB_COUNT FUNCTION: find specific header in first line 
+# of tab-separeted file and return column number of the header
+def header_tab_count(tab_file, header):
+  '''(str)->int
+  Read first line of tab separated file tab_file and return column number 
+  of header
+  >>>column_count("DEVELOPMENT_PHASE")
+  3
+  '''
+
+  #read just first line of tab_file
+  with open(tab_file, 'r') as f:
+    first = f.readline()
+  #set counter to 0
+  col_number = 0
+  #loop until word matches the header
+  while not first.split("\t")[col_number] == header:
+    col_number = col_number +1
+
+  #print(col_number)
+
+  return col_number
+
 
 ###
 #PROCESS CHEMBL FUNCTION CALL
 ###
 
 def processchembl():
-  '''reads chembl drug input file and returns information on number of drugs 
+  '''read chembl drug input file and return information on number of drugs 
   and headers'''
   #opens chembldrugs.txt for reading
   input_file = open(CHEMBL_INPUT, 'r') 
@@ -37,21 +62,9 @@ def processchembl():
   #prints headers list in lowercase
   #print('The headers are: '+headersnospace.lower())
 
-
-  #CLINICAL PHASE FILTER
+  col_phase = header_tab_count(CHEMBL_INPUT,"DEVELOPMENT_PHASE")
+  col_type = header_tab_count(CHEMBL_INPUT,"DRUG_TYPE")
   
-  #splits header row according to tab separators
-  headersplit = lines[0].split("\t")
-  #print(headersplit[3] == "DEVELOPMENT_PHASE")
-  col_phase = 0
-  while not (headersplit[col_phase] == "DEVELOPMENT_PHASE"):
-    col_phase = col_phase +1
-  col_type = 0
-  while not (headersplit[col_type] == "DRUG_TYPE"):
-    col_type = col_type +1
-  #the value col_phase now refers to the index of the development_phase,
-  #the value col_type to the drug_type
-  #print out which column we are referring to 
   print('The column with the development_phase info is the '+str(col_phase+1)
       +'th; the column with the drug_type info is the '+str(col_type+1)+'th.')
   
@@ -125,13 +138,20 @@ def processchembl():
   print(typecount)
   
 
+
+
+###
+#MAIN FUNCTION
+###
+
+def main():
+  processchembl()
+
 ###
 #END OF MAIN FUNCTION
 ###
 
 
-
-
-#calls processchembl, prevents excecution on import
+###calls main function, prevents excecution on import
 if __name__ == "__main__":
-  processchembl()
+  main()
