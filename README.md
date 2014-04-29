@@ -15,6 +15,7 @@ applied to parasitic diseases.
 - [ ] ChEMBL processing: small molecule filter 
 - [ ] ChEMBL processing: uniprot mapping
 - [ ] DrugBank data processing
+- [ ] write everything to log instead of .txt output
 - [ ] ChEMBL/DrugBank data merge
 - [ ] domain architecture mapping (ArchSchema)
 - [ ] schistosoma domains
