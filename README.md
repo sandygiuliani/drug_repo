@@ -11,6 +11,7 @@ applied to parasitic diseases.
 * chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes
 
 **CHECKLIST**
+- [x] code
 - [ ] uniprot mapping
 - [ ] drugbank mapping
 
