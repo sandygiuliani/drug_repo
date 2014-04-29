@@ -3,17 +3,20 @@ _a repository of Python scripts for drug repositioning_
 
 
 Find here Python scripts for a drug repositiong bio-/chemoinformatics project
-applied to parasitic diseases.
+applied to schistosomiasis.  
+What is drug repositioning? The usage of a known drug for a different therapeutic indication. For a few examples, see http://en.wikipedia.org/wiki/Drug_repositioning  
+What is schistosomiasis? A very nasty parasitic disease affecting over 200 million people. Learn more at: http://www.who.int/topics/schistosomiasis/en/
 
 **CONTENTS**
-* processchembl.py - Python script that reads input file (chembldrugs.txt), extracts info and filters data according to development phase. Other features being implemented at the moment.
+* drug_repo.py - Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.
 * chembldrugs.txt - ChEMBL_18 drugs, downloaded from https://www.ebi.ac.uk/chembl/drug/targets
 * chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes. From ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/
 
 **CHECKLIST**  
-- [x] ChEMBL processing: clinical phase filter 
-- [ ] ChEMBL processing: small molecule filter 
-- [ ] ChEMBL processing: uniprot mapping
+drug_repo.py development:
+- [x] ChEMBL processing - clinical phase filter 
+- [x] ChEMBL processing - small molecule filter 
+- [ ] ChEMBL processing - uniprot mapping
 - [ ] DrugBank data processing
 - [ ] write everything to log instead of .txt output
 - [ ] ChEMBL/DrugBank data merge
