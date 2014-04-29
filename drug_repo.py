@@ -1,15 +1,10 @@
 #Copyright 2014 Sandra Giuliani 
-#processchembl reads and extracts
-#information from chembl drug file chembldrugs.txt make sure the input file
-#matches the one downloaded from chembl, from the drug tab the txt file is tab
-#separated and has a first line of headers the header with the drug
-#development phase information (phase 1,2,3 or 4) must be called
-#'DEVELOPMENT_PHASE' the column with the development_phase info should be the
-#4th (3rd index), but in case they change it in future releases, the program
-#makes no assumption about the number and searches for the string.
+#drug_repo.py
 
-#tested with chembl_18 release (April 2014) 
-#the total number of drugs listed is 10,406
+#Mapping of known drugs from ChEMBL and DrugBank to their targets/domain 
+#architecture to identify suitable drug repositioning candidates for 
+#schistosomiasis.
+#Please see README.md for more info.
 
 
 #import modules
