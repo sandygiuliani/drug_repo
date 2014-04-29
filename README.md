@@ -8,7 +8,7 @@ applied to parasitic diseases.
 **CONTENTS**
 * processchembl.py - Python script that reads input file (chembldrugs.txt), extracts info and filters data according to development phase. Other features being implemented at the moment.
 * chembldrugs.txt - ChEMBL_18 drugs, downloaded from https://www.ebi.ac.uk/chembl/drug/targets
-* chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes
+* chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes. From ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/
 
 **CHECKLIST**  
 - [x] ChEMBL processing: clinical phase filter 
