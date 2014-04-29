@@ -83,7 +83,8 @@ def header_tab_count(tab_file, header):
 ### PROCESS_CHEMBL FUNCTION
 ############################################################################
 
-def processchembl():
+# in the end we need a dictionary of chembl ids vs uniprot ids
+def process_chembl():
   '''read chembl drug input file and return information on number of drugs 
   and headers'''
   # open chembldrugs.txt for reading
@@ -102,9 +103,9 @@ def processchembl():
   col_phase = header_tab_count(CHEMBL_INPUT,"DEVELOPMENT_PHASE")
   col_type = header_tab_count(CHEMBL_INPUT,"DRUG_TYPE")
   
-  logger.info('The column with the development_phase info is the '+ str(col_phase+1)
-       + 'th; the column with the drug_type info is the '
-       + str(col_type+1) + 'th.')
+  logger.info('The column with the development_phase info is the ' + 
+              str(col_phase+1) + 'th; the one with the drug_type info is the '
+              + str(col_type+1) + 'th.')
 
   # count the drugs in the 4+1 classes of clinical phase
   # set counters for clinical phases to zero
@@ -128,9 +129,10 @@ def processchembl():
     else:
       phase_unknown = phase_unknown + 1
 
-  logger.info('Number of drugs in phase 1 is: '+ str(phase1)+'; in phase 2 is: ' 
-        +str(phase2)+'; in phase 3 is: ' +str(phase3)+'; in phase 4 is: ' 
-        +str(phase4)+'; in unknown phase is: ' +str(phase_unknown)+'.')
+  logger.info('Number of drugs in phase 1 is: ' + str(phase1) +
+              '; in phase 2 is: ' + str(phase2) + '; in phase 3 is: ' + 
+              str(phase3)+'; in phase 4 is: ' + str(phase4) + 
+              '; in unknown phase is: ' + str(phase_unknown) + '.')
 
   # open the file to write to
   stripped = open('chembldrugs_stripped.txt', 'w')
@@ -150,7 +152,7 @@ def processchembl():
       # print(rowsplit2[column])
   # print friendly statement
   logger.info('We have written to the file chembl_stripped.txt' + 
-      'only the entries in phase 3, 4 or with unkown phase' +
+      'only the entries in phase 4 or with unkown phase' +
       ', for a total number of '+ str(total_stripped_lines)+' drugs.')
   # close the file we wrote to
   stripped.close()
@@ -161,16 +163,17 @@ def processchembl():
   lines2 = stripped2.readlines()
   # closing the stripped file
   stripped2.close()
-  typecount = 0
+  filtered = open('chembldrugs_filt.txt', 'w')
+  small_mol_count = 0
   # look over, note here there is no header
   for x in range(len(lines2)):
     # tab separate
     rowsplit3 = lines2[x].split("\t")
     # drug_type = ''
-    if not rowsplit3[col_type] == 'Synthetic Small Molecule':
-      typecount = typecount +1
-      # print(rowsplit3[col_type])
-  logger.debug(typecount)
+    if rowsplit3[col_type] == 'Synthetic Small Molecule':
+      filtered.write(lines2[x])
+      small_mol_count = small_mol_count +1
+  logger.debug(small_mol_count)
   
 ############################################################################
 
@@ -178,14 +181,25 @@ def processchembl():
 
 
 ############################################################################
+### PROCESS_DRUGBANK FUNCTION
+############################################################################
+
+# process drugbank file to produce a dictionary of drugs vs uniprot ids
+#def process_drugbank():
+  # implement function
+
+############################################################################
+
+
+############################################################################
 ### MAIN FUNCTION
 ############################################################################
 
-# call processchembl, 
-# TO ADD: call processdrugbank, merge uniprot codes
+# call process_chembl, 
+# TO ADD: call process_drugbank, merge uniprot codes
 
 def main():
-  processchembl()
+  process_chembl()
 
 ############################################################################
 
