@@ -1,4 +1,5 @@
-#Copyright 2014 Sandra Giuliani processchembl.py reads and extracts
+#Copyright 2014 Sandra Giuliani 
+#processchembl reads and extracts
 #information from chembl drug file chembldrugs.txt make sure the input file
 #matches the one downloaded from chembl, from the drug tab the txt file is tab
 #separated and has a first line of headers the header with the drug
@@ -7,21 +8,25 @@
 #4th (3rd index), but in case they change it in future releases, the program
 #makes no assumption about the number and searches for the string.
 
-#in chembl_18 release (April 2014) the total number of drugs listed is 10,406
+#tested with chembl_18 release (April 2014) 
+#the total number of drugs listed is 10,406
 
 
 #import modules
 import sys, re, string, os, fnmatch, shutil
 
+#define constant variable CHEMBL_INPUT for chembldrugs input
+CHEMBL_INPUT = 'chembldrugs.txt'
+
 ###
-#MAIN FUNCTION
+#PROCESS CHEMBL FUNCTION CALL
 ###
 
 def processchembl():
   '''reads chembl drug input file and returns information on number of drugs 
   and headers'''
   #opens chembldrugs.txt for reading
-  input_file = open('chembldrugs.txt', 'r') 
+  input_file = open(CHEMBL_INPUT, 'r') 
   lines = input_file.readlines()
   input_file.close()
   print('The number of drugs listed in the input file is '+str(len(lines)-1))
@@ -116,7 +121,7 @@ def processchembl():
     #drug_type = ''
     if not rowsplit3[col_type] == 'Synthetic Small Molecule':
       typecount = typecount +1
-      print(rowsplit3[col_type])
+      #print(rowsplit3[col_type])
   print(typecount)
   
 
