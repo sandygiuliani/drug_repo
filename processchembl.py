@@ -47,7 +47,8 @@ def processchembl():
   #the value col_phase now refers to the index of the development_phase,
   #the value col_type to the drug_type
   #print out which column we are referring to 
-  print('The column with the development_phase info is the '+str(col_phase+1)+'th; the column with the drug_type info is the '+str(col_type+1)+'th.')
+  print('The column with the development_phase info is the '+str(col_phase+1)
+      +'th; the column with the drug_type info is the '+str(col_type+1)+'th.')
   
 
   #CLINICAL PHASE FILTER
@@ -74,7 +75,9 @@ def processchembl():
     else:
       phase_unknown = phase_unknown + 1
 
-  print('Number of drugs in phase 1 is: '+ str(phase1)+'; in phase 2 is: ' +str(phase2)+'; in phase 3 is: ' +str(phase3)+'; in phase 4 is: ' +str(phase4)+'; in unknown phase is: ' +str(phase_unknown)+'.')
+  print('Number of drugs in phase 1 is: '+ str(phase1)+'; in phase 2 is: ' 
+        +str(phase2)+'; in phase 3 is: ' +str(phase3)+'; in phase 4 is: ' 
+        +str(phase4)+'; in unknown phase is: ' +str(phase_unknown)+'.')
 
   #open the file to write to
   stripped = open('chembldrugs_stripped.txt', 'w')
@@ -93,7 +96,9 @@ def processchembl():
       stripped.write(lines[y])
       #print(rowsplit2[column])
   #print friendly statement
-  print('We have written to the file chembl_stripped.txt only the entries in phase 3, 4 or with unkown phase, for a total number of '+ str(total_stripped_lines)+' drugs.')
+  print('We have written to the file chembl_stripped.txt' + 
+      'only the entries in phase 3, 4 or with unkown phase' +
+      ', for a total number of '+ str(total_stripped_lines)+' drugs.')
   #close the file we wrote to
   stripped.close()
   
