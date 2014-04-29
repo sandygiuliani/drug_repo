@@ -16,6 +16,9 @@
 # import modules
 import sys, re, string, os, fnmatch, shutil
 
+# set up log
+import logging
+
 # define CHEMBL_INPUT as the chembldrugs file
 CHEMBL_INPUT = 'chembldrugs.txt'
 # define CHEMBL_UNIPROT as the chemblID/uniprot mapping file
@@ -46,9 +49,7 @@ def header_tab_count(tab_file, header):
   # loop until word matches the header
   while not first.split("\t")[col_number] == header:
     col_number = col_number + 1
-
-  # print(col_number)
-
+  # return column number
   return col_number
 
 ############################################################################
@@ -67,7 +68,8 @@ def processchembl():
   input_file = open(CHEMBL_INPUT, 'r') 
   lines = input_file.readlines()
   input_file.close()
-  print('The number of drugs listed in the input file is '+str(len(lines)-1))
+  logging.info('The number of drugs listed in the input file is '
+              + str(len(lines)-1))
   # get the headers
   headers = lines[0]
   # remove duplicate spaces
@@ -78,7 +80,7 @@ def processchembl():
   col_phase = header_tab_count(CHEMBL_INPUT,"DEVELOPMENT_PHASE")
   col_type = header_tab_count(CHEMBL_INPUT,"DRUG_TYPE")
   
-  print('The column with the development_phase info is the '+ str(col_phase+1)
+  logging.info('The column with the development_phase info is the '+ str(col_phase+1)
        + 'th; the column with the drug_type info is the '
        + str(col_type+1) + 'th.')
 
@@ -104,7 +106,7 @@ def processchembl():
     else:
       phase_unknown = phase_unknown + 1
 
-  print('Number of drugs in phase 1 is: '+ str(phase1)+'; in phase 2 is: ' 
+  logging.info('Number of drugs in phase 1 is: '+ str(phase1)+'; in phase 2 is: ' 
         +str(phase2)+'; in phase 3 is: ' +str(phase3)+'; in phase 4 is: ' 
         +str(phase4)+'; in unknown phase is: ' +str(phase_unknown)+'.')
 
@@ -125,7 +127,7 @@ def processchembl():
       stripped.write(lines[y])
       # print(rowsplit2[column])
   # print friendly statement
-  print('We have written to the file chembl_stripped.txt' + 
+  logging.info('We have written to the file chembl_stripped.txt' + 
       'only the entries in phase 3, 4 or with unkown phase' +
       ', for a total number of '+ str(total_stripped_lines)+' drugs.')
   # close the file we wrote to
@@ -146,7 +148,7 @@ def processchembl():
     if not rowsplit3[col_type] == 'Synthetic Small Molecule':
       typecount = typecount +1
       # print(rowsplit3[col_type])
-  print(typecount)
+  logging.debug(typecount)
   
 ############################################################################
 
@@ -161,6 +163,7 @@ def processchembl():
 # TO ADD: call processdrugbank, merge uniprot codes
 
 def main():
+  logging.basicConfig(filename='log_drug_repo.log', level=logging.DEBUG)
   processchembl()
 
 ############################################################################
