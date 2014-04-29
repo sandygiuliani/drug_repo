@@ -11,10 +11,9 @@ applied to parasitic diseases.
 * chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes
 
 **CHECKLIST**  
-- [ ] ChEMBL drug data processing  
-&nbsp;&nbsp;&nbsp; - [x] clinical phase filter  
-&nbsp;&nbsp;&nbsp; - [ ] small molecule filter  
-&nbsp;&nbsp;&nbsp; - [ ] uniprot mapping  
+- [x] ChEMBL processing: clinical phase filter 
+- [ ] ChEMBL processing: small molecule filter 
+- [ ] ChEMBL processing: uniprot mapping
 - [ ] DrugBank data processing
 - [ ] ChEMBL/DrugBank data merge
 - [ ] domain architecture mapping (ArchSchema)
