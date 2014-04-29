@@ -10,11 +10,15 @@ applied to parasitic diseases.
 * chembldrugs.txt - ChEMBL_18 drugs, downloaded from https://www.ebi.ac.uk/chembl/drug/targets
 * chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes
 
-**CHECKLIST**
-- [x] code
-- [ ] uniprot mapping
-- [ ] drugbank mapping
-
+**CHECKLIST**  
+- [ ] ChEMBL drug data processing  
+&nbsp;&nbsp;&nbsp; - [x] clinical phase filter  
+&nbsp;&nbsp;&nbsp; - [ ] small molecule filter  
+&nbsp;&nbsp;&nbsp; - [ ] uniprot mapping  
+- [ ] DrugBank data processing
+- [ ] ChEMBL/DrugBank data merge
+- [ ] domain architecture mapping (ArchSchema)
+- [ ] schistosoma domains
 
 **DISCLAIMER:**  
 THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback welcome but please be kind.
