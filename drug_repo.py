@@ -39,8 +39,12 @@ logger.addHandler(ch)
 
 #logger.warning('warning_test')
 
-# define CHEMBL_INPUT as the chembldrugs file
-CHEMBL_INPUT = 'chembldrugs.txt'
+# define CHEMBL_INPUT as the drug file from ChEMBL ('Browse drugs')
+# number of drugs should be 10406
+CHEMBL_INPUT = 'chembl_drugs.txt'
+# define CHEMBL_TARGETS as the target file from ChEMBL ('Browse drug targets')
+# number of drugs associated with targets should be 2007
+CHEMBL_TARGETS = 'chembl_drugtargets.txt'
 # define CHEMBL_UNIPROT as the chemblID/uniprot mapping file
 CHEMBL_UNIPROT = 'chembl_uniprot_mapping.txt'
 ############################################################################
@@ -125,8 +129,8 @@ def process_chembl():
   dictionary of '''
   # open chembldrugs.txt for reading
   lines = file_to_lines(CHEMBL_INPUT)
-  logger.info('The number of drugs listed in the input file is '
-              + str(len(lines)-1))
+  logger.info('The total number of drugs listed in the ChEMBL drug file is '
+              + str(len(lines)-1) + '.')
   # get the headers
   headers = lines[0]
   # remove duplicate spaces
@@ -194,12 +198,9 @@ def process_chembl():
   # close the file we wrote to
   stripped.close()
   
-  # we open the stripped file for reading
-  stripped2 = open('chembldrugs_stripped.txt', 'r')
-  # reading lines
-  lines2 = stripped2.readlines()
-  # closing the stripped file
-  stripped2.close()
+  # open stripped file and get lines
+  lines2 = file_to_lines('chembldrugs_stripped.txt')
+  # set counter for small molecules
   small_mol_count = 0
   chembl_filt_list = []
   # look over, note here there is no header
@@ -214,32 +215,53 @@ def process_chembl():
       small_mol_count = small_mol_count + 1
       #logger.debug(rowsplit3[col_chemblid])
 
+      # make list of chembl ids we are interested in
       chembl_filt_list.append(rowsplit3[col_chemblid])
     
   logger.info('The number of filtered drugs that are small molecules is ' +
               str(small_mol_count) + '.')
   #logger.debug(chembl_filt_list)
 
+  
+  # open the drug targets chembl file and get lines
+  drug_targ = file_to_lines(CHEMBL_TARGETS)
+  # get column number for two headers we want (chembl ids for mol and targets)
+  col_mol_id = header_tab_count(CHEMBL_TARGETS,'MOLECULE_CHEMBL_ID')
+  col_targ_id = header_tab_count(CHEMBL_TARGETS,'TARGET_CHEMBL_ID')
+  # empty list in which to store the target chembl ids
+  targets_ids = []
+
+  #logger.debug(drug_targ[0])
+
+  # list of target chemblids that refer to the drugs we are interested in
+  # ie. small molecules, late clinical stages
+  for line in drug_targ:
+    rowsplit = line.split("\t")
+    # check if the molecule chembl id is one of the drugs we want
+    if rowsplit[col_mol_id] in chembl_filt_list:
+      # add the target chembl id to the list
+      targets_ids.append(rowsplit[col_targ_id])
+  logger.info('The number of drugs that have a ChEMBL target associated ' +
+              'to it is ' + str(len(targets_ids)) + '.')
+
   # create dictionary from the chembl/uniprot mapping file
+  # the dictionary will be {'chemblID1':'uniprotid1', etc..}
   chembl_uniprot_map_dic = swap_dic(CHEMBL_UNIPROT)
   #logger.debug(chembl_uniprot_map_dic)
-  # empty dictionary on which to store filtered values
-  chembldrugs_uniprot_dic = {}
 
-  fakedruglist = ['CHEMBL221','CHEMBL230']
-  matching_chembl = 0
-  #loop over the chembl_uniprot_map_dic items
+  # empty list in which to store uniprot codes
+  target_uniprot = []
+
+  # loop over dictionary and check if the chemblid is in out list
   for key in chembl_uniprot_map_dic:
-    #logger.debug(key)
-    # check if chembl key is in chembl_filt_list
-    if key in fakedruglist:
-      #logger.debug(key)
-      matching_chembl = matching_chembl + 1
+    if key in targets_ids:
+      target_uniprot.append(chembl_uniprot_map_dic[key])
 
-      #append value to dictionary
-      chembldrugs_uniprot_dic[key] = chembl_uniprot_map_dic[key]
-  logger.debug(chembldrugs_uniprot_dic)
-  # write in the new dictionary only the ones that match the condition
+  logger.info('The targets that could be mapped to a UniProt ID are ' +
+              str(len(target_uniprot)) + '.')
+
+
+  return target_uniprot
   
 ############################################################################
 
@@ -265,7 +287,12 @@ def process_chembl():
 # TO ADD: call process_drugbank, merge uniprot codes
 
 def main():
+  # get a list of target uniprot from chembl
   process_chembl()
+  # get a list of target uniprot from drugbank
+  #process_drugbank
+
+  # merge the lists, remove duplicates, see how many we end up with
 
 ############################################################################
 
