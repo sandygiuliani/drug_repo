@@ -25,7 +25,7 @@ logging.basicConfig(filename='log_drug_repo.log', filemode='w',
 logger = logging.getLogger(__name__)
 # leave this level setting to DEBUG
 logger.setLevel(logging.DEBUG)
-# create console handler and set level to debug or other level
+# create console handler
 ch = logging.StreamHandler()
 # CHANGE THIS TO TUNE LOGGING LEVEL from DEBUG/INFO/WARNING
 ch.setLevel(logging.DEBUG)
@@ -43,7 +43,6 @@ logger.addHandler(ch)
 CHEMBL_INPUT = 'chembldrugs.txt'
 # define CHEMBL_UNIPROT as the chemblID/uniprot mapping file
 CHEMBL_UNIPROT = 'chembl_uniprot_mapping.txt'
-
 ############################################################################
 
 
@@ -73,7 +72,6 @@ def header_tab_count(tab_file, header):
   logger.debug('the header tab count thing works')
   # return column number
   return col_number
-
 ############################################################################
 
 
@@ -89,7 +87,6 @@ def file_to_lines(text_file):
   input_file.close()
   #logger.debug(lines)
   return lines
-
 ############################################################################
 
 
@@ -115,8 +112,6 @@ def swap_dic(tab_file):
     swap_dictionary[splitline[1].rstrip('\r\n')] = (splitline[0])
   #logger.debug(swap_dictionary)
   return swap_dictionary
-  
-
 ############################################################################
 
 
@@ -218,8 +213,9 @@ def process_chembl():
   logger.debug(small_mol_count)
   # create dictionary from the chembl/uniprot mapping file
   chembl_uniprot_map_dic = swap_dic(CHEMBL_UNIPROT)
-  # empty dictionary on which to store filter values
+  # empty dictionary on which to store filtered values
   chembldrugs_uniprot_dic = {}
+
   
 ############################################################################
 
