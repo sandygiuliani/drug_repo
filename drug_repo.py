@@ -80,17 +80,57 @@ def header_tab_count(tab_file, header):
 
 
 ############################################################################
+### FILE_TO_LINES HELPER FUNCTION
+############################################################################
+# read file using readlines approach and return the lines
+def file_to_lines(text_file):
+  input_file = open(text_file, 'r')
+  lines = input_file.readlines()
+  input_file.close()
+  #logger.debug(lines)
+  return lines
+
+############################################################################
+
+
+
+
+############################################################################
+### SWAP_DIC HELPER FUNCTION
+############################################################################
+# read tab-separated mapping file with header and return dictionary with 
+# second column as key and first column as values - created for the 
+# chemblID uniprot mapping file
+def swap_dic(tab_file):
+  lines = file_to_lines(tab_file)
+  swap_dictionary = {}
+  counter = 0
+  # iterate over lines
+  for i in range(1,len(lines)):
+    # split tab
+    splitline = lines[i].split("\t")
+    counter = counter + 1
+    #logger.debug(splitline[1])
+    # create dictionary, stripping the carriage return
+    swap_dictionary[splitline[1].rstrip('\r\n')] = (splitline[0])
+  #logger.debug(swap_dictionary)
+  return swap_dictionary
+  
+
+############################################################################
+
+
+
+############################################################################
 ### PROCESS_CHEMBL FUNCTION
 ############################################################################
 
 # in the end we need a dictionary of chembl ids vs uniprot ids
 def process_chembl():
-  '''read chembl drug input file and return information on number of drugs 
-  and headers'''
+  '''read chembl drug input file, filter, get various info and return 
+  dictionary of '''
   # open chembldrugs.txt for reading
-  input_file = open(CHEMBL_INPUT, 'r') 
-  lines = input_file.readlines()
-  input_file.close()
+  lines = file_to_lines(CHEMBL_INPUT)
   logger.info('The number of drugs listed in the input file is '
               + str(len(lines)-1))
   # get the headers
@@ -102,6 +142,7 @@ def process_chembl():
 
   col_phase = header_tab_count(CHEMBL_INPUT,"DEVELOPMENT_PHASE")
   col_type = header_tab_count(CHEMBL_INPUT,"DRUG_TYPE")
+  col_chemblid = header_tab_count(CHEMBL_INPUT,"CHEMBL_ID")
   
   logger.info('The column with the development_phase info is the ' + 
               str(col_phase+1) + 'th; the one with the drug_type info is the '
@@ -173,7 +214,12 @@ def process_chembl():
     if rowsplit3[col_type] == 'Synthetic Small Molecule':
       filtered.write(lines2[x])
       small_mol_count = small_mol_count +1
+  #chembl_dic[lines2[col_chemblid]] = [lines2[]]
   logger.debug(small_mol_count)
+  # create dictionary from the chembl/uniprot mapping file
+  chembl_uniprot_map_dic = swap_dic(CHEMBL_UNIPROT)
+  # empty dictionary on which to store filter values
+  chembldrugs_uniprot_dic = {}
   
 ############################################################################
 
