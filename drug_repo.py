@@ -69,7 +69,7 @@ def header_tab_count(tab_file, header):
   while not first.split("\t")[col_number] == header:
     col_number = col_number + 1
   #debug check
-  logger.debug('the header tab count thing works')
+  #logger.debug('the header tab counter works - one loop')
   # return column number
   return col_number
 ############################################################################
@@ -85,7 +85,6 @@ def file_to_lines(text_file):
   input_file = open(text_file, 'r')
   lines = input_file.readlines()
   input_file.close()
-  #logger.debug(lines)
   return lines
 ############################################################################
 
@@ -107,7 +106,7 @@ def swap_dic(tab_file):
     # split tab
     splitline = lines[i].split("\t")
     counter = counter + 1
-    #logger.debug(splitline[1])
+    #logger.debug(splitline[0])
     # create dictionary, stripping the carriage return
     swap_dictionary[splitline[1].rstrip('\r\n')] = (splitline[0])
   #logger.debug(swap_dictionary)
@@ -139,9 +138,11 @@ def process_chembl():
   col_type = header_tab_count(CHEMBL_INPUT,"DRUG_TYPE")
   col_chemblid = header_tab_count(CHEMBL_INPUT,"CHEMBL_ID")
   
-  logger.info('The column with the development_phase info is the ' + 
-              str(col_phase+1) + 'th; the one with the drug_type info is the '
-              + str(col_type+1) + 'th.')
+  # print to log the number for the columns
+  #logger.info('The column with the development_phase info is the ' + 
+  #            str(col_phase+1) + 'th; 
+  #            the one with the drug_type info is the '
+  #            + str(col_type+1) + 'th.')
 
   # count the drugs in the 4+1 classes of clinical phase
   # set counters for clinical phases to zero
@@ -187,7 +188,7 @@ def process_chembl():
       stripped.write(lines[y])
       # print(rowsplit2[column])
   # print friendly statement
-  logger.info('We have written to the file chembl_stripped.txt' + 
+  logger.info('We have written to the file chembl_stripped.txt ' + 
       'only the entries in phase 4 or with unkown phase' +
       ', for a total number of '+ str(total_stripped_lines)+' drugs.')
   # close the file we wrote to
@@ -199,23 +200,46 @@ def process_chembl():
   lines2 = stripped2.readlines()
   # closing the stripped file
   stripped2.close()
-  filtered = open('chembldrugs_filt.txt', 'w')
   small_mol_count = 0
+  chembl_filt_list = []
   # look over, note here there is no header
-  for x in range(len(lines2)):
+  for line in lines2:
+  #for x in range(len(lines2)):
     # tab separate
-    rowsplit3 = lines2[x].split("\t")
-    # drug_type = ''
+    rowsplit3 = line.split("\t")
+    #rowsplit3 = lines2[line].split("\t")
+    # check if they are small molecules and append chemids to list
     if rowsplit3[col_type] == 'Synthetic Small Molecule':
-      filtered.write(lines2[x])
-      small_mol_count = small_mol_count +1
-  #chembl_dic[lines2[col_chemblid]] = [lines2[]]
-  logger.debug(small_mol_count)
+      # count how many lines we are retaining
+      small_mol_count = small_mol_count + 1
+      #logger.debug(rowsplit3[col_chemblid])
+
+      chembl_filt_list.append(rowsplit3[col_chemblid])
+    
+  logger.info('The number of filtered drugs that are small molecules is ' +
+              str(small_mol_count) + '.')
+  #logger.debug(chembl_filt_list)
+
   # create dictionary from the chembl/uniprot mapping file
   chembl_uniprot_map_dic = swap_dic(CHEMBL_UNIPROT)
+  #logger.debug(chembl_uniprot_map_dic)
   # empty dictionary on which to store filtered values
   chembldrugs_uniprot_dic = {}
 
+  fakedruglist = ['CHEMBL221','CHEMBL230']
+  matching_chembl = 0
+  #loop over the chembl_uniprot_map_dic items
+  for key in chembl_uniprot_map_dic:
+    #logger.debug(key)
+    # check if chembl key is in chembl_filt_list
+    if key in fakedruglist:
+      #logger.debug(key)
+      matching_chembl = matching_chembl + 1
+
+      #append value to dictionary
+      chembldrugs_uniprot_dic[key] = chembl_uniprot_map_dic[key]
+  logger.debug(chembldrugs_uniprot_dic)
+  # write in the new dictionary only the ones that match the condition
   
 ############################################################################
 
