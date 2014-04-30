@@ -18,7 +18,7 @@ drug_repo.py development:
 - [x] ChEMBL processing - small molecule filter 
 - [ ] ChEMBL processing - uniprot mapping
 - [ ] DrugBank data processing
-- [ ] write everything to log instead of .txt output
+- [x] write everything to log instead of .txt output
 - [ ] ChEMBL/DrugBank data merge
 - [ ] domain architecture mapping (ArchSchema)
 - [ ] schistosoma domains
