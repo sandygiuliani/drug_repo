@@ -132,7 +132,7 @@ def swap_dic(tab_file):
 # in the end we need a dictionary of chembl ids vs uniprot ids
 def process_chembl():
   '''read chembl drug input file, filter, get various info and return 
-  dictionary of '''
+  list of uniprot ids'''
   # open chembldrugs.txt for reading
   lines = file_to_lines(CHEMBL_INPUT)
   logger.info('The total number of drugs listed in the ChEMBL drug file is '
@@ -266,6 +266,11 @@ def process_chembl():
   logger.info('The targets that could be mapped to a UniProt ID are ' +
               str(len(target_uniprot)) + '.')
 
+  #remove duplicates from the list
+  target_uniprot = list(set(target_uniprot))
+
+  logger.info('The unique UniProt IDs we obtained are ' +
+              str(len(target_uniprot)) + '.')
 
   return target_uniprot
   
@@ -292,10 +297,15 @@ def process_chembl():
 ############################################################################
 
 # let's try and call archindex from the script!
-def call_archindex():
-  # one uniprot value to start with
-  uniprot_value = 'B6DTB2'
-  subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_value) + 
+def call_archindex(uniprot_list):
+  '''(list of str -> list of str)
+  run archindex, return list of domain architecture from list of uniprot 
+  values
+  '''
+  # loop over list of uniprot values
+  for item in uniprot_list:
+    # call archschema on the list
+    subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_value) + 
                   " > test.txt", shell=True)
   # os system does not work very well, also it is deprecated
   #os.system('./../archSchema/bin/archindex -u B6DTB2 > test2.txt')
@@ -315,12 +325,14 @@ def call_archindex():
 
 def main():
   # get a list of target uniprot from chembl
-  process_chembl()
+  uniprot_list = process_chembl()
   # get a list of target uniprot from drugbank
   #process_drugbank
   # merge the lists, remove duplicates, see how many we end up with
 
-  call_archindex()
+  uniprot_test_list = ['B6DTB2', ]
+  # call archindex on list of uniprot values
+  #call_archindex()
 
 ############################################################################
 
