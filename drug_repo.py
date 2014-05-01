@@ -252,7 +252,7 @@ def process_chembl():
   # empty list in which to store uniprot codes
   target_uniprot = []
 
-  # loop over dictionary and check if the chemblid is in out list
+  # loop over dictionary and check if the chemblid is in our list
   for key in chembl_uniprot_map_dic:
     if key in targets_ids:
       target_uniprot.append(chembl_uniprot_map_dic[key])
@@ -277,6 +277,22 @@ def process_chembl():
   # implement function
 
 ############################################################################
+
+
+
+
+############################################################################
+### CALL_ARCHINDEX FUNCTION
+############################################################################
+
+# let's try and call archindex from the script!
+#def call_archindex(uniprot_value):
+  # one uniprot value to start with
+  #uniprot_value = 
+
+############################################################################
+
+
 
 
 ############################################################################
