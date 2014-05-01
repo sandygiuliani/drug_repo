@@ -308,13 +308,17 @@ def call_archindex(uniprot_list):
     subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) + 
                   " -maxa 1 -maxs 1 -cath > temp.txt", shell=True)
 
-    content = file_to_lines('temp.txt')
+    archindex_content = file_to_lines('temp.txt')
 
-    logger.debug(content)
+  logger.debug(archindex_content)
+
+  # rm temp.txt in the end
+  # this is the last temp file that overwrote the others
+  subprocess.call("rm temp.txt", shell=True)
+  
 
   # os system does not work very well, also it is deprecated
   #os.system('./../archSchema/bin/archindex -u B6DTB2 > test2.txt')
-  #logger.debug(test.txt)
 
 ############################################################################
 
