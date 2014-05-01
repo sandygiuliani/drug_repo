@@ -92,10 +92,20 @@ def header_tab_count(tab_file, header):
 ############################################################################
 # read file using readlines approach and return the lines
 def file_to_lines(text_file):
-  input_file = open(text_file, 'r')
-  lines = input_file.readlines()
-  input_file.close()
-  return lines
+  try:
+    input_file = open(text_file, 'r')
+    lines = input_file.readlines()
+    input_file.close()
+    #logger.debug('the try/expect loop is working')
+    return lines
+  except IOError:
+    logger.error('The file ' + text_file + ' cannot be found' +
+                 ' in the current directory!')
+    #this logger exception will print the whole thing
+    #logger.exception('whaaaaat we have error')
+    logger.warning('The program is aborted.')
+    sys.exit() # do I need this??
+
 ############################################################################
 
 
@@ -302,20 +312,30 @@ def call_archindex(uniprot_list):
   run archindex, return list of domain architecture from list of uniprot 
   values
   '''
+  # empty list in which to store domain architecture values
+  architect_list = []
   # loop over list of uniprot values
   for uniprot_id in uniprot_list:
     # call archschema on the list
     subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) + 
                   " -maxa 1 -maxs 1 -cath > temp.txt", shell=True)
-
+    # store lines in archindex_content
     archindex_content = file_to_lines('temp.txt')
 
-  logger.debug(archindex_content)
+
+
+  #logger.debug(archindex_content)
 
   # rm temp.txt in the end
   # this is the last temp file that overwrote the others
   subprocess.call("rm temp.txt", shell=True)
   
+  # eliminate duplicate domain architecture values
+  architect_list = list(set(architect_list))
+
+  # return the list of unique domain architecture values
+  return architect_list
+
 
   # os system does not work very well, also it is deprecated
   #os.system('./../archSchema/bin/archindex -u B6DTB2 > test2.txt')
@@ -333,6 +353,10 @@ def call_archindex(uniprot_list):
 # TO ADD: call process_drugbank, merge uniprot codes
 
 def main():
+  # greeting
+  logger.info("Hi there, you are running drug_repo for drug repositioning! "
+              "Let's do some mapping.")
+
   # get a list of target uniprot from chembl
   uniprot_list = process_chembl()
   # get a list of target uniprot from drugbank
@@ -342,7 +366,7 @@ def main():
   # test list'B6DTB2', 'Q4JEY0','P11511'
   uniprot_test_list = ['B6DTB2']
   # call archindex on list of uniprot values
-  call_archindex(uniprot_test_list)
+  #call_archindex(uniprot_test_list)
 
 ############################################################################
 
