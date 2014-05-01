@@ -402,15 +402,27 @@ def arch_to_uniprot(arch_list):
                   "> temp.txt", shell=True)
     # store lines
     lines = file_to_lines('temp.txt')
-    logger.debug(lines)
+    #logger.debug(temp.txt)
 
     # get the uniprot values and append them to uniprot_list
-    # return uniprot_list
-
+    for i in range(len(lines)):
+      # find line that starts with parent
+      if lines[i][0:7] == ':PARENT':
+        # take the line after the ':PARENT' and split it
+        line_split = lines[i+1].split("\t")
+        
+        uniprot_list.append(line_split[0])
 
   # rm temp.txt in the end
   # this is the last temp file that overwrote the others
   subprocess.call("rm temp.txt", shell=True)
+
+  logger.debug(uniprot_list)
+  #return the list of uniprots
+  return uniprot_list
+
+
+  
 
 
 
@@ -438,11 +450,13 @@ def main():
   # merge the lists, remove duplicates, see how many we end up with
   
   # use this to test
-  # overwrite the list with a small set (list'B6DTB2', 'Q4JEY0','P11511')
-  uniprot_list = ['B6DTB2']
+  # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
+  #uniprot_list = ['B6DTB2', 'Q4JEY0','P11511']
   
   # call archindex on list of uniprot values to retrieve domain architecture
   architect_list = uniprot_to_arch(uniprot_list)
+
+  logger.debug(architect_list)
 
   # call archindex on dom. architecture values to find the ones from schisto
   uniprot_schisto_list = arch_to_uniprot(architect_list)
