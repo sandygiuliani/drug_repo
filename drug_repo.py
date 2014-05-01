@@ -271,7 +271,7 @@ def process_chembl():
 
   logger.info('The unique UniProt IDs we obtained are ' +
               str(len(target_uniprot)) + '.')
-
+  logger.info(target_uniprot)
   return target_uniprot
   
 ############################################################################
@@ -303,10 +303,15 @@ def call_archindex(uniprot_list):
   values
   '''
   # loop over list of uniprot values
-  for item in uniprot_list:
+  for uniprot_id in uniprot_list:
     # call archschema on the list
-    subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_value) + 
-                  " > test.txt", shell=True)
+    subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) + 
+                  " -maxa 1 -maxs 1 -cath > temp.txt", shell=True)
+
+    content = file_to_lines('temp.txt')
+
+    logger.debug(content)
+
   # os system does not work very well, also it is deprecated
   #os.system('./../archSchema/bin/archindex -u B6DTB2 > test2.txt')
   #logger.debug(test.txt)
@@ -329,10 +334,11 @@ def main():
   # get a list of target uniprot from drugbank
   #process_drugbank
   # merge the lists, remove duplicates, see how many we end up with
-
-  uniprot_test_list = ['B6DTB2', ]
+  
+  # test list'B6DTB2', 'Q4JEY0','P11511'
+  uniprot_test_list = ['B6DTB2']
   # call archindex on list of uniprot values
-  #call_archindex()
+  call_archindex(uniprot_test_list)
 
 ############################################################################
 
