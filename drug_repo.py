@@ -10,7 +10,7 @@
 
 
 ############################################################################
-### import modules, set up log and define constant variables
+### import modules, set up logger
 ############################################################################
 
 # import os (old system)
@@ -42,8 +42,14 @@ formatter = logging.Formatter('%(levelname)s: %(name)s - %(message)s')
 ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
+############################################################################
 
-#logger.warning('warning_test')
+
+
+
+############################################################################
+### define global variables
+############################################################################
 
 # define CHEMBL_INPUT as the drug file from ChEMBL ('Browse drugs')
 # number of drugs should be 10406
@@ -53,6 +59,9 @@ CHEMBL_INPUT = 'chembl_drugs.txt'
 CHEMBL_TARGETS = 'chembl_drugtargets.txt'
 # define CHEMBL_UNIPROT as the chemblID/uniprot mapping file
 CHEMBL_UNIPROT = 'chembl_uniprot_mapping.txt'
+# define TAXA as the list of taxonomy identifiers we are interested in
+# e.g. SCHMA (S. Mansoni), SCHHA (S. haematobium), SCHJA (S. japonicum)
+TAXA = ['SCHMA', 'SCHHA', 'SCHJA']
 ############################################################################
 
 
@@ -104,7 +113,8 @@ def file_to_lines(text_file):
     #this logger exception will print the whole thing
     #logger.exception('whaaaaat we have error')
     logger.warning('The program is aborted.')
-    sys.exit() # do I need this??
+    # exit python
+    sys.exit()
 
 ############################################################################
 
@@ -281,7 +291,7 @@ def process_chembl():
 
   logger.info('The unique UniProt IDs we obtained are ' +
               str(len(target_uniprot)) + '.')
-  logger.info(target_uniprot)
+  #logger.debug(target_uniprot)
   return target_uniprot
   
 ############################################################################
@@ -303,11 +313,11 @@ def process_chembl():
 
 
 ############################################################################
-### CALL_ARCHINDEX FUNCTION
+### UNIPROT_TO_ARCH FUNCTION
 ############################################################################
 
 # let's try and call archindex from the script!
-def call_archindex(uniprot_list):
+def uniprot_to_arch(uniprot_list):
   '''(list of str -> list of str)
   run archindex, return list of domain architecture from list of uniprot 
   values
@@ -319,12 +329,36 @@ def call_archindex(uniprot_list):
     # call archschema on the list
     subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) + 
                   " -maxa 1 -maxs 1 -cath > temp.txt", shell=True)
-    # store lines in archindex_content
-    archindex_content = file_to_lines('temp.txt')
+    # store lines
+    lines = file_to_lines('temp.txt')
+    #logger.debug(lines)
+    for i in range(len(lines)):
+      # find line that starts with parent
+      if lines[i][0:7] == ':PARENT':
+        # take the line after the ':PARENT' and split it
+        line_split = lines[i+1].split("\t")
+        #logger.debug('the line after is ' + str(line_split))
 
+        # check if there are 'p's and get rid of them
+        if "p" in line_split[2]:
+          # replace p's with nothing
+          line_nops = line_split[2].replace('p','')
+        else:
+          line_nops = line_split[2]
+        
+        # check if there are undescores
+        if "_" in line_nops:
+          undersc_split = line_nops.split("_")
+          #logger.debug(undersc_split)
+          
+          for item in undersc_split:
+            architect_list.append(item)
 
+        else:
+          architect_list.append(line_nops)
 
-  #logger.debug(archindex_content)
+  #logger.debug(len(architect_list))
+
 
   # rm temp.txt in the end
   # this is the last temp file that overwrote the others
@@ -332,6 +366,9 @@ def call_archindex(uniprot_list):
   
   # eliminate duplicate domain architecture values
   architect_list = list(set(architect_list))
+
+  logger.info('We have found ' + str(len(architect_list)) + 
+              ' unique domain architectures.')
 
   # return the list of unique domain architecture values
   return architect_list
@@ -346,6 +383,41 @@ def call_archindex(uniprot_list):
 
 
 ############################################################################
+### ARCH_TO_UNIPROT FUNCTION
+############################################################################
+# run archindex, filters for TAXA and find uniprot ids
+def arch_to_uniprot(arch_list):
+  '''(list of str -> list of str)
+  run archindex, return list of uniprot from list of domain
+  architecture values applying a filter for TAXA (organism)
+  '''
+  # empty list in which to store domain uniprot values
+  uniprot_list = []
+  # loop over list of arch values
+  for arch_id in arch_list:
+    # here we can add iteration so we use all taxa identifiers???
+    # call archschema on the list
+    subprocess.call("./../archSchema/bin/archindex -p " + str(arch_id) + 
+                  " -maxa 1 -maxs 1 -cath -s SCHMA " + 
+                  "> temp.txt", shell=True)
+    # store lines
+    lines = file_to_lines('temp.txt')
+    logger.debug(lines)
+
+    # get the uniprot values and append them to uniprot_list
+    # return uniprot_list
+
+
+  # rm temp.txt in the end
+  # this is the last temp file that overwrote the others
+  subprocess.call("rm temp.txt", shell=True)
+
+
+
+############################################################################
+
+
+############################################################################
 ### MAIN FUNCTION
 ############################################################################
 
@@ -354,19 +426,26 @@ def call_archindex(uniprot_list):
 
 def main():
   # greeting
-  logger.info("Hi there, you are running drug_repo for drug repositioning! "
-              "Let's do some mapping.")
+  logger.info("Hi there, you are running drug_repo for drug repositioning!" +
+              " Let's do some mapping.")
 
   # get a list of target uniprot from chembl
   uniprot_list = process_chembl()
+  
   # get a list of target uniprot from drugbank
   #process_drugbank
+  
   # merge the lists, remove duplicates, see how many we end up with
   
-  # test list'B6DTB2', 'Q4JEY0','P11511'
-  uniprot_test_list = ['B6DTB2']
-  # call archindex on list of uniprot values
-  #call_archindex(uniprot_test_list)
+  # use this to test
+  # overwrite the list with a small set (list'B6DTB2', 'Q4JEY0','P11511')
+  uniprot_list = ['B6DTB2']
+  
+  # call archindex on list of uniprot values to retrieve domain architecture
+  architect_list = uniprot_to_arch(uniprot_list)
+
+  # call archindex on dom. architecture values to find the ones from schisto
+  uniprot_schisto_list = arch_to_uniprot(architect_list)
 
 ############################################################################
 
@@ -374,7 +453,7 @@ def main():
 
 
 ############################################################################
-### call main function, prevent excecution on import
+### call main function, prevent execution on import
 ############################################################################
 if __name__ == "__main__":
   main()
