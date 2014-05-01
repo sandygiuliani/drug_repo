@@ -13,8 +13,14 @@
 ### import modules, set up log and define constant variables
 ############################################################################
 
+# import os (old system)
+import os
+
+# import subprocess for executing command line
+import subprocess
+
 # import modules
-import sys, re, string, os, fnmatch, shutil
+import sys, re, string, fnmatch, shutil
 
 # set up log
 import logging
@@ -286,9 +292,14 @@ def process_chembl():
 ############################################################################
 
 # let's try and call archindex from the script!
-#def call_archindex(uniprot_value):
+def call_archindex():
   # one uniprot value to start with
-  #uniprot_value = 
+  uniprot_value = 'B6DTB2'
+  subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_value) + 
+                  " > test.txt", shell=True)
+  # os system does not work very well, also it is deprecated
+  #os.system('./../archSchema/bin/archindex -u B6DTB2 > test2.txt')
+  #logger.debug(test.txt)
 
 ############################################################################
 
@@ -307,8 +318,9 @@ def main():
   process_chembl()
   # get a list of target uniprot from drugbank
   #process_drugbank
-
   # merge the lists, remove duplicates, see how many we end up with
+
+  call_archindex()
 
 ############################################################################
 
