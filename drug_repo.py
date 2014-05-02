@@ -347,7 +347,7 @@ def uniprot_to_arch(uniprot_list):
         # this is the case of just one entry, no undescores
         else:
           # check the format is CATH one
-          if line_nops == "*.*.*.*":
+          if CATH_FORMAT.match(line_nops):
             architect_list.append(line_nops)
 
 
