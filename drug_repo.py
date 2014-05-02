@@ -15,6 +15,8 @@
 
 # import os (old system)
 import os
+# os system does not work very well, it is deprecated, use subprocess
+#os.system('./../archSchema/bin/archindex -u B6DTB2 > test2.txt')
 
 # import subprocess for executing command line
 import subprocess
@@ -54,14 +56,18 @@ logger.addHandler(ch)
 # define CHEMBL_INPUT as the drug file from ChEMBL ('Browse drugs')
 # number of drugs should be 10406
 CHEMBL_INPUT = 'chembl_drugs.txt'
+
 # define CHEMBL_TARGETS as the target file from ChEMBL ('Browse drug targets')
 # number of drugs associated with targets should be 2007
 CHEMBL_TARGETS = 'chembl_drugtargets.txt'
+
 # define CHEMBL_UNIPROT as the chemblID/uniprot mapping file
 CHEMBL_UNIPROT = 'chembl_uniprot_mapping.txt'
+
 # define TAXA as the list of taxonomy identifiers we are interested in
 # e.g. SCHMA (S. Mansoni), SCHHA (S. haematobium), SCHJA (S. japonicum)
 TAXA = ['SCHMA', 'SCHHA', 'SCHJA']
+
 # format of CATH domain eg '4.10.400.10'
 CATH_FORMAT = re.compile('.*\..*\..*\..*')
 ############################################################################
@@ -117,7 +123,6 @@ def file_to_lines(text_file):
     logger.warning('The program is aborted.')
     # exit python
     sys.exit()
-
 ############################################################################
 
 
@@ -280,7 +285,6 @@ def process_chembl():
               str(len(target_uniprot)) + '.')
   #logger.debug(target_uniprot)
   return target_uniprot
-  
 ############################################################################
 
 
@@ -300,14 +304,13 @@ def process_chembl():
 
 
 ############################################################################
-### UNIPROT_TO_ARCH FUNCTION
+### UNIPROT_TO_CATH FUNCTION
 ############################################################################
-
-# let's try and call archindex from the script!
-def uniprot_to_arch(uniprot_list):
+# return list of CATH domain archictures from uniprot list
+def uniprot_to_cath(uniprot_list):
   '''(list of str -> list of str)
-  run archindex, return list of domain architecture from list of uniprot 
-  values
+  run archindex, return list of CATH domain architecture from list of 
+  uniprot values
   '''
   # empty list in which to store domain architecture values
   architect_list = []
@@ -361,15 +364,10 @@ def uniprot_to_arch(uniprot_list):
   #logger.debug(architect_list)
   
   logger.info('We have found ' + str(len(architect_list)) + 
-              ' unique domain architectures.')
+              ' unique CATH domain architectures.')
 
   # return the list of unique domain architecture values
   return architect_list
-
-
-  # os system does not work very well, also it is deprecated
-  #os.system('./../archSchema/bin/archindex -u B6DTB2 > test2.txt')
-
 ############################################################################
 
 
@@ -378,7 +376,7 @@ def uniprot_to_arch(uniprot_list):
 ############################################################################
 ### ARCH_TO_UNIPROT FUNCTION
 ############################################################################
-# run archindex, filters for TAXA and find uniprot ids
+# run archindex, filter for TAXA and find uniprot ids
 def arch_to_uniprot(arch_list):
   '''(list of str -> list of str)
   run archindex, return list of uniprot from list of domain
@@ -418,11 +416,10 @@ def arch_to_uniprot(arch_list):
 
   logger.info('We have found ' + str(len(uniprot_list)) + 
               ' UniProt IDs of schistosoma proteins' +
-              ' (taxonomic identifiers ' + str(TAXA) + ')')
+              ' (taxonomic identifiers ' + str(TAXA) + ').')
 
   #return the list of uniprots
   return uniprot_list
-
 ############################################################################
 
 
@@ -451,12 +448,11 @@ def main():
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
   uniprot_list = ['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
   
-  # call archindex on list of uniprot values to retrieve domain architecture
-  architect_list = uniprot_to_arch(uniprot_list)
+  # call archindex on uniprot list to retrieve cath domain architectures
+  architect_list = uniprot_to_cath(uniprot_list)
 
   # call archindex on dom. architecture values to find the ones from schisto
   uniprot_schisto_list = arch_to_uniprot(architect_list)
-
 ############################################################################
 
 
