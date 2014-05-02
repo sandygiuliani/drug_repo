@@ -157,7 +157,7 @@ def process_chembl():
   list of uniprot ids'''
   # open chembldrugs.txt for reading
   lines = file_to_lines(CHEMBL_INPUT)
-  logger.info('The total number of drugs listed in the ChEMBL drug file is '
+  logger.info('The total number of drugs listed in the ChEMBL input file is '
               + str(len(lines)-1) + '.')
   # get the headers
   headers = lines[0]
@@ -170,12 +170,6 @@ def process_chembl():
   col_type = header_tab_count(CHEMBL_INPUT,"DRUG_TYPE")
   col_chemblid = header_tab_count(CHEMBL_INPUT,"CHEMBL_ID")
   
-  # print to log the number for the columns
-  #logger.info('The column with the development_phase info is the ' + 
-  #            str(col_phase+1) + 'th; 
-  #            the one with the drug_type info is the '
-  #            + str(col_type+1) + 'th.')
-
   # count the drugs in the 4+1 classes of clinical phase
   # set counters for clinical phases to zero
   phase1 = 0
@@ -198,41 +192,32 @@ def process_chembl():
     else:
       phase_unknown = phase_unknown + 1
 
-  logger.info('Number of drugs in phase 1 is: ' + str(phase1) +
+  logger.info('The number of drugs in phase 1 is: ' + str(phase1) +
               '; in phase 2 is: ' + str(phase2) + '; in phase 3 is: ' + 
               str(phase3)+'; in phase 4 is: ' + str(phase4) + 
               '; in unknown phase is: ' + str(phase_unknown) + '.')
 
-  # open the file to write to
-  stripped = open('chembldrugs_stripped.txt', 'w')
-  # set counter to zero, this is just to know how many lines we end up writing
-  total_stripped_lines = 0
+  # set up empty list to append lines to
+  stripped = []
   # look over lines, excluding header
   for y in range(1,len(lines)):
     # tab separate each row
     rowsplit2 = lines[y].split("\t")
     # check if they are phase 4 or unknown
-    # can also add phase 3 from here rowsplit2[col_phase] == '3')
+    # can also add phase 3 from here (or rowsplit2[col_phase] == '3')
     if (rowsplit2[col_phase] == '4'): 
-      # increase the useless counter
-      total_stripped_lines = total_stripped_lines + 1
-      # write to the file the stripped lines
-      stripped.write(lines[y])
-      # print(rowsplit2[column])
+      # append the stripped lines to the list
+      stripped.append(lines[y])
+
   # print friendly statement
-  logger.info('We have written to the file chembl_stripped.txt ' + 
-      'only the entries in phase 4' +
-      ', for a total number of '+ str(total_stripped_lines)+' drugs.')
-  # close the file we wrote to
-  stripped.close()
+  logger.info('We are only considering the entries in phase 4' + 
+      ', for a total number of '+ str(len(stripped))+' drugs.')
   
-  # open stripped file and get lines
-  lines2 = file_to_lines('chembldrugs_stripped.txt')
   # set counter for small molecules
   small_mol_count = 0
   chembl_filt_list = []
-  # look over, note here there is no header
-  for line in lines2:
+  # loop over, note here there is no header
+  for line in stripped:
   #for x in range(len(lines2)):
     # tab separate
     rowsplit3 = line.split("\t")
@@ -464,7 +449,7 @@ def main():
   # use this fake uniprot list to test
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
-  #uniprot_list = ['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
+  uniprot_list = ['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
   
   # call archindex on list of uniprot values to retrieve domain architecture
   architect_list = uniprot_to_arch(uniprot_list)
