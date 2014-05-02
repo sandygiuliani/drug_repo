@@ -213,7 +213,7 @@ def process_chembl():
     rowsplit2 = lines[y].split("\t")
     # check if they are phase 4 or unknown
     # can also add phase 3 from here rowsplit2[col_phase] == '3')
-    if (rowsplit2[col_phase] == '4') or (rowsplit2[col_phase] == ''): 
+    if (rowsplit2[col_phase] == '4'): 
       # increase the useless counter
       total_stripped_lines = total_stripped_lines + 1
       # write to the file the stripped lines
@@ -221,7 +221,7 @@ def process_chembl():
       # print(rowsplit2[column])
   # print friendly statement
   logger.info('We have written to the file chembl_stripped.txt ' + 
-      'only the entries in phase 4 or with unkown phase' +
+      'only the entries in phase 4' +
       ', for a total number of '+ str(total_stripped_lines)+' drugs.')
   # close the file we wrote to
   stripped.close()
@@ -403,23 +403,24 @@ def arch_to_uniprot(arch_list):
   uniprot_list = []
   # loop over list of arch values
   for arch_id in arch_list:
-    # here we can add iteration so we use all taxa identifiers???
-    # call archschema on the list
-    subprocess.call("./../archSchema/bin/archindex -p " + str(arch_id) + 
-                  " -maxa 1 -maxs 1 -cath -s SCHMA " + 
-                  "> temp.txt", shell=True)
-    # store lines
-    lines = file_to_lines('temp.txt')
-    #logger.debug(temp.txt)
+    # iterate over the taxa code list (schisto species)
+    for taxa_code in TAXA:
+      # call archschema on the list
+      subprocess.call("./../archSchema/bin/archindex -p " + str(arch_id) + 
+                    " -maxa 1 -maxs 1 -cath -s " + taxa_code + 
+                    " > temp.txt", shell=True)
+      # store lines
+      lines = file_to_lines('temp.txt')
+      #logger.debug(temp.txt)
 
-    # get the uniprot values and append them to uniprot_list
-    for i in range(len(lines)):
-      # find line that starts with parent
-      if lines[i][0:7] == ':PARENT':
-        # take the line after the ':PARENT' and split it
-        line_split = lines[i+1].split("\t")
-        
-        uniprot_list.append(line_split[0])
+      # get the uniprot values and append them to uniprot_list
+      for i in range(len(lines)):
+        # find line that starts with parent
+        if lines[i][0:7] == ':PARENT':
+          # take the line after the ':PARENT' and split it
+          line_split = lines[i+1].split("\t")
+          
+          uniprot_list.append(line_split[0])
 
   # rm temp.txt in the end
   # this is the last temp file that overwrote the others
@@ -428,10 +429,11 @@ def arch_to_uniprot(arch_list):
   # remove duplicates from list
   uniprot_list = list(set(uniprot_list))
 
-  #logger.debug(uniprot_list)
+  logger.debug(uniprot_list)
 
   logger.info('We have found ' + str(len(uniprot_list)) + 
-              ' schistosoma UniProt')
+              ' UniProt IDs of schistosoma proteins' +
+              ' (taxonomic identifiers ' + str(TAXA) + ')')
 
   #return the list of uniprots
   return uniprot_list
