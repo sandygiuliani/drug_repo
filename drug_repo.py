@@ -361,12 +361,70 @@ def uniprot_to_cath(uniprot_list):
   # eliminate duplicate domain architecture values
   architect_list = list(set(architect_list))
   
-  #logger.debug(architect_list)
-  
   logger.info('We have found ' + str(len(architect_list)) + 
               ' unique CATH domain architectures.')
-
+  logger.debug(architect_list)
   # return the list of unique domain architecture values
+  return architect_list
+############################################################################
+
+
+
+
+############################################################################
+### UNIPROT_TO_PFAM FUNCTION
+############################################################################
+# return list of pfam domain archictures from uniprot list
+def uniprot_to_pfam(uniprot_list):
+  '''(list of str -> list of str)
+  run archindex, return list of pfam domain architecture from list of 
+  uniprot values
+  '''
+  # empty list in which to store domain architecture values
+  architect_list = []
+  # set counter for debug
+  uniprot_counter = 0
+  # loop over list of uniprot values
+  for uniprot_id in uniprot_list:
+    uniprot_counter = uniprot_counter + 1
+    # log the 
+    logger.debug('We are processing uniprot n.' + str(uniprot_counter)
+                + '(' + str(uniprot_id) + ')..')
+    # call archschema on the list
+    subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) + 
+                  " -maxa 1 -maxs 1 > temp.txt", shell=True)
+    # store lines
+    lines = file_to_lines('temp.txt')
+    #logger.debug(lines)
+    for i in range(len(lines)):
+      # find line that starts with parent
+      if lines[i][0:7] == ':PARENT':
+        # take the line after the ':PARENT' and split it
+        line_split = lines[i+1].split("\t")
+        #logger.debug('the line after is ' + str(line_split))
+        # check if there are dots
+        if "." in line_split[2]:
+          dot_split = line_split[2].split(".")
+          #logger.debug(undersc_split)
+          
+          for item in dot_split:
+         
+            architect_list.append(item)
+
+        # this is the case of just one entry, no dots
+        else:
+       
+          architect_list.append(line_split[2])
+  
+  # rm temp.txt in the end
+  # this is the last temp file that overwrote the others
+  subprocess.call("rm temp.txt", shell=True)
+  # remove duplicates
+  architect_list = list(set(architect_list))
+
+  logger.info('We have found ' + str(len(architect_list)) + 
+              ' unique pfam domain architectures.')
+  logger.debug(architect_list)
   return architect_list
 ############################################################################
 
@@ -377,7 +435,7 @@ def uniprot_to_cath(uniprot_list):
 ### ARCH_TO_UNIPROT FUNCTION
 ############################################################################
 # run archindex, filter for TAXA and find uniprot ids
-def arch_to_uniprot(arch_list):
+def arch_to_uniprot(arch_list,flag):
   '''(list of str -> list of str)
   run archindex, return list of uniprot from list of domain
   architecture values applying a filter for TAXA (organism)
@@ -390,7 +448,7 @@ def arch_to_uniprot(arch_list):
     for taxa_code in TAXA:
       # call archschema on the list
       subprocess.call("./../archSchema/bin/archindex -p " + str(arch_id) + 
-                    " -maxa 1 -maxs 1 -cath -s " + taxa_code + 
+                    " -maxa 1 -maxs 1 " + str(flag) + " -s " + taxa_code + 
                     " > temp.txt", shell=True)
       # store lines
       lines = file_to_lines('temp.txt')
@@ -412,12 +470,11 @@ def arch_to_uniprot(arch_list):
   # remove duplicates from list
   uniprot_list = list(set(uniprot_list))
 
-  logger.debug(uniprot_list)
-
   logger.info('We have found ' + str(len(uniprot_list)) + 
               ' UniProt IDs of schistosoma proteins' +
               ' (taxonomic identifiers ' + str(TAXA) + ').')
 
+  #logger.debug(uniprot_list)
   #return the list of uniprots
   return uniprot_list
 ############################################################################
@@ -446,13 +503,31 @@ def main():
   # use this fake uniprot list to test
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
-  uniprot_list = ['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
-  
-  # call archindex on uniprot list to retrieve cath domain architectures
-  architect_list = uniprot_to_cath(uniprot_list)
+  uniprot_list = ['Q9UM73','Q4JEY0','P68363']
 
-  # call archindex on dom. architecture values to find the ones from schisto
-  uniprot_schisto_list = arch_to_uniprot(architect_list)
+  # call archindex on uniprot list to retrieve cath domain architectures
+  cath_list = uniprot_to_cath(uniprot_list)
+
+  # call archindex on uniprot list to retrieve pfam domain architectures
+  pfam_list = uniprot_to_pfam(uniprot_list)
+
+  # call archindex on cath values to find the ones from schisto
+  cath_flag = "-cath"
+  uniprot_schisto_cath_list = arch_to_uniprot(cath_list, cath_flag)
+
+  # call archindex on pfam values, without the flag
+  pfam_flag = ""
+  uniprot_schisto_pfam_list = arch_to_uniprot(pfam_list, pfam_flag)
+
+  # merge and rm duplicates
+  uniprot_schisto_list = list(
+                              set(uniprot_schisto_cath_list)|
+                              set(uniprot_schisto_pfam_list))
+
+  logger.debug('The merged UniProt values obtained from CATH and pfam ' +
+    'are ' + str(len(uniprot_schisto_list)) + '.')
+  logger.debug(uniprot_schisto_list)
+
 ############################################################################
 
 
