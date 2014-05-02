@@ -19,7 +19,7 @@ import os
 # import subprocess for executing command line
 import subprocess
 
-# import modules
+# import other modules
 import sys, re, string, fnmatch, shutil
 
 # set up log
@@ -62,6 +62,8 @@ CHEMBL_UNIPROT = 'chembl_uniprot_mapping.txt'
 # define TAXA as the list of taxonomy identifiers we are interested in
 # e.g. SCHMA (S. Mansoni), SCHHA (S. haematobium), SCHJA (S. japonicum)
 TAXA = ['SCHMA', 'SCHHA', 'SCHJA']
+# format of CATH domain eg '4.10.400.10'
+CATH_FORMAT = re.compile('.*\..*\..*\..*')
 ############################################################################
 
 
@@ -352,12 +354,16 @@ def uniprot_to_arch(uniprot_list):
           #logger.debug(undersc_split)
           
           for item in undersc_split:
-            architect_list.append(item)
+            # check if the format is CATH one
+            #cath_format = re.compile('.*\..*\..*\..*')
+            if CATH_FORMAT.match(item):
+              architect_list.append(item)
 
+        # this is the case of just one entry, no undescores
         else:
-          architect_list.append(line_nops)
-
-  #logger.debug(len(architect_list))
+          # check the format is CATH one
+          if line_nops == "*.*.*.*":
+            architect_list.append(line_nops)
 
 
   # rm temp.txt in the end
@@ -366,7 +372,9 @@ def uniprot_to_arch(uniprot_list):
   
   # eliminate duplicate domain architecture values
   architect_list = list(set(architect_list))
-
+  
+  #logger.debug(architect_list)
+  
   logger.info('We have found ' + str(len(architect_list)) + 
               ' unique domain architectures.')
 
@@ -417,14 +425,16 @@ def arch_to_uniprot(arch_list):
   # this is the last temp file that overwrote the others
   subprocess.call("rm temp.txt", shell=True)
 
-  logger.debug(uniprot_list)
+  # remove duplicates from list
+  uniprot_list = list(set(uniprot_list))
+
+  #logger.debug(uniprot_list)
+
+  logger.info('We have found ' + str(len(uniprot_list)) + 
+              ' schistosoma UniProt')
+
   #return the list of uniprots
   return uniprot_list
-
-
-  
-
-
 
 ############################################################################
 
@@ -441,7 +451,7 @@ def main():
   logger.info("Hi there, you are running drug_repo for drug repositioning!" +
               " Let's do some mapping.")
 
-  # get a list of target uniprot from chembl
+  # get a list of target uniprot from chembl drug file
   uniprot_list = process_chembl()
   
   # get a list of target uniprot from drugbank
@@ -449,14 +459,13 @@ def main():
   
   # merge the lists, remove duplicates, see how many we end up with
   
-  # use this to test
+  # use this fake uniprot list to test
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
-  #uniprot_list = ['B6DTB2', 'Q4JEY0','P11511']
+  #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
+  #uniprot_list = ['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
   
   # call archindex on list of uniprot values to retrieve domain architecture
   architect_list = uniprot_to_arch(uniprot_list)
-
-  logger.debug(architect_list)
 
   # call archindex on dom. architecture values to find the ones from schisto
   uniprot_schisto_list = arch_to_uniprot(architect_list)
