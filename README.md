@@ -17,7 +17,7 @@ What is schistosomiasis? A very nasty parasitic disease affecting over 200 milli
 drug_repo.py development:
 - [x] ChEMBL processing - clinical phase filter 
 - [x] ChEMBL processing - small molecule filter 
-- [ ] ChEMBL processing - uniprot mapping
+- [x] ChEMBL processing - uniprot mapping
 - [ ] DrugBank data processing
 - [x] write everything to log instead of .txt output
 - [ ] ChEMBL/DrugBank data merge
