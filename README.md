@@ -5,7 +5,8 @@ _a repository of Python scripts for drug repositioning_
 Find here Python scripts for a drug repositiong bio-/chemoinformatics project
 applied to schistosomiasis.  
 What is drug repositioning? The usage of a known drug for a different therapeutic indication. For a few examples, see http://en.wikipedia.org/wiki/Drug_repositioning  
-What is schistosomiasis? A very nasty parasitic disease affecting over 200 million people. Learn more at: http://www.who.int/topics/schistosomiasis/en/
+What is schistosomiasis? A very nasty parasitic disease affecting over 200 million people. Learn more at: http://www.who.int/topics/schistosomiasis/en/  
+How does the tool work? By mapping! known drugs -> their targets -> their domain architecture -> parasite targets  
 
 **CONTENTS**
 * drug_repo.py - Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.
