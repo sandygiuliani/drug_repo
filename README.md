@@ -21,8 +21,8 @@ drug_repo.py development:
 - [ ] DrugBank data processing
 - [x] write everything to log instead of .txt output
 - [ ] ChEMBL/DrugBank data merge
-- [ ] domain architecture mapping (ArchSchema)
-- [ ] schistosoma domains
+- [x] domain architecture mapping (ArchSchema)
+- [x] schistosoma domains
 
 **DISCLAIMER:**  
 THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback welcome but please be kind.
