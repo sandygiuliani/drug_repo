@@ -79,40 +79,12 @@ CATH_FORMAT = re.compile('.*\..*\..*\..*')
 
 
 
-############################################################################
-### HEADER_TAB_COUNT HELPER FUNCTION
-############################################################################
-# find specific header in first line of tab-separated file 
-# and return column number of the header
-def header_tab_count(tab_file, header):
-  '''(str)->int
-  Read first line of tab separated file tab_file and return column number 
-  of header
-  '''
-
-  # read just first line of tab_file
-  with open(tab_file, 'r') as f:
-    first = f.readline()
-    #logger.debug(first)
-  # set counter to 0
-  col_number = 0
-  # loop until word matches the header
-  while not first.split("\t")[col_number] == header:
-    col_number = col_number + 1
-  #debug check
-  #logger.debug('the header tab counter works - one loop')
-  # return column number
-  return col_number
-############################################################################
-
-
-
 
 ############################################################################
 ### HEADER_COUNT HELPER FUNCTION
 ############################################################################
-# find specific header in first line of comma/tab separated file 
-# and return column number of the header
+# find specific header in line of comma or tab (or other) separated 
+# file and return column number of the header
 def header_count(line, separator, header):
   '''
   Read a string (line) separated by separator 
@@ -196,9 +168,9 @@ def process_chembl():
   # print headers list in lowercase
   # print('The headers are: '+headersnospace.lower())
 
-  col_phase = header_tab_count(CHEMBL_INPUT,"DEVELOPMENT_PHASE")
-  col_type = header_tab_count(CHEMBL_INPUT,"DRUG_TYPE")
-  col_chemblid = header_tab_count(CHEMBL_INPUT,"CHEMBL_ID")
+  col_phase = header_count(headers, "\t", "DEVELOPMENT_PHASE")
+  col_type = header_count(headers, "\t", "DRUG_TYPE")
+  col_chemblid = header_count(headers, "\t", "CHEMBL_ID")
   
   # count the drugs in the 4+1 classes of clinical phase
   # set counters for clinical phases to zero
@@ -269,8 +241,8 @@ def process_chembl():
   # open the drug targets chembl file and get lines
   drug_targ = file_to_lines(CHEMBL_TARGETS)
   # get column number for two headers we want (chembl ids for mol and targets)
-  col_mol_id = header_tab_count(CHEMBL_TARGETS,'MOLECULE_CHEMBL_ID')
-  col_targ_id = header_tab_count(CHEMBL_TARGETS,'TARGET_CHEMBL_ID')
+  col_mol_id = header_count(drug_targ[0], '\t', 'MOLECULE_CHEMBL_ID')
+  col_targ_id = header_count(drug_targ[0], '\t', 'TARGET_CHEMBL_ID')
   # empty list in which to store the target chembl ids
   targets_ids = []
 
@@ -322,7 +294,6 @@ def process_chembl():
 # process drugbank file to produce a dictionary of drugs vs uniprot ids
 def process_drugbank():
   
-
   # open and read drug_bank input and count number
   lines = file_to_lines(DRUGBANK_INPUT)
   logger.info('The DrugBank input file has ' + str(len(lines)) + ' entries.')
