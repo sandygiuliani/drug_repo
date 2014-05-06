@@ -64,6 +64,11 @@ CHEMBL_TARGETS = 'chembl_drugtargets.txt'
 # define CHEMBL_UNIPROT as the chemblID/uniprot mapping file
 CHEMBL_UNIPROT = 'chembl_uniprot_mapping.txt'
 
+# define DRUGBANK_INPUT as the DrugBank Drug Target Identifiers
+# either: all_target_ids_all.csv (all drugs, 4,026 entries),
+# or: small_molecule_target_ids_all.csv (small molecule drugs, 3,899 entries)
+DRUGBANK_INPUT = 'small_molecule_target_ids_all.csv'
+
 # define TAXA as the list of taxonomy identifiers we are interested in
 # e.g. SCHMA (S. Mansoni), SCHHA (S. haematobium), SCHJA (S. japonicum)
 TAXA = ['SCHMA', 'SCHHA', 'SCHJA']
@@ -83,13 +88,12 @@ def header_tab_count(tab_file, header):
   '''(str)->int
   Read first line of tab separated file tab_file and return column number 
   of header
-  >>>column_count("DEVELOPMENT_PHASE")
-  3
   '''
 
   # read just first line of tab_file
   with open(tab_file, 'r') as f:
     first = f.readline()
+    #logger.debug(first)
   # set counter to 0
   col_number = 0
   # loop until word matches the header
@@ -101,6 +105,27 @@ def header_tab_count(tab_file, header):
   return col_number
 ############################################################################
 
+
+
+
+############################################################################
+### HEADER_COUNT HELPER FUNCTION
+############################################################################
+# find specific header in first line of comma/tab separated file 
+# and return column number of the header
+def header_count(line, separator, header):
+  '''
+  Read a string (line) separated by separator 
+  and return column number of a specific string (header)
+  '''
+  #set counter to 0
+  col_number = 0
+  # loop until word matches the header
+  while not line.split(separator)[col_number] == header:
+    col_number = col_number + 1
+  # return column number
+  return col_number
+############################################################################
 
 
 
@@ -295,8 +320,21 @@ def process_chembl():
 ############################################################################
 
 # process drugbank file to produce a dictionary of drugs vs uniprot ids
-#def process_drugbank():
-  # implement function
+def process_drugbank():
+  
+
+  # open and read drug_bank input and count number
+  lines = file_to_lines(DRUGBANK_INPUT)
+  logger.info('The DrugBank input file has ' + str(len(lines)) + ' entries.')
+
+  # headers are first line of the file, stripped of carriage return
+  headers = lines[0].rstrip('\r\n')
+  logger.debug('The DrugBank headers are: ' + headers + '.')
+  col_uniprot = header_count(headers, "," , "UniProt ID")
+  col_drugbankids = header_count(headers, "," , "Drug IDs")
+  logger.debug(col_uniprot)
+  logger.debug(col_drugbankids)
+
 
 ############################################################################
 
@@ -496,37 +534,37 @@ def main():
   uniprot_list = process_chembl()
   
   # get a list of target uniprot from drugbank
-  #process_drugbank
+  process_drugbank()
   
   # merge the lists, remove duplicates, see how many we end up with
   
   # use this fake uniprot list to test
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
-  uniprot_list = ['Q9UM73','Q4JEY0','P68363']
+  #uniprot_list = ['Q9UM73','Q4JEY0','P68363']
 
   # call archindex on uniprot list to retrieve cath domain architectures
-  cath_list = uniprot_to_cath(uniprot_list)
+  #cath_list = uniprot_to_cath(uniprot_list)
 
   # call archindex on uniprot list to retrieve pfam domain architectures
-  pfam_list = uniprot_to_pfam(uniprot_list)
+  #pfam_list = uniprot_to_pfam(uniprot_list)
 
   # call archindex on cath values to find the ones from schisto
-  cath_flag = "-cath"
-  uniprot_schisto_cath_list = arch_to_uniprot(cath_list, cath_flag)
+  #cath_flag = "-cath"
+  #uniprot_schisto_cath_list = arch_to_uniprot(cath_list, cath_flag)
 
   # call archindex on pfam values, without the flag
-  pfam_flag = ""
-  uniprot_schisto_pfam_list = arch_to_uniprot(pfam_list, pfam_flag)
+  #pfam_flag = ""
+  #uniprot_schisto_pfam_list = arch_to_uniprot(pfam_list, pfam_flag)
 
   # merge and rm duplicates
-  uniprot_schisto_list = list(
-                              set(uniprot_schisto_cath_list)|
-                              set(uniprot_schisto_pfam_list))
+  #uniprot_schisto_list = list(
+  #                            set(uniprot_schisto_cath_list)|
+  #                            set(uniprot_schisto_pfam_list))
 
-  logger.debug('The merged UniProt values obtained from CATH and pfam ' +
-    'are ' + str(len(uniprot_schisto_list)) + '.')
-  logger.debug(uniprot_schisto_list)
+  #logger.debug('The merged UniProt values obtained from CATH and pfam ' +
+  #  'are ' + str(len(uniprot_schisto_list)) + '.')
+  #logger.debug(uniprot_schisto_list)
 
 ############################################################################
 
