@@ -18,6 +18,9 @@ import os
 # os system does not work very well, it is deprecated, use subprocess
 #os.system('./../archSchema/bin/archindex -u B6DTB2 > test2.txt')
 
+# import csv for comma-sep files
+import csv
+
 # import subprocess for executing command line
 import subprocess
 
@@ -291,22 +294,57 @@ def process_chembl():
 ### PROCESS_DRUGBANK FUNCTION
 ############################################################################
 
-# process drugbank file to produce a dictionary of drugs vs uniprot ids
+# process drugbank file, return a dictionary of drugs vs uniprot ids
 def process_drugbank():
   
   # open and read drug_bank input and count number
   lines = file_to_lines(DRUGBANK_INPUT)
-  logger.info('The DrugBank input file has ' + str(len(lines)) + ' entries.')
+  # number of entries (remember there is header)
+  logger.info('The DrugBank input file has ' + str(len(lines)-1) + 
+              ' entries.')
 
   # headers are first line of the file, stripped of carriage return
   headers = lines[0].rstrip('\r\n')
   logger.debug('The DrugBank headers are: ' + headers + '.')
+  # find column number of uniprot and drugbank ids
   col_uniprot = header_count(headers, "," , "UniProt ID")
   col_drugbankids = header_count(headers, "," , "Drug IDs")
-  logger.debug(col_uniprot)
-  logger.debug(col_drugbankids)
+  #logger.debug(col_uniprot)
+  #logger.debug(col_drugbankids)
 
+  # empty dictionary in which to store drugbank info
+  drugbank_dic = {}
+  # loop over to len(lines), excluding first line (headers)
+  #for i in range(1,3898):
+    #logger.debug(lines[i])
+    # do I need here skipinitialspace=True ??
+    
+  # read csv lines with the csv reader - deals with quotation marks etc..  
+  incsv = csv.reader(lines)
+  # skip the first line with the headers
+  next(incsv)
+  # loop over each line
+  for line in incsv:
+    drug_string = line[col_drugbankids]
+      # list of drubbank ids
+    drug_split = drug_string.split(';')
+    #ogger.debug(drug_split)
+      # check if uniprot id is already in the dictionary
+    if line[col_uniprot] in drugbank_dic:  
+      # append drug id value to the list in the dictionary
+      # the '.extend' prevents the formation of a list of lists!
+      drugbank_dic[line[col_uniprot]].extend(drug_split)
+    else:
+      # populate dictionary with the new entry
+      drugbank_dic[line[col_uniprot]] = drug_split
 
+  logger.debug(drugbank_dic)
+  
+  # return dictionary {uniprot1:(list of DB ids),uniprot 2: (..)}
+  return drugbank_dic
+
+  # do not forget to double check if there are actually duplicates in
+  # the drugbank file!!!!
 ############################################################################
 
 
@@ -505,8 +543,11 @@ def main():
   uniprot_list = process_chembl()
   
   # get a list of target uniprot from drugbank
-  process_drugbank()
+  drugbank_dictionary = process_drugbank()
   
+  drugbank_uniprot_list = list(drugbank_dictionary)
+  logger.debug(len(drugbank_uniprot_list))
+
   # merge the lists, remove duplicates, see how many we end up with
   
   # use this fake uniprot list to test
