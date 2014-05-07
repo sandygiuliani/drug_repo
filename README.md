@@ -4,9 +4,16 @@ _a repository of Python scripts for drug repositioning_
 
 Find here Python scripts for a drug repositiong bio-/chemoinformatics project
 applied to schistosomiasis.  
-What is drug repositioning? The usage of a known drug for a different therapeutic indication. For a few examples, see http://en.wikipedia.org/wiki/Drug_repositioning  
-What is schistosomiasis? A very nasty parasitic disease affecting over 200 million people. Learn more at: http://www.who.int/topics/schistosomiasis/en/  
-How does the tool work? By mapping! known drugs -> their targets -> their domain architecture -> parasite targets  
+
+**FAQ**  
+Q. What is drug repositioning?   
+A. The usage of a known drug for a different therapeutic indication. For a few examples, see http://en.wikipedia.org/wiki/Drug_repositioning  
+Q. What is schistosomiasis?  
+A. A very nasty parasitic disease affecting over 200 million people. Learn more at: http://www.who.int/topics/schistosomiasis/en/  
+Q. How does the tool work?  
+A. By mapping! known drugs -> their targets -> their domain architecture -> parasite targets  
+Q. What is archindex?  
+A. See below ARCHINDEX/ARCHSCHEMA.
 
 **CONTENTS**
 * drug_repo.py - Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.
@@ -23,20 +30,24 @@ drug_repo.py development:
 - [x] ChEMBL processing - clinical phase filter 
 - [x] ChEMBL processing - small molecule filter 
 - [x] ChEMBL processing - uniprot mapping
-- [ ] DrugBank data processing
+- [x] DrugBank data processing
 - [x] write everything to log instead of .txt output
 - [ ] ChEMBL/DrugBank data merge
 - [x] domain architecture mapping (ArchSchema)
 - [x] schistosoma domains
 
-**DISCLAIMER:**  
-THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback welcome but please be kind.
-
-Contact me at: sandraxgiuliani@gmail.com
+**ARCHINDEX/ARCHSCHEMA**  
+The main script calls archindex, code kindly provided by Dr Laskowski.   
+Main reference: www.ncbi.nlm.nih.gov/pubmed/20299327  
+For more information on ArchSchema, please visit:  
+http://www.ebi.ac.uk/thornton-srv/databases/archschema  
 
 **LICENSE**  
 Copyright &copy; 2014 Sandra Giuliani  
 This repository is licensed under the terms of the MIT license. Please see LICENSE.md for more information.  
 The MIT license is approved by the Open Source Initiative http://opensource.org/licenses
 
+**DISCLAIMER**  
+THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback welcome but please be kind.
 
+Contact me at: sandraxgiuliani@gmail.com
