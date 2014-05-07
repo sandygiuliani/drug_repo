@@ -18,7 +18,7 @@ A. See below ARCHINDEX/ARCHSCHEMA.
 **CONTENTS**
 * drug_repo.py - Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.
 * chembl\_drugs.txt - ChEMBL drugs. From www.ebi.ac.uk/chembl/drugstore ('browse drugs')
-* chembl\_drugtargets.txt - ChEMBL drug targets. From www.ebi.ac.uk/chembl/drug/targets ('browse drug targets')  
+* chembl\_drugtargets.txt - ChEMBL drug targets. From www.ebi.ac.uk/chembl/drug/targets ('browse drug targets'). Manually edited to strip a newline character at lines 383/384.  
 * chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes. From ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/  
 * all\_target\_ids\_all.csv - DrugBank Drug Target Identifiers/All Drugs download. From www.drugbank.ca/downloads#protein-identifiers  
 * small\_molecule\_target\_ids\_all.csv - DrugBank Drug Target Identifier/Small Molecule Drugs download. From www.drugbank.ca/downloads#protein-identifiers  
@@ -32,7 +32,7 @@ drug_repo.py development:
 - [x] ChEMBL processing - uniprot mapping
 - [x] DrugBank data processing
 - [x] write everything to log instead of .txt output
-- [ ] ChEMBL/DrugBank data merge
+- [x] ChEMBL/DrugBank data merge
 - [x] domain architecture mapping (ArchSchema)
 - [x] schistosoma domains
 
