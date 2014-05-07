@@ -324,7 +324,11 @@ def process_drugbank():
   # skip the first line with the headers
   next(incsv)
   # loop over each line
+  # this list_check to double check we are dealing with duplicates
+  list_check = []
+  # loop over each line
   for line in incsv:
+    list_check.append(line[col_uniprot])
     drug_string = line[col_drugbankids]
       # list of drubbank ids
     drug_split = drug_string.split(';')
@@ -338,13 +342,13 @@ def process_drugbank():
       # populate dictionary with the new entry
       drugbank_dic[line[col_uniprot]] = drug_split
 
-  logger.debug(drugbank_dic)
-  
+  #logger.debug(drugbank_dic)
+  # confirm we are dealing with duplicates
+  logger.debug(len(list_check))
+  logger.debug(len(list(set(list_check))))
   # return dictionary {uniprot1:(list of DB ids),uniprot 2: (..)}
   return drugbank_dic
 
-  # do not forget to double check if there are actually duplicates in
-  # the drugbank file!!!!
 ############################################################################
 
 
@@ -546,7 +550,7 @@ def main():
   drugbank_dictionary = process_drugbank()
   
   drugbank_uniprot_list = list(drugbank_dictionary)
-  logger.debug(len(drugbank_uniprot_list))
+  #logger.debug(len(drugbank_uniprot_list))
 
   # merge the lists, remove duplicates, see how many we end up with
   
