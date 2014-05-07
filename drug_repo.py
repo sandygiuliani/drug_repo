@@ -380,7 +380,7 @@ def process_drugbank():
 
   # headers are first line of the file, stripped of carriage return
   headers = lines[0].rstrip('\r\n')
-  logger.debug('The DrugBank headers are: ' + headers + '.')
+  #logger.debug('The DrugBank headers are: ' + headers + '.')
   # find column number of uniprot and drugbank ids
   col_uniprot = header_count(headers, "," , "UniProt ID")
   col_drugbankids = header_count(headers, "," , "Drug IDs")
@@ -417,7 +417,9 @@ def process_drugbank():
       # populate dictionary with the new entry
       drugbank_dic[line[col_uniprot]] = drug_split
 
-  #logger.debug(drugbank_dic)
+  logger.info('The DrugBank drugs could be mapped to ' +
+              str(len(drugbank_dic)) + ' unique UniProt IDs.')
+  
   # confirm we are dealing with duplicates
   #logger.debug(len(list_check))
   #logger.debug(len(list(set(list_check))))
@@ -610,9 +612,6 @@ def arch_to_uniprot(arch_list,flag):
 ### MAIN FUNCTION
 ############################################################################
 
-# call process_chembl, 
-# TO ADD: call process_drugbank, merge uniprot codes
-
 def main():
   # greeting
   logger.info("Hi there, you are running drug_repo for drug repositioning!" +
@@ -621,33 +620,34 @@ def main():
   # get a list of target uniprot from chembl drug file
   #chembl_uniprot_list = process_chembl()
   
-  # get dictionary {uniprot: drug chembl ids} from chembl
+  # get dictionary {uniprot: (list of drug chembl ids)} from chembl
   chembl_dictionary = process_chembl()
 
   # get list of uniprot ids from cheml
   chembl_uniprot_list = list(chembl_dictionary)
   #logger.debug(len(chembl_uniprot_list))
 
-  # get dictionary {uniprot: drugbank ids} from drugbank
+  # get dictionary {uniprot: (list of drugbank ids)} from drugbank
   drugbank_dictionary = process_drugbank()
   
   # get list of uniprot ids from drugbank
   drugbank_uniprot_list = list(drugbank_dictionary)
-  logger.debug(len(drugbank_uniprot_list))
+  #logger.debug(len(drugbank_uniprot_list))
 
   # for reverse mapping use the two dictionaries above
   # (drug -> original target(s))
   # note this does not cover all the drugs, only the ones we could map
-  # to a target. also note the chembl/drugbank ids might be the same drug!
-  # for k in ...
+  # to a target.
 
 
 
   # merge the lists, remove duplicates, see how many we end up with
   uniprot_list =  chembl_uniprot_list + drugbank_uniprot_list
-  logger.debug(len(uniprot_list))
+  #logger.debug(len(uniprot_list))
   # remove duplicates
   uniprot_list = list(set(uniprot_list))
+  #logger.debug(uniprot_list)
+
   logger.info('We have merged the UniProt values obtained from ' + 
               'ChEMBL and DrugBank, for a total of ' + 
               str(len(uniprot_list)) + '.')
