@@ -633,7 +633,7 @@ def main():
   
   # get list of uniprot ids from drugbank
   drugbank_uniprot_list = list(drugbank_dictionary)
-  #logger.debug(len(drugbank_uniprot_list))
+  logger.debug(len(drugbank_uniprot_list))
 
   # for reverse mapping use the two dictionaries above
   # (drug -> original target(s))
@@ -644,7 +644,13 @@ def main():
 
 
   # merge the lists, remove duplicates, see how many we end up with
-  #uniprot_list = 
+  uniprot_list =  chembl_uniprot_list + drugbank_uniprot_list
+  logger.debug(len(uniprot_list))
+  # remove duplicates
+  uniprot_list = list(set(uniprot_list))
+  logger.info('We have merged the UniProt values obtained from ' + 
+              'ChEMBL and DrugBank, for a total of ' + 
+              str(len(uniprot_list)) + '.')
   
   # use this fake uniprot list to test
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
