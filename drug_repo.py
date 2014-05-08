@@ -660,7 +660,7 @@ def main():
   # use this fake uniprot list to test
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
-  uniprot_list = ['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
+  #uniprot_list = ['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
 
   # call archindex on uniprot list to retrieve cath domain architectures
   cath_list = uniprot_to_cath(uniprot_list)
