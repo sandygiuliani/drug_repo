@@ -18,6 +18,12 @@ import os
 # os system does not work very well, it is deprecated, use subprocess
 #os.system('./../archSchema/bin/archindex -u B6DTB2 > test2.txt')
 
+# import os.path for checking if files exist
+import os.path
+
+# import pickle
+import cPickle as pickle
+
 # import csv for comma-sep files
 import csv
 
@@ -613,6 +619,34 @@ def arch_to_uniprot(arch_list,flag):
 ############################################################################
 
 
+
+
+############################################################################
+### RUN_OR_PICKLE
+############################################################################
+def run_or_pickle(function_return_obj, function_name, *argument):
+
+  # make string with pickle name
+  pickle_name = (function_return_obj + ".p")
+  #logger.debug(pickle_name)
+  
+  # check if pickle file exists
+  if os.path.isfile(pickle_name) == True:
+    # retrieve pickle
+    function_return_obj = pickle.load(
+                          open((str(function_return_obj) +".p"),"rb"))
+    logger.info('You have already analysed this bit, ' +
+                'so we have pickled the ' + str(pickle_name))
+  else:
+  # run function
+    function_return_obj = function_name()
+    pickle.dump(function_return_obj, open(pickle_name, "wb"))
+
+############################################################################
+
+
+
+
 ############################################################################
 ### MAIN FUNCTION
 ############################################################################
@@ -621,68 +655,85 @@ def main():
   # greeting
   logger.info("Hi there, you are running drug_repo for drug repositioning!" +
               " Let's do some mapping.")
-
-  # get a list of target uniprot from chembl drug file
-  #chembl_uniprot_list = process_chembl()
   
-  # get dictionary {uniprot: (list of drug chembl ids)} from chembl
-  chembl_dictionary = process_chembl()
+  
+  # initialise the result as dictionary
+  chembl_dictionary = {}
+  
+  # run or pickle the chembl dictionary
+  run_or_pickle("chembl_dictionary", process_chembl)
 
   # get list of uniprot ids from cheml
   chembl_uniprot_list = list(chembl_dictionary)
   #logger.debug(len(chembl_uniprot_list))
 
-  # get dictionary {uniprot: (list of drugbank ids)} from drugbank
-  drugbank_dictionary = process_drugbank()
+  # initialise the result as dictionary
+  drugbank_dictionary = {}
+
+  # run or pickle the drugbank_dictionary
+  run_or_pickle("drugbank_dictionary", process_drugbank)
   
+
   # get list of uniprot ids from drugbank
-  drugbank_uniprot_list = list(drugbank_dictionary)
+  #drugbank_uniprot_list = list(drugbank_dictionary)
   #logger.debug(len(drugbank_uniprot_list))
 
-  # for reverse mapping use the two dictionaries above
-  # (drug -> original target(s))
-  # note this does not cover all the drugs, only the ones we could map
-  # to a target.
-
-
-
   # merge the lists, remove duplicates, see how many we end up with
-  uniprot_list =  chembl_uniprot_list + drugbank_uniprot_list
+  #uniprot_list =  chembl_uniprot_list + drugbank_uniprot_list
   #logger.debug(len(uniprot_list))
   # remove duplicates
-  uniprot_list = list(set(uniprot_list))
+  #uniprot_list = list(set(uniprot_list))
   #logger.debug(uniprot_list)
 
-  logger.info('We have merged the UniProt values obtained from ' + 
-              'ChEMBL and DrugBank, for a total of ' + 
-              str(len(uniprot_list)) + ' unique UniProt IDs.')
-  
-  # use this fake uniprot list to test
+ # logger.info('We have merged the UniProt values obtained from ' + 
+  #            'ChEMBL and DrugBank, for a total of ' + 
+  #            str(len(uniprot_list)) + ' unique UniProt IDs.')
+
+
+  ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
-  #uniprot_list = ['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
+  uniprot_list = ['Q4JEY0', 'P68363', 'P10613']
+  ###
 
+
+  # initialise cath_list
+  #cath_list = []
+
+  # run or pickle uniprot_to_cath
+  #run_or_pickle(uniprot_to_cath(uniprot_list), "cath_list")
+  
   # call archindex on uniprot list to retrieve cath domain architectures
-  cath_list = uniprot_to_cath(uniprot_list)
+  #cath_list = uniprot_to_cath(uniprot_list)
 
   # call archindex on uniprot list to retrieve pfam domain architectures
-  pfam_list = uniprot_to_pfam(uniprot_list)
+  #pfam_list = uniprot_to_pfam(uniprot_list)
 
   # call archindex on cath values to find the ones from schisto
-  uniprot_schisto_cath_list = arch_to_uniprot(cath_list, "-cath")
+  #uniprot_schisto_cath_list = arch_to_uniprot(cath_list, "-cath")
 
   # call archindex on pfam values, without the flag
-  uniprot_schisto_pfam_list = arch_to_uniprot(pfam_list, "")
+  #uniprot_schisto_pfam_list = arch_to_uniprot(pfam_list, "")
 
   # merge and rm duplicates
-  uniprot_schisto_list = list(
-                              set(uniprot_schisto_cath_list)|
-                              set(uniprot_schisto_pfam_list))
+  #uniprot_schisto_list = list(
+  #                            set(uniprot_schisto_cath_list)|
+  #                            set(uniprot_schisto_pfam_list))
 
-  logger.debug('The merged UniProt values obtained from CATH and pfam ' +
-    'are ' + str(len(uniprot_schisto_list)) + '.')
-  logger.debug(uniprot_schisto_list)
+  #logger.debug('The merged UniProt values obtained from CATH and pfam ' +
+  #  'are ' + str(len(uniprot_schisto_list)) + '.')
+  #logger.debug(uniprot_schisto_list)
 
+
+  ### OVERWRITE UNIPROT_SCHISTO_LIST WITH MADE-UP LIST
+  # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
+  #'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
+  uniprot_schisto_list = ['P13566','Q9U8F1','P33676','P30114','Q26499',
+                          'P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
+  ###
+
+
+  # reverse mapping
 
 ############################################################################
 
