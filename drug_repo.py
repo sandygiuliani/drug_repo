@@ -702,7 +702,7 @@ def main():
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
-  uniprot_list = ['Q4JEY0', 'P68363', 'P10613']
+  #uniprot_list = ['Q4JEY0', 'P68363', 'P10613']
   ###
 
   # run or pickle uniprot_to_cath to retrieve cath domain architectures
