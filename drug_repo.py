@@ -36,6 +36,21 @@ import itertools
 # import other modules
 import sys, re, string, fnmatch, shutil
 
+# import Biopython Entrez
+from Bio import Entrez
+# tell NCBI who I am
+Entrez.email = "sandraxgiuliani@gmail.com"
+
+# list available databases
+#handle = Entrez.einfo()
+#logger.info(handle.read())
+
+# import expasy for access protein sequences
+from Bio import ExPASy
+
+# import swissprot for parsing swissprot plain text files
+from Bio import SwissProt
+
 # set up log
 import logging
 # set up log file to write to, it will be overwritten every time ('w' mode)
@@ -732,16 +747,26 @@ def main():
     'are ' + str(len(uniprot_schisto_list)) + '.')
   #logger.debug(uniprot_schisto_list)
 
+  logger.debug(uniprot_schisto_list[7:14])
 
   ### OVERWRITE UNIPROT_SCHISTO_LIST WITH MADE-UP LIST
   # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
   #'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
-  #uniprot_schisto_list = ['P13566','Q9U8F1','P33676','P30114','Q26499',
-  #                        'P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
+  #example of unreviewed entries: 'C7TY75', 'G4LXF4', 'C1L491'
+  uniprot_schisto_list = ['P13566','C7TY75']
   ###
 
-
   # reverse mapping
+
+  #entrez fetch
+  #prothandle = Entrez.efetch(db="protein", id= uniprot_schisto_list)
+  #seq_record = SeqIO.read(prothandle)
+
+  for entry in uniprot_schisto_list:
+
+    handle = ExPASy.get_sprot_raw(entry)
+    record = SwissProt.read(handle)
+    print(record.sequence)
 
 ############################################################################
 
