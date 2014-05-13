@@ -1,8 +1,8 @@
-# Copyright 2014 Sandra Giuliani 
+# Copyright 2014 Sandra Giuliani
 # drug_repo.py
 
-# Mapping of known drugs from ChEMBL and DrugBank to their targets/domain 
-# architecture to identify suitable drug repositioning candidates for 
+# Mapping of known drugs from ChEMBL and DrugBank to their targets/domain
+# architecture to identify suitable drug repositioning candidates for
 # schistosomiasis.
 # Please see README.md for more info.
 
@@ -41,6 +41,9 @@ from Bio import Entrez
 # tell NCBI who I am
 Entrez.email = "sandraxgiuliani@gmail.com"
 
+# import SeqIO
+from Bio import SeqIO
+
 # list available databases
 #handle = Entrez.einfo()
 #logger.info(handle.read())
@@ -55,7 +58,7 @@ from Bio import SwissProt
 import logging
 # set up log file to write to, it will be overwritten every time ('w' mode)
 # leave this level setting to DEBUG
-logging.basicConfig(filename='log_drug_repo.log', filemode='w', 
+logging.basicConfig(filename='log_drug_repo.log', filemode='w',
                     level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 # leave this level setting to DEBUG
@@ -119,11 +122,11 @@ CATH_FORMAT = re.compile('.*\..*\..*\..*')
 ############################################################################
 ### HEADER_COUNT HELPER FUNCTION
 ############################################################################
-# find specific header in line of comma or tab (or other) separated 
+# find specific header in line of comma or tab (or other) separated
 # file and return column number of the header
 def header_count(line, separator, header):
   '''
-  Read a string (line) separated by separator 
+  Read a string (line) separated by separator
   and return column number of a specific string (header)
   '''
   #set counter to 0
@@ -164,8 +167,8 @@ def file_to_lines(text_file):
 ############################################################################
 ### SWAP_DIC HELPER FUNCTION
 ############################################################################
-# read tab-separated mapping file with header and return dictionary with 
-# second column as key and first column as values - created for the 
+# read tab-separated mapping file with header and return dictionary with
+# second column as key and first column as values - created for the
 # chemblID uniprot mapping file
 def swap_dic(tab_file):
   lines = file_to_lines(tab_file)
@@ -191,14 +194,14 @@ def swap_dic(tab_file):
 
 # in the end we need a dictionary of chembl ids vs uniprot ids
 def process_chembl():
-  '''read chembl drug input file, filter, get various info and return 
+  '''read chembl drug input file, filter, get various info and return
   list of uniprot ids'''
   # open chembldrugs.txt for reading
   lines = file_to_lines(CHEMBL_INPUT)
   logger.info('We are now analysing the ChEMBL input file ' +
               str(CHEMBL_INPUT) + ', containing a total of '
               + str(len(lines)-1) + ' drugs.')
-  
+
 
   ### ANALYSE HEADERS AND OBTAIN COLUMN NUMBERS
 
@@ -212,7 +215,7 @@ def process_chembl():
   col_phase = header_count(headers, "\t", "DEVELOPMENT_PHASE")
   col_type = header_count(headers, "\t", "DRUG_TYPE")
   col_chemblid = header_count(headers, "\t", "CHEMBL_ID")
-  
+
   # count the drugs in the 4+1 classes of clinical phase
   # set counters for clinical phases to zero
   phase1 = 0
@@ -236,16 +239,16 @@ def process_chembl():
       phase_unknown = phase_unknown + 1
 
   logger.info('The number of drugs in phase 1 is: ' + str(phase1) +
-              '; in phase 2 is: ' + str(phase2) + '; in phase 3 is: ' + 
-              str(phase3)+'; in phase 4 is: ' + str(phase4) + 
+              '; in phase 2 is: ' + str(phase2) + '; in phase 3 is: ' +
+              str(phase3)+'; in phase 4 is: ' + str(phase4) +
               '; in unknown phase is: ' + str(phase_unknown) + '.')
   ###
 
 
-  ### CLINICAL PHASE AND MOLECULAR TYPE FILTER 
+  ### CLINICAL PHASE AND MOLECULAR TYPE FILTER
   # IN THE END WE OBTAIN CHEMBL_FILT_LIST THAT HAD THE FILTERED CHEMBL IDS
   # possibly merge THEM TOGETHER!
-  
+
   # set up empty list to append lines to
   stripped = []
   # look over lines, excluding header
@@ -253,7 +256,7 @@ def process_chembl():
     # tab separate each row
     rowsplit2 = lines[y].split("\t")
     # check if they are in clinical phase we are intereste in
-    if (rowsplit2[col_phase] in CHEMBL_CLINICAL_PHASES):    
+    if (rowsplit2[col_phase] in CHEMBL_CLINICAL_PHASES):
       # append the stripped lines to the list
       stripped.append(lines[y])
 
@@ -269,17 +272,17 @@ def process_chembl():
 
       # make list of chembl ids we are interested in
       chembl_filt_list.append(rowsplit3[col_chemblid])
-  
-  logger.info('We have filtered the entries in clinical phases ' + 
+
+  logger.info('We have filtered the entries in clinical phases ' +
               str(CHEMBL_CLINICAL_PHASES) + ' and of molecule type ' +
-              str(CHEMBL_MOL_TYPE) + ', to obtain ' + 
+              str(CHEMBL_MOL_TYPE) + ', to obtain ' +
               str(len(chembl_filt_list)) + ' drugs.')
   ###
 
 
   # CREATE DICTIONARY CHEMBL_TARGET_DRUG_DIC IN WHICH TO STORE
   # {CHEMBL TARGET IDS: (LIST OF CHEMBL DRUG IDS)}
-  
+
   # open the drug targets chembl file and get lines
   drug_targ = file_to_lines(CHEMBL_TARGETS)
   # get column number for two headers we want (chembl ids for mol and targets)
@@ -307,25 +310,25 @@ def process_chembl():
     test_duplo.append(chembl_drug_id)
 
     # check if the molecule chembl id is one of the drugs we want
-    if chembl_drug_id in chembl_filt_list:      
-      
+    if chembl_drug_id in chembl_filt_list:
+
       # check if the target is is already in the dictionary, and extend
       if chembl_target_id in chembl_target_drug_dic:
         # try to append stuff to dictionary
         chembl_target_drug_dic[chembl_target_id].append(chembl_drug_id)
-      
+
       # else create the new entry in the dictionary
       else:
         # create empty list
         chembl_target_drug_dic[chembl_target_id] = []
         # append to empty list the value
         chembl_target_drug_dic[chembl_target_id].append(chembl_drug_id)
-  
-  # test to see if there are duplicates drugs 
+
+  # test to see if there are duplicates drugs
   # positive: tot 2007 but 1596 unique
   #logger.debug(len(test_duplo))
   #logger.debug(len(list(set(test_duplo))))
-  
+
   # number of drugs we could associate with chembl target
   # this will be a list of lists, so we need to flatten it out
   drug_ids = list(itertools.chain(*list(chembl_target_drug_dic.values())))
@@ -347,14 +350,14 @@ def process_chembl():
   # create dictionary from the chembl/uniprot mapping file
   # the dictionary will be {'chemblID1':'uniprotid1', etc..}
   # the dictionary has to be this way because more than one chembl id
-  # can point to the same uniprot id 
+  # can point to the same uniprot id
   chembl_uniprot_map_dic = swap_dic(CHEMBL_UNIPROT)
   #logger.debug(chembl_uniprot_map_dic)
 
   # compare length dictionary with unique uniprot id values!
   #logger.debug(len(chembl_uniprot_map_dic))
   #logger.debug(len(list(set(chembl_uniprot_map_dic.values()))))
-  
+
 
   # empty dictionary
   chembl_dic = {}
@@ -374,11 +377,11 @@ def process_chembl():
       # write this in the new dictionary
         chembl_dic[uniprot_value] = chembl_target_drug_dic[keything]
 
-  logger.info('Said ChEMBL drugs could be mapped to ' + 
+  logger.info('Said ChEMBL drugs could be mapped to ' +
               str(len(chembl_dic)) + ' unique UniProt ID.')
   #logger.debug(len(list(itertools.chain(*list(chembl_dic.values())))))
   #logger.debug(chembl_dic)
-  
+
   # return dictionary {uniprot1:(list of chembl ids)}
   return chembl_dic
 ############################################################################
@@ -389,15 +392,15 @@ def process_chembl():
 ############################################################################
 ### PROCESS_DRUGBANK FUNCTION
 ############################################################################
-# process drugbank file, return a dictionary of drugs vs uniprot ids. Deal 
+# process drugbank file, return a dictionary of drugs vs uniprot ids. Deal
 # with duplicate values and append to list in the dictionary.
 def process_drugbank():
-  
+
   # open and read drug_bank input and count number
   lines = file_to_lines(DRUGBANK_INPUT)
   # number of entries (remember there is header)
-  logger.info('We are now analysing the DrugBank input file ' + 
-              str(DRUGBANK_INPUT) + ', containing ' + str(len(lines)-1) + 
+  logger.info('We are now analysing the DrugBank input file ' +
+              str(DRUGBANK_INPUT) + ', containing ' + str(len(lines)-1) +
               ' entries.')
 
   # headers are first line of the file, stripped of carriage return
@@ -415,8 +418,8 @@ def process_drugbank():
   #for i in range(1,3898):
     #logger.debug(lines[i])
     # do I need here skipinitialspace=True ??
-    
-  # read csv lines with the csv reader - deals with quotation marks etc..  
+
+  # read csv lines with the csv reader - deals with quotation marks etc..
   incsv = csv.reader(lines)
   # skip the first line with the headers
   next(incsv)
@@ -431,7 +434,7 @@ def process_drugbank():
     drug_split = drug_string.split(';')
     #ogger.debug(drug_split)
       # check if uniprot id is already in the dictionary
-    if line[col_uniprot] in drugbank_dic:  
+    if line[col_uniprot] in drugbank_dic:
       # append drug id value to the list in the dictionary
       # the '.extend' prevents the formation of a list of lists!
       drugbank_dic[line[col_uniprot]].extend(drug_split)
@@ -441,11 +444,11 @@ def process_drugbank():
 
   logger.info('The DrugBank drugs could be mapped to ' +
               str(len(drugbank_dic)) + ' unique UniProt IDs.')
-  
+
   # confirm we are dealing with duplicates
   #logger.debug(len(list_check))
   #logger.debug(len(list(set(list_check))))
-  
+
   # return dictionary {uniprot1:(list of drugbank ids)}
   return drugbank_dic
 ############################################################################
@@ -459,7 +462,7 @@ def process_drugbank():
 # return list of CATH domain archictures from uniprot list
 def uniprot_to_cath(uniprot_list):
   '''(list of str -> list of str)
-  run archindex, return list of CATH domain architecture from list of 
+  run archindex, return list of CATH domain architecture from list of
   uniprot values
   '''
   # empty list in which to store domain architecture values
@@ -467,7 +470,7 @@ def uniprot_to_cath(uniprot_list):
   # loop over list of uniprot values
   for uniprot_id in uniprot_list:
     # call archschema on the list
-    subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) + 
+    subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) +
                   " -maxa 1 -maxs 1 -cath > temp.txt", shell=True)
     # store lines
     lines = file_to_lines('temp.txt')
@@ -485,12 +488,12 @@ def uniprot_to_cath(uniprot_list):
           line_nops = line_split[2].replace('p','')
         else:
           line_nops = line_split[2]
-        
+
         # check if there are undescores
         if "_" in line_nops:
           undersc_split = line_nops.split("_")
           #logger.debug(undersc_split)
-          
+
           for item in undersc_split:
             # check if the format is CATH one
             #cath_format = re.compile('.*\..*\..*\..*')
@@ -507,11 +510,11 @@ def uniprot_to_cath(uniprot_list):
   # rm temp.txt in the end
   # this is the last temp file that overwrote the others
   subprocess.call("rm temp.txt", shell=True)
-  
+
   # eliminate duplicate domain architecture values
   architect_list = list(set(architect_list))
-  
-  logger.info('We have found ' + str(len(architect_list)) + 
+
+  logger.info('We have found ' + str(len(architect_list)) +
               ' unique CATH domain architectures.')
   #logger.debug(architect_list)
   # return the list of unique domain architecture values
@@ -527,7 +530,7 @@ def uniprot_to_cath(uniprot_list):
 # return list of pfam domain archictures from uniprot list
 def uniprot_to_pfam(uniprot_list):
   '''(list of str -> list of str)
-  run archindex, return list of pfam domain architecture from list of 
+  run archindex, return list of pfam domain architecture from list of
   uniprot values
   '''
   # empty list in which to store domain architecture values
@@ -537,11 +540,11 @@ def uniprot_to_pfam(uniprot_list):
   # loop over list of uniprot values
   for uniprot_id in uniprot_list:
     uniprot_counter = uniprot_counter + 1
-    # log the 
+    # log the
     #logger.debug('We are processing uniprot n.' + str(uniprot_counter)
     #            + '(' + str(uniprot_id) + ')..')
     # call archschema on the list
-    subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) + 
+    subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) +
                   " -maxa 1 -maxs 1 > temp.txt", shell=True)
     # store lines
     lines = file_to_lines('temp.txt')
@@ -556,22 +559,22 @@ def uniprot_to_pfam(uniprot_list):
         if "." in line_split[2]:
           dot_split = line_split[2].split(".")
           #logger.debug(undersc_split)
-          
+
           for item in dot_split:
-         
+
             architect_list.append(item)
 
         # this is the case of just one entry, no dots
-        else:      
+        else:
           architect_list.append(line_split[2])
-  
+
   # rm temp.txt in the end
   # this is the last temp file that overwrote the others
   subprocess.call("rm temp.txt", shell=True)
   # remove duplicates
   architect_list = list(set(architect_list))
 
-  logger.info('We have found ' + str(len(architect_list)) + 
+  logger.info('We have found ' + str(len(architect_list)) +
               ' unique pfam domain architectures.')
   #logger.debug(architect_list)
   return architect_list
@@ -596,8 +599,8 @@ def arch_to_uniprot(arch_list,flag):
     # iterate over the taxa code list (schisto species)
     for taxa_code in TAXA:
       # call archschema on the list
-      subprocess.call("./../archSchema/bin/archindex -p " + str(arch_id) + 
-                    " -maxa 1 -maxs 1 " + str(flag) + " -s " + taxa_code + 
+      subprocess.call("./../archSchema/bin/archindex -p " + str(arch_id) +
+                    " -maxa 1 -maxs 1 " + str(flag) + " -s " + taxa_code +
                     " > temp.txt", shell=True)
       # store lines
       lines = file_to_lines('temp.txt')
@@ -609,7 +612,7 @@ def arch_to_uniprot(arch_list,flag):
         if lines[i][0:7] == ':PARENT':
           # take the line after the ':PARENT' and split it
           line_split = lines[i+1].split("\t")
-          
+
           uniprot_list.append(line_split[0])
 
   # rm temp.txt in the end
@@ -623,8 +626,8 @@ def arch_to_uniprot(arch_list,flag):
     flag_name = 'CATH'
   else:
     flag_name = 'Pfam'
-  logger.info('Using ' + flag_name + ' domain architectures we have found ' + 
-              str(len(uniprot_list)) + 
+  logger.info('Using ' + flag_name + ' domain architectures we have found ' +
+              str(len(uniprot_list)) +
               ' UniProt IDs of schistosoma proteins' +
               ' (taxonomic identifiers ' + str(TAXA) + ').')
 
@@ -646,7 +649,7 @@ def run_or_pickle(
   # make string with pickle name
   pickle_name = (function_return_obj + ".p")
   #logger.debug(pickle_name)
-  
+
   # check if pickle file exists
   if os.path.isfile(pickle_name) == True:
     # retrieve pickle
@@ -658,7 +661,7 @@ def run_or_pickle(
     if arg1 == None and arg2 == None:
       # run function with no arguments
       function_return_obj = function_name()
-     
+
     else:
       if arg2 == None:
         # run function with arg1
@@ -668,7 +671,7 @@ def run_or_pickle(
         function_return_obj = function_name(arg1, arg2)
 
     # dump result in pickle
-    pickle.dump(function_return_obj, open(pickle_name, "wb")) 
+    pickle.dump(function_return_obj, open(pickle_name, "wb"))
 
   # return what the function returned or the pickle
   return function_return_obj
@@ -686,8 +689,8 @@ def main():
   # greeting
   logger.info("Hi there, you are running drug_repo for drug repositioning!" +
               " Let's do some mapping.")
-  
-  
+
+
   # run or pickle the chembl dictionary
   chembl_dic = run_or_pickle("chembl_dictionary", process_chembl)
 
@@ -697,7 +700,7 @@ def main():
 
   # run or pickle the drugbank_dictionary
   drugbank_dic = run_or_pickle("drugbank_dictionary", process_drugbank)
-  
+
   # get list of uniprot ids from drugbank
   drugbank_uniprot_list = list(drugbank_dic)
   #logger.debug(len(drugbank_uniprot_list))
@@ -705,12 +708,12 @@ def main():
   # merge the uniprot lists
   uniprot_list =  chembl_uniprot_list + drugbank_uniprot_list
   #logger.debug(len(uniprot_list))
-  
+
   # remove duplicates
   uniprot_list = list(set(uniprot_list))
 
-  logger.info('We have merged the UniProt values obtained from ' + 
-              'ChEMBL and DrugBank, for a total of ' + 
+  logger.info('We have merged the UniProt values obtained from ' +
+              'ChEMBL and DrugBank, for a total of ' +
               str(len(uniprot_list)) + ' unique UniProt IDs.')
 
 
@@ -722,7 +725,7 @@ def main():
 
   # run or pickle uniprot_to_cath to retrieve cath domain architectures
   cath_list = run_or_pickle("cath_list", uniprot_to_cath, uniprot_list)
-  
+
   # run or pickle uniprot_to_cath to retrieve pfam domain architectures
   pfam_list = run_or_pickle("pfam_list", uniprot_to_pfam, uniprot_list)
 
@@ -740,33 +743,56 @@ def main():
   uniprot_schisto_list = list(
                               set(uniprot_schisto_cath_list)|
                               set(uniprot_schisto_pfam_list))
-  
-  pickle.dump(uniprot_schisto_list, open("uniprot_schisto_list.p", "wb")) 
-  
+
+  pickle.dump(uniprot_schisto_list, open("uniprot_schisto_list.p", "wb"))
+
   logger.debug('The merged UniProt values obtained from CATH and pfam ' +
     'are ' + str(len(uniprot_schisto_list)) + '.')
   #logger.debug(uniprot_schisto_list)
-
-  logger.debug(uniprot_schisto_list[7:14])
 
   ### OVERWRITE UNIPROT_SCHISTO_LIST WITH MADE-UP LIST
   # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
   #'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
   #example of unreviewed entries: 'C7TY75', 'G4LXF4', 'C1L491'
-  uniprot_schisto_list = ['P13566','C7TY75']
+  #uniprot_schisto_list = ['P13566','Q9U8F1','P33676']
   ###
 
   # reverse mapping
 
-  #entrez fetch
-  #prothandle = Entrez.efetch(db="protein", id= uniprot_schisto_list)
-  #seq_record = SeqIO.read(prothandle)
+  # entrez fetch does not seem to handle non-swissprot ids (TrEMBL)
+  #prothandle = Entrez.efetch(
+  #                  db="protein", id= 'P13566', rettype = "gb")
+  #seq_record = SeqIO.read(prothandle, "gb")
+  #logger.debug(seq_record)
+
+  # counter for reviewed entries
+  rev_count = 0
+
+  # counter for records with multiple accession numbers
+  mult_count = 0
 
   for entry in uniprot_schisto_list:
 
     handle = ExPASy.get_sprot_raw(entry)
+    # swissprot read
     record = SwissProt.read(handle)
-    print(record.sequence)
+    # alternative to swissport read, should also work
+    #record = SeqIO.read(handle, "swiss")
+
+    if record.data_class == 'Reviewed':
+      rev_count = rev_count + 1
+
+    if len(record.accessions) > 1:
+      mult_count = mult_count + 1
+      logger.debug('The entry ' + entry + ' has multiple entries ' + str(record.accessions))
+
+    #print(record.seqinfo)
+    #for ref in record.references:
+    #  print(ref.authors)
+
+  logger.info('The reviewed entries are ' + str(rev_count) + '.')
+  logger.info('The entries with multiple ids are ' + str(mult_count) + '.')
+
 
 ############################################################################
 
