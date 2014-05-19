@@ -570,7 +570,7 @@ def uniprot_to_arch(uniprot_list,architecture):
 # run archindex, filter for TAXA and find uniprot ids
 def arch_to_uniprot(arch_list,architecture):
   '''(list of str -> list of str)
-  run archindex, return list of uniprot from list of domain
+  run archindex, return dictionary of uniprot from list of domain
   architecture values applying a filter for TAXA (organism)
   '''
 
@@ -579,10 +579,12 @@ def arch_to_uniprot(arch_list,architecture):
   elif architecture == "pfam":
     flag = ""
 
-  # empty list in which to store domain uniprot values
-  uniprot_list = []
+  # empty dictionary
+  uniprot_dic = {}
   # loop over list of arch values
   for arch_id in arch_list:
+    # empty list in which to store uniprot values
+    uniprot_list = []
     # iterate over the taxa code list (schisto species)
     for taxa_code in TAXA:
       # call archschema on the list
@@ -601,23 +603,27 @@ def arch_to_uniprot(arch_list,architecture):
           line_split = lines[i+1].split("\t")
 
           uniprot_list.append(line_split[0])
+    
+    # remove duplicates from list
+    uniprot_list = list(set(uniprot_list))
+
+    # populate the dictionary
+    uniprot_dic[arch_id] = uniprot_list
 
   # rm temp.txt in the end
   # this is the last temp file that overwrote the others
   subprocess.call("rm temp.txt", shell=True)
 
-  # remove duplicates from list
-  uniprot_list = list(set(uniprot_list))
-
-  logger.info('Using ' + str(architecture) + 
-              ' domain architectures we have found ' + 
-              str(len(uniprot_list)) + 
-              ' UniProt IDs of schistosoma proteins (taxonomic identifiers ' +
-               str(TAXA) + ').')
+  #logger.info('Using ' + str(architecture) + 
+  #            ' domain architectures we have found ' + 
+   #           str(len(uniprot_list)) + 
+   #           ' UniProt IDs of schistosoma proteins (taxonomic identifiers ' +
+   #            str(TAXA) + ').')
 
   #logger.debug(uniprot_list)
-  #return the list of uniprots
-  return uniprot_list
+
+  #return the dictionary
+  return uniprot_dic
 ############################################################################
 
 
@@ -692,8 +698,10 @@ def expasy_filter(uniprot_list):
   return filtered_list
   #logger.info('The entries with multiple ids are ' + str(mult_count) + '.')
 
-
 ############################################################################
+
+
+
 
 ############################################################################
 ### FLATTEN_VALUES
@@ -709,6 +717,9 @@ def flatten_values(dic):
   flat_list = list(set(flat_list))
 
   return flat_list
+############################################################################
+
+
 
 
 ############################################################################
@@ -784,7 +795,7 @@ def main():
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
-  uniprot_list = ['Q4JEY0', 'P68363', 'P10613','P18825']
+  #uniprot_list = ['Q4JEY0', 'P68363', 'P10613','P18825']
   ###
 
   # run or pickle uniprot_to_arch to retrieve cath domain architectures
@@ -803,13 +814,24 @@ def main():
 
 
   # call archindex on cath values to find the ones from schisto
-  uniprot_schisto_cath_list = run_or_pickle(
-      "uniprot_schisto_cath_list", arch_to_uniprot, cath_list, "cath")
+  uniprot_schisto_cath_dic = run_or_pickle(
+      "uniprot_schisto_cath_dic", arch_to_uniprot, cath_list, "cath")
+  
+  # generate list, flatten it and rm duplicates
+  uniprot_schisto_cath_list = run_or_pickle("uniprot_schisto_cath_list", 
+                              flatten_values, uniprot_schisto_cath_dic)
+  
+  logger.debug(len(uniprot_schisto_cath_list))
 
-  # call archindex on pfam values
-  uniprot_schisto_pfam_list = run_or_pickle(
-    "uniprot_schisto_pfam_list", arch_to_uniprot, pfam_list, "pfam")
-  #logger.debug(len(uniprot_schisto_pfam_list))
+  # call archindex on pfam values to find ones from schisto
+  uniprot_schisto_pfam_dic = run_or_pickle(
+    "uniprot_schisto_pfam_dic", arch_to_uniprot, pfam_list, "pfam")
+  
+  # generate list, flatten it and rm duplicates
+  uniprot_schisto_pfam_list = run_or_pickle("uniprot_schisto_pfam_list", 
+                              flatten_values, uniprot_schisto_pfam_dic)
+  logger.debug(len(uniprot_schisto_pfam_list))
+
 
   # merge and rm duplicates
   # this is total list of unique schisto uniprot ids
@@ -821,8 +843,8 @@ def main():
   # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
   #'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
   #example of unreviewed entries: 'C7TY75', 'G4LXF4', 'C1L491'
-  uniprot_schisto_list = ['P13566','Q9U8F1','P33676',
-  'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
+  #uniprot_schisto_list = ['P13566','Q9U8F1','P33676',
+  #'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
   ###
 
   # filter list for only reviewed ones
@@ -833,9 +855,9 @@ def main():
 
   # make list of cath ids that point to the uniprot_schisto_list
 
-  cath_final_dic = uniprot_to_arch(uniprot_schisto_filt, "cath")
-  logger.debug(cath_final_dic)
-  logger.debug(flatten_values(cath_final_dic))
+  #cath_final_dic = uniprot_to_arch(uniprot_schisto_filt, "cath")
+  #logger.debug(cath_final_dic)
+  #logger.debug(flatten_values(cath_final_dic))
 
 ############################################################################
 
