@@ -640,9 +640,84 @@ def arch_to_uniprot(arch_list,flag):
 
 
 ############################################################################
+### MERGE_LISTS
+############################################################################
+# merge lists, remove duplicates and return merged list
+def merge_lists(list1, list2):
+
+  merged_list = list(set(list1)|set(list2))
+
+  #pickle.dump(uniprot_schisto_list, open("uniprot_schisto_list.p", "wb"))
+
+  logger.debug('The merged UniProt values obtained from CATH and pfam ' +
+    'are ' + str(len(merged_list)) + '.')
+
+  #logger.debug(uniprot_schisto_list)
+  return merged_list
+############################################################################
+
+
+
+
+############################################################################
+### EXPASY_FILTER
+############################################################################
+# take list of uniprot, call expasy and applies filter to find the reviewed
+# entries
+
+  # entrez fetch does not seem to handle non-swissprot ids (TrEMBL)
+  #prothandle = Entrez.efetch(
+  #                  db="protein", id= 'P13566', rettype = "gb")
+  #seq_record = SeqIO.read(prothandle, "gb")
+  #logger.debug(seq_record)
+
+def expasy_filter(uniprot_list):
+
+  # empty list to sore filtered entries
+  filtered_list = []
+
+  # counter for reviewed entries
+  rev_count = 0
+
+  # counter for records with multiple accession numbers
+  #mult_count = 0
+
+  for entry in uniprot_list:
+
+    handle = ExPASy.get_sprot_raw(entry)
+    # swissprot read
+    record = SwissProt.read(handle)
+    # alternative to swissport read, should also work
+    #record = SeqIO.read(handle, "swiss")
+
+    if record.data_class == 'Reviewed':
+      rev_count = rev_count + 1
+      filtered_list.append(entry)
+
+    #if len(record.accessions) > 1:
+    #  mult_count = mult_count + 1
+    #  logger.debug('The entry ' + entry + ' has multiple entries ' + 
+    #                str(record.accessions))
+
+    #print(record.seqinfo)
+    #for ref in record.references:
+    #  print(ref.authors)
+
+  logger.info('The reviewed entries are ' + str(rev_count) + '.')
+
+  return filtered_list
+  #logger.info('The entries with multiple ids are ' + str(mult_count) + '.')
+
+
+############################################################################
+
+
+
+
+############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
-# run module and dump in pickle or retreive pickle iwthour running module
+# run module and dump in pickle or retreive pickle without running module
 def run_or_pickle(
               function_return_obj, function_name, arg1 = None, arg2 = None):
 
@@ -740,15 +815,9 @@ def main():
   #logger.debug(len(uniprot_schisto_pfam_list))
 
   # merge and rm duplicates
-  uniprot_schisto_list = list(
-                              set(uniprot_schisto_cath_list)|
-                              set(uniprot_schisto_pfam_list))
+  uniprot_schisto_list = run_or_pickle("uniprot_schisto_list", merge_lists, 
+                        uniprot_schisto_cath_list, uniprot_schisto_pfam_list)
 
-  pickle.dump(uniprot_schisto_list, open("uniprot_schisto_list.p", "wb"))
-
-  logger.debug('The merged UniProt values obtained from CATH and pfam ' +
-    'are ' + str(len(uniprot_schisto_list)) + '.')
-  #logger.debug(uniprot_schisto_list)
 
   ### OVERWRITE UNIPROT_SCHISTO_LIST WITH MADE-UP LIST
   # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
@@ -757,41 +826,9 @@ def main():
   #uniprot_schisto_list = ['P13566','Q9U8F1','P33676']
   ###
 
-  # reverse mapping
-
-  # entrez fetch does not seem to handle non-swissprot ids (TrEMBL)
-  #prothandle = Entrez.efetch(
-  #                  db="protein", id= 'P13566', rettype = "gb")
-  #seq_record = SeqIO.read(prothandle, "gb")
-  #logger.debug(seq_record)
-
-  # counter for reviewed entries
-  rev_count = 0
-
-  # counter for records with multiple accession numbers
-  mult_count = 0
-
-  for entry in uniprot_schisto_list:
-
-    handle = ExPASy.get_sprot_raw(entry)
-    # swissprot read
-    record = SwissProt.read(handle)
-    # alternative to swissport read, should also work
-    #record = SeqIO.read(handle, "swiss")
-
-    if record.data_class == 'Reviewed':
-      rev_count = rev_count + 1
-
-    if len(record.accessions) > 1:
-      mult_count = mult_count + 1
-      logger.debug('The entry ' + entry + ' has multiple entries ' + str(record.accessions))
-
-    #print(record.seqinfo)
-    #for ref in record.references:
-    #  print(ref.authors)
-
-  logger.info('The reviewed entries are ' + str(rev_count) + '.')
-  logger.info('The entries with multiple ids are ' + str(mult_count) + '.')
+  # overwrite list with list of filtered entries
+  #uniprot_schisto_filt = run_or_pickle()
+  
 
 
 ############################################################################
