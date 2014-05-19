@@ -826,8 +826,9 @@ def main():
   #uniprot_schisto_list = ['P13566','Q9U8F1','P33676']
   ###
 
-  # overwrite list with list of filtered entries
-  #uniprot_schisto_filt = run_or_pickle()
+  # filter list for only reviewed ones
+  uniprot_schisto_filt = run_or_pickle("uniprot_schisto_filt", 
+                                        expasy_filter,uniprot_schisto_list)
   
 
 
