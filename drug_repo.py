@@ -114,6 +114,11 @@ TAXA = ['SCHMA', 'SCHHA', 'SCHJA']
 
 # format of CATH domain eg '4.10.400.10'
 CATH_FORMAT = re.compile('.*\..*\..*\..*')
+
+# path to archindex binary
+# old path "./../archSchema/bin/archindex" still valid on mac
+# new path on linux machine "./../Arch/archindex"
+ARCHINDEX_PATH = "./../Arch/archindex"
 ############################################################################
 
 
@@ -457,21 +462,28 @@ def process_drugbank():
 
 
 ############################################################################
-### UNIPROT_TO_CATH FUNCTION
+### UNIPROT_TO_ARCH FUNCTION
 ############################################################################
-# return list of CATH domain archictures from uniprot list
-def uniprot_to_cath(uniprot_list):
-  '''(list of str -> list of str)
-  run archindex, return list of CATH domain architecture from list of
-  uniprot values
+def uniprot_to_arch(uniprot_list,architecture):
+  ''' run archindex, return dictionary of CATH/pfam domain architecture vs
+   uniprot values
   '''
-  # empty list in which to store domain architecture values
-  architect_list = []
+  if architecture == "cath":
+    flag = "-cath"
+
+  elif architecture == "pfam":
+    flag = ""
+
+  # dictionary of uniprot ids and list of correposponding architectures
+  arch_dic = {}
+  
   # loop over list of uniprot values
   for uniprot_id in uniprot_list:
+    #list in which to store list of CATH domains for each entry
+    architect_list = []
     # call archschema on the list
-    subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) +
-                  " -maxa 1 -maxs 1 -cath > temp.txt", shell=True)
+    subprocess.call(ARCHINDEX_PATH + " -u " + str(uniprot_id) +
+                  " -maxa 1 -maxs 1 " + str(flag) +" > temp.txt", shell=True)
     # store lines
     lines = file_to_lines('temp.txt')
     #logger.debug(lines)
@@ -482,102 +494,71 @@ def uniprot_to_cath(uniprot_list):
         line_split = lines[i+1].split("\t")
         #logger.debug('the line after is ' + str(line_split))
 
-        # check if there are 'p's and get rid of them
-        if "p" in line_split[2]:
-          # replace p's with nothing
-          line_nops = line_split[2].replace('p','')
-        else:
-          line_nops = line_split[2]
 
-        # check if there are undescores
-        if "_" in line_nops:
-          undersc_split = line_nops.split("_")
-          #logger.debug(undersc_split)
+        ### for cath ###
+        if architecture == "cath":
 
-          for item in undersc_split:
-            # check if the format is CATH one
-            #cath_format = re.compile('.*\..*\..*\..*')
-            if CATH_FORMAT.match(item):
+          # check if there are 'p's and get rid of them
+          if "p" in line_split[2]:
+            # replace p's with nothing
+            line_nops = line_split[2].replace('p','')
+          else:
+            line_nops = line_split[2]
+
+          # check if there are undescores
+          if "_" in line_nops:
+            undersc_split = line_nops.split("_")
+            #logger.debug(undersc_split)
+
+            for item in undersc_split:
+              # check if the format is CATH one
+              #cath_format = re.compile('.*\..*\..*\..*')
+              if CATH_FORMAT.match(item):
+                architect_list.append(item)
+
+          # this is the case of just one entry, no undescores
+          else:
+            # check the format is CATH one
+            if CATH_FORMAT.match(line_nops):
+              architect_list.append(line_nops)
+
+
+        ### for pfam ###
+        elif architecture == "pfam":
+          # check if there are dots
+          if "." in line_split[2]:
+            dot_split = line_split[2].split(".")
+            #logger.debug(undersc_split)
+
+            for item in dot_split:
+
               architect_list.append(item)
 
-        # this is the case of just one entry, no undescores
-        else:
-          # check the format is CATH one
-          if CATH_FORMAT.match(line_nops):
-            architect_list.append(line_nops)
+          # this is the case of just one entry, no dots
+          else:
+            architect_list.append(line_split[2])
 
+
+
+    # eliminate duplicates within the list (this is for each entry!!)
+    architect_list = list(set(architect_list))
+
+    # populate the dictionary
+    arch_dic[uniprot_id] = architect_list
+
+
+  #logger.debug(cath_dic)
 
   # rm temp.txt in the end
   # this is the last temp file that overwrote the others
   subprocess.call("rm temp.txt", shell=True)
 
-  # eliminate duplicate domain architecture values
-  architect_list = list(set(architect_list))
-
-  logger.info('We have found ' + str(len(architect_list)) +
-              ' unique CATH domain architectures.')
+  #logger.info('We have found ' + str(len(architect_list)) +
+  #            ' unique CATH domain architectures.')
+  
   #logger.debug(architect_list)
   # return the list of unique domain architecture values
-  return architect_list
-############################################################################
-
-
-
-
-############################################################################
-### UNIPROT_TO_PFAM FUNCTION
-############################################################################
-# return list of pfam domain archictures from uniprot list
-def uniprot_to_pfam(uniprot_list):
-  '''(list of str -> list of str)
-  run archindex, return list of pfam domain architecture from list of
-  uniprot values
-  '''
-  # empty list in which to store domain architecture values
-  architect_list = []
-  # set counter for debug
-  uniprot_counter = 0
-  # loop over list of uniprot values
-  for uniprot_id in uniprot_list:
-    uniprot_counter = uniprot_counter + 1
-    # log the
-    #logger.debug('We are processing uniprot n.' + str(uniprot_counter)
-    #            + '(' + str(uniprot_id) + ')..')
-    # call archschema on the list
-    subprocess.call("./../archSchema/bin/archindex -u " + str(uniprot_id) +
-                  " -maxa 1 -maxs 1 > temp.txt", shell=True)
-    # store lines
-    lines = file_to_lines('temp.txt')
-    #logger.debug(lines)
-    for i in range(len(lines)):
-      # find line that starts with parent
-      if lines[i][0:7] == ':PARENT':
-        # take the line after the ':PARENT' and split it
-        line_split = lines[i+1].split("\t")
-        #logger.debug('the line after is ' + str(line_split))
-        # check if there are dots
-        if "." in line_split[2]:
-          dot_split = line_split[2].split(".")
-          #logger.debug(undersc_split)
-
-          for item in dot_split:
-
-            architect_list.append(item)
-
-        # this is the case of just one entry, no dots
-        else:
-          architect_list.append(line_split[2])
-
-  # rm temp.txt in the end
-  # this is the last temp file that overwrote the others
-  subprocess.call("rm temp.txt", shell=True)
-  # remove duplicates
-  architect_list = list(set(architect_list))
-
-  logger.info('We have found ' + str(len(architect_list)) +
-              ' unique pfam domain architectures.')
-  #logger.debug(architect_list)
-  return architect_list
+  return arch_dic
 ############################################################################
 
 
@@ -587,11 +568,17 @@ def uniprot_to_pfam(uniprot_list):
 ### ARCH_TO_UNIPROT FUNCTION
 ############################################################################
 # run archindex, filter for TAXA and find uniprot ids
-def arch_to_uniprot(arch_list,flag):
+def arch_to_uniprot(arch_list,architecture):
   '''(list of str -> list of str)
   run archindex, return list of uniprot from list of domain
   architecture values applying a filter for TAXA (organism)
   '''
+
+  if architecture == "cath":
+    flag = "-cath"
+  elif architecture == "pfam":
+    flag = ""
+
   # empty list in which to store domain uniprot values
   uniprot_list = []
   # loop over list of arch values
@@ -599,7 +586,7 @@ def arch_to_uniprot(arch_list,flag):
     # iterate over the taxa code list (schisto species)
     for taxa_code in TAXA:
       # call archschema on the list
-      subprocess.call("./../archSchema/bin/archindex -p " + str(arch_id) +
+      subprocess.call(ARCHINDEX_PATH + " -p " + str(arch_id) +
                     " -maxa 1 -maxs 1 " + str(flag) + " -s " + taxa_code +
                     " > temp.txt", shell=True)
       # store lines
@@ -622,14 +609,11 @@ def arch_to_uniprot(arch_list,flag):
   # remove duplicates from list
   uniprot_list = list(set(uniprot_list))
 
-  if flag == '-cath':
-    flag_name = 'CATH'
-  else:
-    flag_name = 'Pfam'
-  logger.info('Using ' + flag_name + ' domain architectures we have found ' +
-              str(len(uniprot_list)) +
-              ' UniProt IDs of schistosoma proteins' +
-              ' (taxonomic identifiers ' + str(TAXA) + ').')
+  logger.info('Using ' + str(architecture) + 
+              ' domain architectures we have found ' + 
+              str(len(uniprot_list)) + 
+              ' UniProt IDs of schistosoma proteins (taxonomic identifiers ' +
+               str(TAXA) + ').')
 
   #logger.debug(uniprot_list)
   #return the list of uniprots
@@ -649,8 +633,8 @@ def merge_lists(list1, list2):
 
   #pickle.dump(uniprot_schisto_list, open("uniprot_schisto_list.p", "wb"))
 
-  logger.debug('The merged UniProt values obtained from CATH and pfam ' +
-    'are ' + str(len(merged_list)) + '.')
+  #logger.debug('The merged UniProt values obtained from CATH and pfam ' +
+  #  'are ' + str(len(merged_list)) + '.')
 
   #logger.debug(uniprot_schisto_list)
   return merged_list
@@ -711,7 +695,20 @@ def expasy_filter(uniprot_list):
 
 ############################################################################
 
+############################################################################
+### FLATTEN_VALUES
+############################################################################
+# list from dictionary values and flatten it (from list of lists to simple
+# list, also eliminate ducplicates
 
+def flatten_values(dic):
+  # generate list and flatten it
+  flat_list = list(itertools.chain(*list(dic.values())))
+
+  # rm duplicates
+  flat_list = list(set(flat_list))
+
+  return flat_list
 
 
 ############################################################################
@@ -767,54 +764,55 @@ def main():
 
 
   # run or pickle the chembl dictionary
-  chembl_dic = run_or_pickle("chembl_dictionary", process_chembl)
+  chembl_dic = run_or_pickle("chembl_dic", process_chembl)
 
   # get list of uniprot ids from cheml
   chembl_uniprot_list = list(chembl_dic)
   #logger.debug(len(chembl_uniprot_list))
 
   # run or pickle the drugbank_dictionary
-  drugbank_dic = run_or_pickle("drugbank_dictionary", process_drugbank)
+  drugbank_dic = run_or_pickle("drugbank_dic", process_drugbank)
 
   # get list of uniprot ids from drugbank
   drugbank_uniprot_list = list(drugbank_dic)
   #logger.debug(len(drugbank_uniprot_list))
 
-  # merge the uniprot lists
-  uniprot_list =  chembl_uniprot_list + drugbank_uniprot_list
-  #logger.debug(len(uniprot_list))
-
-  # remove duplicates
-  uniprot_list = list(set(uniprot_list))
-
-  logger.info('We have merged the UniProt values obtained from ' +
-              'ChEMBL and DrugBank, for a total of ' +
-              str(len(uniprot_list)) + ' unique UniProt IDs.')
-
+  # merge lists and rm duplicates
+  uniprot_list = run_or_pickle("uniprot_list", merge_lists, 
+                              chembl_uniprot_list, drugbank_uniprot_list)
 
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
-  #uniprot_list = ['Q4JEY0', 'P68363', 'P10613']
+  uniprot_list = ['Q4JEY0', 'P68363', 'P10613','P18825']
   ###
 
-  # run or pickle uniprot_to_cath to retrieve cath domain architectures
-  cath_list = run_or_pickle("cath_list", uniprot_to_cath, uniprot_list)
+  # run or pickle uniprot_to_arch to retrieve cath domain architectures
+  cath_dic = run_or_pickle("cath_dic", uniprot_to_arch, uniprot_list, "cath")
 
-  # run or pickle uniprot_to_cath to retrieve pfam domain architectures
-  pfam_list = run_or_pickle("pfam_list", uniprot_to_pfam, uniprot_list)
+  # generate list, flatten it and rm duplicates
+  cath_list = run_or_pickle("cath_list", flatten_values, cath_dic)
+
+  #logger.debug(len(cath_list))
+
+  # run or pickle uniprot_to_arch to retrieve pfam domain architectures
+  pfam_dic = run_or_pickle("pfam_dic", uniprot_to_arch, uniprot_list, "pfam")
+
+  # generate list, flatten it and rm duplicates
+  pfam_list = run_or_pickle("pfam_list", flatten_values, pfam_dic)
 
 
   # call archindex on cath values to find the ones from schisto
   uniprot_schisto_cath_list = run_or_pickle(
-      "uniprot_schisto_cath_list", arch_to_uniprot, cath_list, "-cath")
+      "uniprot_schisto_cath_list", arch_to_uniprot, cath_list, "cath")
 
-  # call archindex on pfam values, without the flag
+  # call archindex on pfam values
   uniprot_schisto_pfam_list = run_or_pickle(
-    "uniprot_schisto_pfam_list", arch_to_uniprot, pfam_list, "")
+    "uniprot_schisto_pfam_list", arch_to_uniprot, pfam_list, "pfam")
   #logger.debug(len(uniprot_schisto_pfam_list))
 
   # merge and rm duplicates
+  # this is total list of unique schisto uniprot ids
   uniprot_schisto_list = run_or_pickle("uniprot_schisto_list", merge_lists, 
                         uniprot_schisto_cath_list, uniprot_schisto_pfam_list)
 
@@ -823,14 +821,21 @@ def main():
   # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
   #'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
   #example of unreviewed entries: 'C7TY75', 'G4LXF4', 'C1L491'
-  #uniprot_schisto_list = ['P13566','Q9U8F1','P33676']
+  uniprot_schisto_list = ['P13566','Q9U8F1','P33676',
+  'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
   ###
 
   # filter list for only reviewed ones
   uniprot_schisto_filt = run_or_pickle("uniprot_schisto_filt", 
                                         expasy_filter,uniprot_schisto_list)
-  
 
+  logger.debug(uniprot_schisto_filt)
+
+  # make list of cath ids that point to the uniprot_schisto_list
+
+  cath_final_dic = uniprot_to_arch(uniprot_schisto_filt, "cath")
+  logger.debug(cath_final_dic)
+  logger.debug(flatten_values(cath_final_dic))
 
 ############################################################################
 
