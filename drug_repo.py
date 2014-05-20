@@ -334,20 +334,14 @@ def process_chembl():
   # number of drugs we could associate with chembl target
   # this will be a list of lists, so we need to flatten it out
   drug_ids = list(itertools.chain(*list(chembl_target_drug_dic.values())))
-  logger.debug(len(drug_ids))
+  #logger.debug(len(drug_ids))
 
   # eliminate duplicates
   drug_ids = list(set(drug_ids))
   #logger.debug(drug_ids)
-  #drug_ids = ['CHEMBL549', 'CHEMBL1738990', 'CHEMBL1200826']
-  # list of targets
-  targets_ids = list(chembl_target_drug_dic.keys())
-
-  # NB the len of target_ids and chembl_target_drug_dic is the same!
-  logger.info(str(len(drug_ids)) + ' ChEMBL drugs could be associated with ' +
-               str(len(targets_ids)) + ' ChEMBL targets.')
 
   ###
+
 
 
   # create dictionary from the chembl/uniprot mapping file
@@ -361,27 +355,9 @@ def process_chembl():
   #logger.debug(len(chembl_uniprot_map_dic))
   #logger.debug(len(list(set(chembl_uniprot_map_dic.values()))))
 
-
-  # empty dictionary
+  
+  # empty dictionary,it will store {drug chembl id : [list of uniprot]}
   chembl_dic = {}
-
-  # loop over keys in the dictionary
-  for keything in chembl_target_drug_dic:
-    # check if the target is in the mapping dictionary
-    if keything in chembl_uniprot_map_dic:
-      # find corresponding uniprot value in the mapping dic
-      uniprot_value = chembl_uniprot_map_dic[keything]
-      #logger.debug(uniprot_value)
-
-      # if target is in the dictionary already
-      if uniprot_value in chembl_dic:
-        chembl_dic[uniprot_value].extend(chembl_target_drug_dic[keything])
-      else:
-      # write this in the new dictionary
-        chembl_dic[uniprot_value] = chembl_target_drug_dic[keything]
-
-
-
 
   # new method to create swap dictionary instead!
   # loop over unique list of drug ids
@@ -396,16 +372,31 @@ def process_chembl():
         target_list.append(key)
     #logger.debug(target_list)
 
-        # convert target list into the uniprot id using the mapping dic
-        #target2_list = [chembl_uniprot_map_dic[x] for x in target_list]
+    # empty list for uniprot values
+    uniprot_list = []
+    # loop over the list of chembl ids we have just generated
+    for chembl_id in target_list:
+      # check if this id is in the mapping dictionary
+      if chembl_id in chembl_uniprot_map_dic:
+        # append uniprot value to list
+        uniprot_list.append(chembl_uniprot_map_dic[chembl_id])
 
-  #logger.debug(target2_list)
+    # check the list is not empty
+    if uniprot_list != []:
+      chembl_dic[drug] = uniprot_list
+
+  # flat list of uniprot codes from the dictionary
+  uniprot_ids = list(itertools.chain(*list(chembl_dic.values())))
+  #logger.debug(len(drug_ids))
+
+  # eliminate duplicates
+  uniprot_ids = list(set(uniprot_ids))
 
 
-
-
-  logger.info('Said ChEMBL drugs could be mapped to ' +
-              str(len(chembl_dic)) + ' unique UniProt ID.')
+  # NB the len of target_ids and chembl_target_drug_dic is the same!
+  logger.info(str(len(chembl_dic)) + ' ChEMBL drugs could be associated ' +
+              'with ' + str(len(uniprot_ids)) + ' unique UniProt ID.')
+  
   #logger.debug(len(list(itertools.chain(*list(chembl_dic.values())))))
   #logger.debug(chembl_dic)
 
@@ -800,7 +791,8 @@ def main():
   chembl_dic = run_or_pickle("chembl_dic", process_chembl)
 
   # get list of uniprot ids from cheml
-  chembl_uniprot_list = list(chembl_dic)
+  chembl_uniprot_list = run_or_pickle("chembl_uniprot_list", 
+                                      flatten_values, chembl_dic)
   #logger.debug(len(chembl_uniprot_list))
 
   # run or pickle the drugbank_dictionary
@@ -905,8 +897,8 @@ def main():
         retromap_dic[uniprot] = retro_cath
 
 
-  logger.debug(retromap_dic)
-  logger.debug(flatten_values(retromap_dic))
+  #logger.debug(retromap_dic)
+  #logger.debug(flatten_values(retromap_dic))
 
 
     #elif key 
