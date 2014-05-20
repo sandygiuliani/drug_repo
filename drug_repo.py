@@ -298,9 +298,6 @@ def process_chembl():
   # empty dictionary
   chembl_target_drug_dic = {}
 
-  # test for duplicate drug entries
-  test_duplo = []
-
   # list of target chemblids that refer to the drugs we are interested in
   # ie. small molecules, late clinical stages
   for i in range(1,len(drug_targ)):
@@ -311,23 +308,23 @@ def process_chembl():
     chembl_drug_id = rowsplit[col_mol_id]
     chembl_target_id = rowsplit[col_targ_id]
 
-    # test for duplicate drug entries
-    test_duplo.append(chembl_drug_id)
+    # only proceed if the target id is not an empty field!
+    if chembl_target_id  != "":
 
-    # check if the molecule chembl id is one of the drugs we want
-    if chembl_drug_id in chembl_filt_list:
+      # check if the molecule chembl id is one of the drugs we want
+      if chembl_drug_id in chembl_filt_list:
 
-      # check if the target is is already in the dictionary, and extend
-      if chembl_target_id in chembl_target_drug_dic:
-        # try to append stuff to dictionary
-        chembl_target_drug_dic[chembl_target_id].append(chembl_drug_id)
+        # check if the target is is already in the dictionary, and extend
+        if chembl_target_id in chembl_target_drug_dic:
+          # try to append stuff to dictionary
+          chembl_target_drug_dic[chembl_target_id].append(chembl_drug_id)
 
-      # else create the new entry in the dictionary
-      else:
-        # create empty list
-        chembl_target_drug_dic[chembl_target_id] = []
-        # append to empty list the value
-        chembl_target_drug_dic[chembl_target_id].append(chembl_drug_id)
+        # else create the new entry in the dictionary
+        else:
+          # create empty list
+          chembl_target_drug_dic[chembl_target_id] = []
+          # append to empty list the value
+          chembl_target_drug_dic[chembl_target_id].append(chembl_drug_id)
 
   # test to see if there are duplicates drugs
   # positive: tot 2007 but 1596 unique
@@ -337,11 +334,12 @@ def process_chembl():
   # number of drugs we could associate with chembl target
   # this will be a list of lists, so we need to flatten it out
   drug_ids = list(itertools.chain(*list(chembl_target_drug_dic.values())))
-  #logger.debug(len(drug_ids))
+  logger.debug(len(drug_ids))
 
   # eliminate duplicates
   drug_ids = list(set(drug_ids))
-
+  #logger.debug(drug_ids)
+  #drug_ids = ['CHEMBL549', 'CHEMBL1738990', 'CHEMBL1200826']
   # list of targets
   targets_ids = list(chembl_target_drug_dic.keys())
 
@@ -381,6 +379,30 @@ def process_chembl():
       else:
       # write this in the new dictionary
         chembl_dic[uniprot_value] = chembl_target_drug_dic[keything]
+
+
+
+
+  # new method to create swap dictionary instead!
+  # loop over unique list of drug ids
+  for drug in drug_ids:
+    # empty target list in which to store target ids
+    target_list = []
+    # loop over dictionary of chembl target ids and drug chembl ids
+    for key in chembl_target_drug_dic:
+      # check if drug is in the list
+      if drug in chembl_target_drug_dic[key]:
+        # append chembl id to list
+        target_list.append(key)
+    #logger.debug(target_list)
+
+        # convert target list into the uniprot id using the mapping dic
+        #target2_list = [chembl_uniprot_map_dic[x] for x in target_list]
+
+  #logger.debug(target2_list)
+
+
+
 
   logger.info('Said ChEMBL drugs could be mapped to ' +
               str(len(chembl_dic)) + ' unique UniProt ID.')
@@ -707,7 +729,7 @@ def expasy_filter(uniprot_list):
 ### FLATTEN_VALUES
 ############################################################################
 # list from dictionary values and flatten it (from list of lists to simple
-# list, also eliminate ducplicates
+# list, also eliminate duplicates
 
 def flatten_values(dic):
   # generate list and flatten it
@@ -792,6 +814,7 @@ def main():
   uniprot_list = run_or_pickle("uniprot_list", merge_lists, 
                               chembl_uniprot_list, drugbank_uniprot_list)
 
+  logger.debug(len(uniprot_list))
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
@@ -821,7 +844,7 @@ def main():
   uniprot_schisto_cath_list = run_or_pickle("uniprot_schisto_cath_list", 
                               flatten_values, uniprot_schisto_cath_dic)
   
-  logger.debug(len(uniprot_schisto_cath_list))
+  #logger.debug(len(uniprot_schisto_cath_list))
 
   # call archindex on pfam values to find ones from schisto
   uniprot_schisto_pfam_dic = run_or_pickle(
@@ -830,7 +853,7 @@ def main():
   # generate list, flatten it and rm duplicates
   uniprot_schisto_pfam_list = run_or_pickle("uniprot_schisto_pfam_list", 
                               flatten_values, uniprot_schisto_pfam_dic)
-  logger.debug(len(uniprot_schisto_pfam_list))
+  #logger.debug(len(uniprot_schisto_pfam_list))
 
 
   # merge and rm duplicates
@@ -838,6 +861,7 @@ def main():
   uniprot_schisto_list = run_or_pickle("uniprot_schisto_list", merge_lists, 
                         uniprot_schisto_cath_list, uniprot_schisto_pfam_list)
 
+  logger.debug(len(uniprot_schisto_list))
 
   ### OVERWRITE UNIPROT_SCHISTO_LIST WITH MADE-UP LIST
   # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
@@ -858,6 +882,36 @@ def main():
   #cath_final_dic = uniprot_to_arch(uniprot_schisto_filt, "cath")
   #logger.debug(cath_final_dic)
   #logger.debug(flatten_values(cath_final_dic))
+
+
+  # OVERWRITE FILTERED LIST
+  uniprot_schisto_filt = ['P33676']
+
+  # empty dictionary for retromapping
+  retromap_dic = {}
+
+  # loop over list of uniprot ids
+  for uniprot in uniprot_schisto_filt:
+    # empty list for cath ids for each uniprot
+    retro_cath = []
+    # loop over cath dictionary
+    for key in uniprot_schisto_cath_dic:
+      # check if uniprot is in the values
+      if uniprot in uniprot_schisto_cath_dic[key]:
+        # append cath ids to the list
+        retro_cath.append(key)
+
+
+        retromap_dic[uniprot] = retro_cath
+
+
+  logger.debug(retromap_dic)
+  logger.debug(flatten_values(retromap_dic))
+
+
+    #elif key 
+
+
 
 ############################################################################
 
