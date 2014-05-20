@@ -753,18 +753,19 @@ def run_or_pickle(
                           open((str(function_return_obj) +".p"),"rb"))
     logger.info('You have already analysed this bit, ' +
                 'so we have pickled the ' + str(pickle_name))
+  # otherwise we want to run the function
   else:
+    # case 1: two arguments
     if arg1 == None and arg2 == None:
       # run function with no arguments
       function_return_obj = function_name()
-
+    # case 2: one argument
+    elif arg2 == None:
+      # run function with arg1
+      function_return_obj = function_name(arg1)
     else:
-      if arg2 == None:
-        # run function with arg1
-        function_return_obj = function_name(arg1)
-      else:
-        # run with both arguments
-        function_return_obj = function_name(arg1, arg2)
+      # run with both arguments
+      function_return_obj = function_name(arg1, arg2)
 
     # dump result in pickle
     pickle.dump(function_return_obj, open(pickle_name, "wb"))
