@@ -879,68 +879,67 @@ def drugbank_repo_map(drugbank_dic, cath_dic, schisto_cath_dic,
 
   #below copied from chembl_repo_map
 
-  # # loop over each drug in the dictionary
-  # for drug in drugbank_dic:
-  #
-  #
-  #   # dictionary for each drug
-  #   each_drug_dic = {}
-  #
-  #   # sanity check the uniprot list is not empty (it should not be empty)
-  #   if chembl_dic[drug]:
-  #     # loop on list of uniprot
-  #     for target in chembl_dic[drug]:
-  #
-  #       # make list in which to store the cath/pfam
-  #       cath_pfam = []
-  #
-  #       # append cath value, only if it exists in the dictionary
-  #       if target in cath_dic:
-  #         cath_pfam.extend(cath_dic[target])
-  #
-  #       # append pfam value, only if it exists in the dictionary
-  #       if target in pfam_dic:
-  #         cath_pfam.extend(pfam_dic[target])
-  #
-  #       #logger.debug(cath_pfam)
-  #       # check the list is not empy
-  #       if cath_pfam:
-  #       # make dictionary
-  #         each_drug_dic[target] = cath_pfam
-  #
-  #     # finished loops for all targets, we have the dictionary
-  #     # with {uniprot1:[list of arch],uniprot2:[list]}
-  #     #logger.debug(each_drug_dic)
-  #
-  #     #loop over each uniprot in new dictionary
-  #     for targ in each_drug_dic:
-  #
-  #       # dictionary for each target
-  #       each_target_dic = {}
-  #       # sanity check the arch list is not empty:
-  #       if each_drug_dic[targ]:
-  #         # loop over list of architectures
-  #         for arch in each_drug_dic[targ]:
-  #           # empty list for schisto
-  #           schisto_list = []
-  #           # check it exists in the cath dictionary
-  #           if arch in schisto_cath_dic:
-  #             schisto_list.extend(schisto_cath_dic[arch])
-  #
-  #           if arch in schisto_pfam_dic:
-  #             schisto_list.extend(schisto_pfam_dic[arch])
-  #
-  #           # check list is not empty
-  #           if schisto_list:
-  #             #logger.debug(schisto_list)
-  #             # add list as values in dictionary
-  #             each_target_dic[arch] = schisto_list
-  #
-  #             #logger.debug(each_target_dic)
-  #
-  #             chembl_repo_map[drug][targ][arch] = each_target_dic[arch]
+  # loop over each drug in the dictionary
+  for drug in drugbank_dic:
 
+    # dictionary for each drug
+    each_drug_dic = {}
 
+    # sanity check the uniprot list is not empty (it should not be empty)
+    if drugbank_dic[drug]:
+      # loop on list of uniprot
+      for target in drugbank_dic[drug]:
+
+        # make list in which to store the cath/pfam
+        cath_pfam = []
+
+        # append cath value, only if it exists in the dictionary
+        if target in cath_dic:
+          cath_pfam.extend(cath_dic[target])
+
+        # append pfam value, only if it exists in the dictionary
+        if target in pfam_dic:
+          cath_pfam.extend(pfam_dic[target])
+
+        #logger.debug(cath_pfam)
+        # check the list is not empy
+        if cath_pfam:
+        # make dictionary
+          each_drug_dic[target] = cath_pfam
+
+      # finished loops for all targets, we have the dictionary
+      # with {uniprot1:[list of arch],uniprot2:[list]}
+      #logger.debug(each_drug_dic)
+
+      #loop over each uniprot in new dictionary
+      for targ in each_drug_dic:
+
+        # dictionary for each target
+        each_target_dic = {}
+        # sanity check the arch list is not empty:
+        if each_drug_dic[targ]:
+          # loop over list of architectures
+          for arch in each_drug_dic[targ]:
+            # empty list for schisto
+            schisto_list = []
+            # check it exists in the cath dictionary
+            if arch in schisto_cath_dic:
+              schisto_list.extend(schisto_cath_dic[arch])
+
+            if arch in schisto_pfam_dic:
+              schisto_list.extend(schisto_pfam_dic[arch])
+
+            # check list is not empty
+            if schisto_list:
+              #logger.debug(schisto_list)
+              # add list as values in dictionary
+              each_target_dic[arch] = schisto_list
+
+              #logger.debug(each_target_dic)
+
+              drugbank_repo_map[drug][targ][arch] = each_target_dic[arch]
+
+  #logger.debug(drugbank_repo_map)
   return drugbank_repo_map
 ############################################################################
 
@@ -1056,7 +1055,6 @@ def main():
   drugbank_uniprot_list = run_or_pickle("drugbank_uniprot_list",
                                     flatten_values, drugbank_dic)
 
-
   #logger.debug(len(drugbank_uniprot_list))
 
   # merge lists and rm duplicates
@@ -1151,15 +1149,23 @@ def main():
   drugbank_repo_dic = run_or_pickle(
     "drugbank_repo_map", drugbank_repo_map, drugbank_dic, cath_dic,
     uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
-  logger.debug(drugbank_repo_dic)
+  #logger.debug(drugbank_repo_dic)
 
 
   # this one should then include the drugbank entries once they are ready
   # obtain filtered mapping dictionary for filtered entries
-  schisto_filt_map = run_or_pickle("schisto_filt_map", filt_schisto_map,
-                                  chembl_repo_dic, uniprot_schisto_filt)
+  chembl_schisto_filt_map = run_or_pickle("chembl_schisto_filt_map",
+                                          filt_schisto_map, chembl_repo_dic,
+                                          uniprot_schisto_filt)
 
-  #logger.debug(schisto_filt_map)
+
+  drugbank_schisto_filt_map = run_or_pickle("drugbank_schisto_filt_map",
+                                            filt_schisto_map, drugbank_repo_dic,
+                                            uniprot_schisto_filt)
+
+
+  logger.debug(chembl_schisto_filt_map)
+  logger.debug(drugbank_schisto_filt_map)
 
 ############################################################################
 
