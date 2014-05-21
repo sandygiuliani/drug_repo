@@ -750,8 +750,34 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
   # empty dictionary
   chembl_repo_map = {}
 
-  # add stuff
+  # loop over each drug in the dictionary
+  for drug in chembl_dic:
+    # dictionary for each drug
+    each_drug_dic = {}
+    # loop on list of uniprot
+    for target in chembl_dic[drug]:
+      
+      # make list in which to store the cath/pfam
+      cath_pfam = []
 
+      # append cath value, only if it exists in the dictionary
+      if target in cath_dic:
+        cath_pfam.extend(cath_dic[target])
+      
+      # append pfam value, only if it exists in the dictionary
+      if target in pfam_dic:
+        cath_pfam.extend(pfam_dic[target])
+      
+      # check the list is not empy
+      if cath_pfam:
+      # make dictionary
+        each_drug_dic[target] = cath_pfam
+  
+      # add dictionary as value to the main dic
+      chembl_repo_map[drug] = each_drug_dic
+
+  logger.debug(chembl_repo_map)
+  #logger.debug(each_drug_dic)
   return chembl_repo_map
 ############################################################################
 
@@ -914,22 +940,7 @@ def main():
     "chembl_repo_map", chembl_repo_map, chembl_dic, cath_dic, 
     uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
 
-  logger.debug(chembl_repo_dic)
-
-  # # loop over list of uniprot ids
-  # for uniprot in uniprot_schisto_filt:
-  #   # empty list for cath ids for each uniprot
-  #   retro_cath = []
-  #   # loop over cath dictionary
-  #   for key in uniprot_schisto_cath_dic:
-  #     # check if uniprot is in the values
-  #     if uniprot in uniprot_schisto_cath_dic[key]:
-  #       # append cath ids to the list
-  #       retro_cath.append(key)
-  #       retromap_dic[uniprot] = retro_cath
-
-
-
+  #logger.debug(chembl_repo_dic)
 ############################################################################
 
 
