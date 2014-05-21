@@ -7,8 +7,6 @@
 # Please see README.md for more info.
 
 
-
-
 ############################################################################
 ### import modules, set up logger
 ############################################################################
@@ -22,6 +20,9 @@ import os
 import os.path
 
 # import pickle
+#import pickle
+
+# cpickle does not work with AutoVivification
 import cPickle as pickle
 
 # import csv for comma-sep files
@@ -75,6 +76,16 @@ formatter = logging.Formatter('%(asctime)s - %(message)s')
 ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
+
+
+class AutoVivification(dict):
+  """Implementation of perl's autovivification feature."""
+  def __getitem__(self, item):
+      try:
+          return dict.__getitem__(self, item)
+      except KeyError:
+          value = self[item] = type(self)()
+          return value
 ############################################################################
 
 
@@ -747,13 +758,16 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
                     pfam_dic, schisto_pfam_dic):
   # empty dictionary
   chembl_repo_map = {}
-  logger.debug(len(chembl_dic))
+
   # loop over each drug in the dictionary
   for drug in chembl_dic:
+    # let's try declare that each entry in the main dic will be a dic!
+    chembl_repo_map[drug] = {}
+
     # dictionary for each drug
     each_drug_dic = {}
 
-    # check the uniprot list is not empty
+    # sanity check the uniprot list is not empty (it should not be empty)
     if chembl_dic[drug]:
       # loop on list of uniprot
       for target in chembl_dic[drug]:
@@ -769,40 +783,48 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
         if target in pfam_dic:
           cath_pfam.extend(pfam_dic[target])
 
+        #logger.debug(cath_pfam)
         # check the list is not empy
         if cath_pfam:
         # make dictionary
           each_drug_dic[target] = cath_pfam
 
-          logger.debug(each_drug_dic)
+      # finished loops for all targets, we have the dictionary
+      # with {uniprot1:[list of arch],uniprot2:[list]}
+      #logger.debug(each_drug_dic)
+
+      #loop over each uniprot in new dictionary
+      for targ in each_drug_dic:
+        # let's also declare that each entry in this dic will be a dic
+        chembl_repo_map[drug][targ] = {}
+
+        # dictionary for each target
+        each_target_dic = {}
+        # sanity check the arch list is not empty:
+        if each_drug_dic[targ]:
+          # loop over list of architectures
+          for arch in each_drug_dic[targ]:
+            # empty list for schisto
+            schisto_list = []
+            # check it exists in the cath dictionary
+            if arch in schisto_cath_dic:
+              schisto_list.extend(schisto_cath_dic[arch])
+
+            if arch in schisto_pfam_dic:
+              schisto_list.extend(schisto_pfam_dic[arch])
 
 
-          # now loop over dictionary we have just created
-          for uniprot in each_drug_dic:
-            # create a dictionary for each uniprot
-            each_uniprot_dic = {}
-            # loop over the cath or pfam
-            for arch in each_drug_dic[uniprot]:
-              # empty list
-              schisto_uniprot = []
-              # check if it is pfam
-              if 'P' in arch:
-                # check the list is not empty
-                if schisto_pfam_dic[arch]:
-                  # put in list the schisto uniprot values
-                  schisto_uniprot = schisto_pfam_dic[arch]
 
-              else:
-                # check the list is not empty
-                if schisto_cath_dic[arch]:
-                  schisto_uniprot = schisto_cath_dic[arch]
+            # check list is not empty
+            if schisto_list:
+              #logger.debug(schisto_list)
+              # add list as values in dictionary
+              each_target_dic[arch] = schisto_list
 
-              #logger.debug(schisto_uniprot)
-             # each_uniprot_dic[arch] = schisto_uniprot
+              #logger.debug(each_target_dic)
 
-              if schisto_uniprot:
-                # populate main dictionary
-                chembl_repo_map[drug][target][arch] = schisto_uniprot
+
+              chembl_repo_map[drug][targ][arch] = each_target_dic[arch]
 
 
   #logger.debug(chembl_repo_map)
@@ -821,15 +843,24 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
 
 def filt_schisto_map(chembl_repo_map, schisto_filt):
   # empty dictionary
-  schisto_filt_map = {}
+
+
+  schisto_filt_map = AutoVivification()
 
   for drug in chembl_repo_map:
+    #schisto_filt_map[drug] = {}
     for target in chembl_repo_map[drug]:
+      #schisto_filt_map[drug][target] = {}
       for arch in chembl_repo_map[drug][target]:
-        #logger.debug(arch)
+        #logger.debug(arch
+
+        schisto_list = []
+
         for schisto in chembl_repo_map[drug][target][arch]:
           if schisto in schisto_filt:
-            schisto_filt_map[drug][target][arch] = schisto
+            schisto_list.append(schisto)
+            if schisto_list:
+              schisto_filt_map[drug][target][arch] = schisto_list
 
   return schisto_filt_map
 ############################################################################
@@ -899,12 +930,6 @@ def main():
   # generate chembl dictionary
   chembl_dic = run_or_pickle("chembl_dic", process_chembl)
 
-  silly = 0
-  for thing in chembl_dic:
-    if chembl_dic[thing] == []:
-      silly = silly +1
-
-  logger.debug(silly)
 
   # get list of uniprot ids from chembl_dic
   chembl_uniprot_list = run_or_pickle("chembl_uniprot_list",
@@ -987,7 +1012,7 @@ def main():
   uniprot_schisto_filt = run_or_pickle("uniprot_schisto_filt",
                                         expasy_filter,uniprot_schisto_list)
 
-  #logger.debug(uniprot_schisto_filt)
+  logger.debug(uniprot_schisto_filt)
 
   # make list of cath ids that point to the uniprot_schisto_list
 
