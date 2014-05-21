@@ -736,11 +736,34 @@ def flatten_values(dic):
 
 
 ############################################################################
+### CHEMBL_REPO_MAP
+############################################################################
+# make big map for chembl ids, for both cath and pfam arch
+# format {drug1:{drug_target1:{arch1:[list os schisto uniprot], arch2:[..]},
+#                 drug_target2:{..}, drug2:{........}}}
+
+# takes chembl to uniprot dic, uniprot to cath dic, cath to schisto dic,
+# uniprot to pfam dic, pfam to schisto dic
+
+def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic, 
+                    pfam_dic, schisto_pfam_dic):
+  # empty dictionary
+  chembl_repo_map = {}
+
+  # add stuff
+
+  return chembl_repo_map
+############################################################################
+
+
+
+
+############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
 # run module and dump in pickle or retreive pickle without running module
-def run_or_pickle(
-              function_return_obj, function_name, arg1 = None, arg2 = None):
+def run_or_pickle(function_return_obj, function_name, arg1 = None, 
+                  arg2 = None, arg3 = None, arg4 = None, arg5 = None):
 
   # make string with pickle name
   pickle_name = (function_return_obj + ".p")
@@ -755,17 +778,23 @@ def run_or_pickle(
                 'so we have pickled the ' + str(pickle_name))
   # otherwise we want to run the function
   else:
-    # case 1: two arguments
-    if arg1 == None and arg2 == None:
-      # run function with no arguments
+    # case 1: no arguments
+    if (arg1 == None and arg2 == None and arg3 == None and arg4 == None and 
+        arg5 == None):
+      
       function_return_obj = function_name()
+
     # case 2: one argument
     elif arg2 == None:
-      # run function with arg1
       function_return_obj = function_name(arg1)
-    else:
-      # run with both arguments
+
+    # case 3: two arguments
+    elif arg3 == None and arg4 == None and arg5 == None:
       function_return_obj = function_name(arg1, arg2)
+
+    #case 4: all arguments
+    else:
+      function_return_obj = function_name(arg1, arg2, arg3, arg4, arg5)
 
     # dump result in pickle
     pickle.dump(function_return_obj, open(pickle_name, "wb"))
@@ -788,26 +817,25 @@ def main():
               " Let's do some mapping.")
 
 
-  # run or pickle the chembl dictionary
+  # generate chembl dictionary
   chembl_dic = run_or_pickle("chembl_dic", process_chembl)
 
-  # get list of uniprot ids from cheml
+  # get list of uniprot ids from chembl_dic
   chembl_uniprot_list = run_or_pickle("chembl_uniprot_list", 
                                       flatten_values, chembl_dic)
-  #logger.debug(len(chembl_uniprot_list))
 
-  # run or pickle the drugbank_dictionary
+  # generate drugbank_dictionary
   drugbank_dic = run_or_pickle("drugbank_dic", process_drugbank)
 
   # get list of uniprot ids from drugbank
   drugbank_uniprot_list = list(drugbank_dic)
-  #logger.debug(len(drugbank_uniprot_list))
 
   # merge lists and rm duplicates
   uniprot_list = run_or_pickle("uniprot_list", merge_lists, 
                               chembl_uniprot_list, drugbank_uniprot_list)
 
-  logger.debug(len(uniprot_list))
+  #logger.debug(len(uniprot_list))
+  
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
@@ -877,32 +905,28 @@ def main():
   #logger.debug(flatten_values(cath_final_dic))
 
 
-  # OVERWRITE FILTERED LIST
-  uniprot_schisto_filt = ['P33676']
+  ### OVERWRITE FILTERED LIST
+  #uniprot_schisto_filt = ['P33676']
+  ###
 
-  # empty dictionary for retromapping
-  retromap_dic = {}
+  # generate big map for chembl drugs
+  chembl_repo_dic = run_or_pickle(
+    "chembl_repo_map", chembl_repo_map, chembl_dic, cath_dic, 
+    uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
 
-  # loop over list of uniprot ids
-  for uniprot in uniprot_schisto_filt:
-    # empty list for cath ids for each uniprot
-    retro_cath = []
-    # loop over cath dictionary
-    for key in uniprot_schisto_cath_dic:
-      # check if uniprot is in the values
-      if uniprot in uniprot_schisto_cath_dic[key]:
-        # append cath ids to the list
-        retro_cath.append(key)
+  logger.debug(chembl_repo_dic)
 
-
-        retromap_dic[uniprot] = retro_cath
-
-
-  #logger.debug(retromap_dic)
-  #logger.debug(flatten_values(retromap_dic))
-
-
-    #elif key 
+  # # loop over list of uniprot ids
+  # for uniprot in uniprot_schisto_filt:
+  #   # empty list for cath ids for each uniprot
+  #   retro_cath = []
+  #   # loop over cath dictionary
+  #   for key in uniprot_schisto_cath_dic:
+  #     # check if uniprot is in the values
+  #     if uniprot in uniprot_schisto_cath_dic[key]:
+  #       # append cath ids to the list
+  #       retro_cath.append(key)
+  #       retromap_dic[uniprot] = retro_cath
 
 
 
