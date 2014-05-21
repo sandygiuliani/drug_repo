@@ -476,8 +476,39 @@ def process_drugbank():
   #logger.debug(len(list_check))
   #logger.debug(len(list(set(list_check))))
 
+
+  # fast and silly way to generate the swap dictionary!
+
+  drugbank_list = list(itertools.chain(*list(drugbank_dic.values())))
+  drugbank_unique = list(set(drugbank_list))
+
+  #logger.debug(len(drugbank_unique))
+
+
+
+  drugbank_swap = {}
+
+  # loop over list of unique drugbank ids
+  for drug in drugbank_unique:
+    #empty list for the uniprot values
+    uniprot_list = []
+    for uniprot in drugbank_dic:
+      for db in drugbank_dic[uniprot]:
+        if db == drug:
+          # append uniprot value to the list
+          uniprot_list.append(uniprot)
+
+    # sanity check the list is not empty
+    if uniprot_list:
+    # the list is now ready, populate the dictionary
+      drugbank_swap[drug] = uniprot_list
+
+
+
+  #logger.debug(drugbank_swap)
+
   # return dictionary {uniprot1:(list of drugbank ids)}
-  return drugbank_dic
+  return drugbank_swap
 ############################################################################
 
 
@@ -1016,13 +1047,17 @@ def main():
   chembl_uniprot_list = run_or_pickle("chembl_uniprot_list",
                                       flatten_values, chembl_dic)
 
-  logger.debug(len(chembl_dic))
-
   # generate drugbank_dictionary
   drugbank_dic = run_or_pickle("drugbank_dic", process_drugbank)
 
+  #logger.debug(drugbank_dic)
+
   # get list of uniprot ids from drugbank
-  drugbank_uniprot_list = list(drugbank_dic)
+  drugbank_uniprot_list = run_or_pickle("drugbank_uniprot_list",
+                                    flatten_values, drugbank_dic)
+
+
+  #logger.debug(len(drugbank_uniprot_list))
 
   # merge lists and rm duplicates
   uniprot_list = run_or_pickle("uniprot_list", merge_lists,
