@@ -199,8 +199,6 @@ def swap_dic(tab_file):
 
 # in the end we need a dictionary of chembl ids vs uniprot ids
 def process_chembl():
-  '''read chembl drug input file, filter, get various info and return
-  list of uniprot ids'''
   # open chembldrugs.txt for reading
   lines = file_to_lines(CHEMBL_INPUT)
   logger.info('We are now analysing the ChEMBL input file ' +
@@ -633,7 +631,6 @@ def arch_to_uniprot(arch_list,architecture):
    #           ' UniProt IDs of schistosoma proteins (taxonomic identifiers ' +
    #            str(TAXA) + ').')
 
-  #logger.debug(uniprot_list)
 
   #return the dictionary
   return uniprot_dic
@@ -656,6 +653,7 @@ def merge_lists(list1, list2):
   #  'are ' + str(len(merged_list)) + '.')
 
   #logger.debug(uniprot_schisto_list)
+
   return merged_list
 ############################################################################
 
@@ -754,31 +752,81 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
   for drug in chembl_dic:
     # dictionary for each drug
     each_drug_dic = {}
-    # loop on list of uniprot
-    for target in chembl_dic[drug]:
-      
-      # make list in which to store the cath/pfam
-      cath_pfam = []
+    
+    # check the uniprot list is not empty
+    if chembl_dic[drug]:
+      # loop on list of uniprot
+      for target in chembl_dic[drug]:
+        
+        # make list in which to store the cath/pfam
+        cath_pfam = []
 
-      # append cath value, only if it exists in the dictionary
-      if target in cath_dic:
-        cath_pfam.extend(cath_dic[target])
-      
-      # append pfam value, only if it exists in the dictionary
-      if target in pfam_dic:
-        cath_pfam.extend(pfam_dic[target])
-      
-      # check the list is not empy
-      if cath_pfam:
-      # make dictionary
-        each_drug_dic[target] = cath_pfam
+        # append cath value, only if it exists in the dictionary
+        if target in cath_dic:
+          cath_pfam.extend(cath_dic[target])
+        
+        # append pfam value, only if it exists in the dictionary
+        if target in pfam_dic:
+          cath_pfam.extend(pfam_dic[target])
+        
+        # check the list is not empy
+        if cath_pfam:
+        # make dictionary
+          each_drug_dic[target] = cath_pfam
+
+
+          # now loop over dictionary we have just created
+          for uniprot in each_drug_dic:
+            # create a dictionary for each uniprot
+            #each_uniprot_dic = {}
+            # loop over the cath or pfam
+            for arch in each_drug_dic[uniprot]:
+              # empty list
+              schisto_uniprot = []
+              # check if it is pfam
+              if 'P' in arch:
+                # put in list the schisto uniprot values
+                schisto_uniprot = schisto_pfam_dic[arch]
+
+              else:
+                schisto_uniprot = schisto_cath_dic[arch]
+
+              #logger.debug(schisto_uniprot)
+             # each_uniprot_dic[arch] = schisto_uniprot
+
+              if schisto_uniprot:              
+                # populate main dictionary
+                chembl_repo_map[drug][target][arch] = schisto_uniprot
+
   
-      # add dictionary as value to the main dic
-      chembl_repo_map[drug] = each_drug_dic
 
-  logger.debug(chembl_repo_map)
+  #logger.debug(chembl_repo_map)
   #logger.debug(each_drug_dic)
   return chembl_repo_map
+############################################################################
+
+
+
+
+############################################################################
+### FILT_SCHISTO_MAP
+############################################################################
+# filter the chembl_repo_map for the filtered schisto uniprots we are 
+# interested in
+
+def filt_schisto_map(chembl_repo_map, schisto_filt):
+  # empty dictionary
+  schisto_filt_map = {}
+
+  for drug in chembl_repo_map:
+    for target in chembl_repo_map[drug]:
+      for arch in chembl_repo_map[drug][target]:
+        #logger.debug(arch)
+        for schisto in chembl_repo_map[drug][target][arch]:
+          if schisto in schisto_filt:
+            schisto_filt_map[drug][target][arch] = schisto
+
+  return schisto_filt_map
 ############################################################################
 
 
@@ -922,7 +970,7 @@ def main():
   uniprot_schisto_filt = run_or_pickle("uniprot_schisto_filt", 
                                         expasy_filter,uniprot_schisto_list)
 
-  logger.debug(uniprot_schisto_filt)
+  #logger.debug(uniprot_schisto_filt)
 
   # make list of cath ids that point to the uniprot_schisto_list
 
@@ -941,6 +989,14 @@ def main():
     uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
 
   #logger.debug(chembl_repo_dic)
+
+
+  # obtain filtered mapping dictionary fof riltered entries
+  schisto_filt_map = run_or_pickle("schisto_filt_map", filt_schisto_map, 
+                                  chembl_repo_dic, uniprot_schisto_filt)
+  
+  logger.debug(schisto_filt_map)
+
 ############################################################################
 
 
