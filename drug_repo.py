@@ -353,7 +353,7 @@ def process_chembl():
   #logger.debug(len(chembl_uniprot_map_dic))
   #logger.debug(len(list(set(chembl_uniprot_map_dic.values()))))
 
-  
+
   # empty dictionary,it will store {drug chembl id : [list of uniprot]}
   chembl_dic = {}
 
@@ -394,7 +394,7 @@ def process_chembl():
   # NB the len of target_ids and chembl_target_drug_dic is the same!
   logger.info(str(len(chembl_dic)) + ' ChEMBL drugs could be associated ' +
               'with ' + str(len(uniprot_ids)) + ' unique UniProt ID.')
-  
+
   #logger.debug(len(list(itertools.chain(*list(chembl_dic.values())))))
   #logger.debug(chembl_dic)
 
@@ -487,7 +487,7 @@ def uniprot_to_arch(uniprot_list,architecture):
 
   # dictionary of uniprot ids and list of correposponding architectures
   arch_dic = {}
-  
+
   # loop over list of uniprot values
   for uniprot_id in uniprot_list:
     #list in which to store list of CATH domains for each entry
@@ -566,7 +566,7 @@ def uniprot_to_arch(uniprot_list,architecture):
 
   #logger.info('We have found ' + str(len(architect_list)) +
   #            ' unique CATH domain architectures.')
-  
+
   #logger.debug(architect_list)
   # return the list of unique domain architecture values
   return arch_dic
@@ -614,7 +614,7 @@ def arch_to_uniprot(arch_list,architecture):
           line_split = lines[i+1].split("\t")
 
           uniprot_list.append(line_split[0])
-    
+
     # remove duplicates from list
     uniprot_list = list(set(uniprot_list))
 
@@ -625,9 +625,9 @@ def arch_to_uniprot(arch_list,architecture):
   # this is the last temp file that overwrote the others
   subprocess.call("rm temp.txt", shell=True)
 
-  #logger.info('Using ' + str(architecture) + 
-  #            ' domain architectures we have found ' + 
-   #           str(len(uniprot_list)) + 
+  #logger.info('Using ' + str(architecture) +
+  #            ' domain architectures we have found ' +
+   #           str(len(uniprot_list)) +
    #           ' UniProt IDs of schistosoma proteins (taxonomic identifiers ' +
    #            str(TAXA) + ').')
 
@@ -697,7 +697,7 @@ def expasy_filter(uniprot_list):
 
     #if len(record.accessions) > 1:
     #  mult_count = mult_count + 1
-    #  logger.debug('The entry ' + entry + ' has multiple entries ' + 
+    #  logger.debug('The entry ' + entry + ' has multiple entries ' +
     #                str(record.accessions))
 
     #print(record.seqinfo)
@@ -743,32 +743,32 @@ def flatten_values(dic):
 # takes chembl to uniprot dic, uniprot to cath dic, cath to schisto dic,
 # uniprot to pfam dic, pfam to schisto dic
 
-def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic, 
+def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
                     pfam_dic, schisto_pfam_dic):
   # empty dictionary
   chembl_repo_map = {}
-
+  logger.debug(len(chembl_dic))
   # loop over each drug in the dictionary
   for drug in chembl_dic:
     # dictionary for each drug
     each_drug_dic = {}
-    
+
     # check the uniprot list is not empty
     if chembl_dic[drug]:
       # loop on list of uniprot
       for target in chembl_dic[drug]:
-        
+
         # make list in which to store the cath/pfam
         cath_pfam = []
 
         # append cath value, only if it exists in the dictionary
         if target in cath_dic:
           cath_pfam.extend(cath_dic[target])
-        
+
         # append pfam value, only if it exists in the dictionary
         if target in pfam_dic:
           cath_pfam.extend(pfam_dic[target])
-        
+
         # check the list is not empy
         if cath_pfam:
         # make dictionary
@@ -800,7 +800,7 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
               #logger.debug(schisto_uniprot)
              # each_uniprot_dic[arch] = schisto_uniprot
 
-              if schisto_uniprot:              
+              if schisto_uniprot:
                 # populate main dictionary
                 chembl_repo_map[drug][target][arch] = schisto_uniprot
 
@@ -816,7 +816,7 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
 ############################################################################
 ### FILT_SCHISTO_MAP
 ############################################################################
-# filter the chembl_repo_map for the filtered schisto uniprots we are 
+# filter the chembl_repo_map for the filtered schisto uniprots we are
 # interested in
 
 def filt_schisto_map(chembl_repo_map, schisto_filt):
@@ -841,7 +841,7 @@ def filt_schisto_map(chembl_repo_map, schisto_filt):
 ### RUN_OR_PICKLE
 ############################################################################
 # run module and dump in pickle or retreive pickle without running module
-def run_or_pickle(function_return_obj, function_name, arg1 = None, 
+def run_or_pickle(function_return_obj, function_name, arg1 = None,
                   arg2 = None, arg3 = None, arg4 = None, arg5 = None):
 
   # make string with pickle name
@@ -858,9 +858,9 @@ def run_or_pickle(function_return_obj, function_name, arg1 = None,
   # otherwise we want to run the function
   else:
     # case 1: no arguments
-    if (arg1 == None and arg2 == None and arg3 == None and arg4 == None and 
+    if (arg1 == None and arg2 == None and arg3 == None and arg4 == None and
         arg5 == None):
-      
+
       function_return_obj = function_name()
 
     # case 2: one argument
@@ -899,9 +899,18 @@ def main():
   # generate chembl dictionary
   chembl_dic = run_or_pickle("chembl_dic", process_chembl)
 
+  silly = 0
+  for thing in chembl_dic:
+    if chembl_dic[thing] == []:
+      silly = silly +1
+
+  logger.debug(silly)
+
   # get list of uniprot ids from chembl_dic
-  chembl_uniprot_list = run_or_pickle("chembl_uniprot_list", 
+  chembl_uniprot_list = run_or_pickle("chembl_uniprot_list",
                                       flatten_values, chembl_dic)
+
+  logger.debug(len(chembl_dic))
 
   # generate drugbank_dictionary
   drugbank_dic = run_or_pickle("drugbank_dic", process_drugbank)
@@ -910,11 +919,11 @@ def main():
   drugbank_uniprot_list = list(drugbank_dic)
 
   # merge lists and rm duplicates
-  uniprot_list = run_or_pickle("uniprot_list", merge_lists, 
+  uniprot_list = run_or_pickle("uniprot_list", merge_lists,
                               chembl_uniprot_list, drugbank_uniprot_list)
 
   #logger.debug(len(uniprot_list))
-  
+
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
@@ -943,9 +952,9 @@ def main():
 
 
   # generate list, flatten it and rm duplicates
-  uniprot_schisto_cath_list = run_or_pickle("uniprot_schisto_cath_list", 
+  uniprot_schisto_cath_list = run_or_pickle("uniprot_schisto_cath_list",
                               flatten_values, uniprot_schisto_cath_dic)
-  
+
   #logger.debug(len(uniprot_schisto_cath_list))
 
   # call archindex on pfam values to find ones from schisto
@@ -954,14 +963,14 @@ def main():
   # this dic has empty values! clean up!
 
   # generate list, flatten it and rm duplicates
-  uniprot_schisto_pfam_list = run_or_pickle("uniprot_schisto_pfam_list", 
+  uniprot_schisto_pfam_list = run_or_pickle("uniprot_schisto_pfam_list",
                               flatten_values, uniprot_schisto_pfam_dic)
   #logger.debug(len(uniprot_schisto_pfam_list))
 
 
   # merge and rm duplicates
   # this is total list of unique schisto uniprot ids
-  uniprot_schisto_list = run_or_pickle("uniprot_schisto_list", merge_lists, 
+  uniprot_schisto_list = run_or_pickle("uniprot_schisto_list", merge_lists,
                         uniprot_schisto_cath_list, uniprot_schisto_pfam_list)
 
   logger.debug(len(uniprot_schisto_list))
@@ -975,7 +984,7 @@ def main():
   ###
 
   # filter list for only reviewed ones
-  uniprot_schisto_filt = run_or_pickle("uniprot_schisto_filt", 
+  uniprot_schisto_filt = run_or_pickle("uniprot_schisto_filt",
                                         expasy_filter,uniprot_schisto_list)
 
   #logger.debug(uniprot_schisto_filt)
@@ -993,16 +1002,16 @@ def main():
 
   # generate big map for chembl drugs
   chembl_repo_dic = run_or_pickle(
-    "chembl_repo_map", chembl_repo_map, chembl_dic, cath_dic, 
+    "chembl_repo_map", chembl_repo_map, chembl_dic, cath_dic,
     uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
 
   #logger.debug(chembl_repo_dic)
 
 
   # obtain filtered mapping dictionary fof riltered entries
-  schisto_filt_map = run_or_pickle("schisto_filt_map", filt_schisto_map, 
+  schisto_filt_map = run_or_pickle("schisto_filt_map", filt_schisto_map,
                                   chembl_repo_dic, uniprot_schisto_filt)
-  
+
   logger.debug(schisto_filt_map)
 
 ############################################################################
