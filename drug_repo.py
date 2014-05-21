@@ -22,7 +22,7 @@ import os.path
 # import pickle
 #import pickle
 
-# cpickle does not work with AutoVivification
+# cpickle
 import cPickle as pickle
 
 # import csv for comma-sep files
@@ -77,7 +77,7 @@ ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
 
-
+# autovivification for creating nested dictionaries automatically
 class AutoVivification(dict):
   """Implementation of perl's autovivification feature."""
   def __getitem__(self, item):
@@ -756,13 +756,12 @@ def flatten_values(dic):
 
 def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
                     pfam_dic, schisto_pfam_dic):
-  # empty dictionary
-  chembl_repo_map = {}
+
+  # autovivification nested dictionary
+  chembl_repo_map = AutoVivification()
 
   # loop over each drug in the dictionary
   for drug in chembl_dic:
-    # let's try declare that each entry in the main dic will be a dic!
-    chembl_repo_map[drug] = {}
 
     # dictionary for each drug
     each_drug_dic = {}
@@ -795,8 +794,6 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
 
       #loop over each uniprot in new dictionary
       for targ in each_drug_dic:
-        # let's also declare that each entry in this dic will be a dic
-        chembl_repo_map[drug][targ] = {}
 
         # dictionary for each target
         each_target_dic = {}
@@ -827,9 +824,93 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
               chembl_repo_map[drug][targ][arch] = each_target_dic[arch]
 
 
-  #logger.debug(chembl_repo_map)
-  #logger.debug(each_drug_dic)
   return chembl_repo_map
+############################################################################
+
+
+
+
+############################################################################
+### DRUGBANK_REPO_MAP
+############################################################################
+# make big map for drugbank ids, for both cath and pfam arch
+# format {drug1:{drug_target1:{arch1:[list os schisto uniprot], arch2:[..]},
+#                 drug_target2:{..}, drug2:{........}}}
+
+# takes chembl to uniprot dic, uniprot to cath dic, cath to schisto dic,
+# uniprot to pfam dic, pfam to schisto dic
+
+def drugbank_repo_map(drugbank_dic, cath_dic, schisto_cath_dic,
+                    pfam_dic, schisto_pfam_dic):
+
+  # autovivification nested dictionary
+  drugbank_repo_map = AutoVivification()
+
+  #below copied from chembl_repo_map
+
+  # # loop over each drug in the dictionary
+  # for drug in drugbank_dic:
+  #
+  #
+  #   # dictionary for each drug
+  #   each_drug_dic = {}
+  #
+  #   # sanity check the uniprot list is not empty (it should not be empty)
+  #   if chembl_dic[drug]:
+  #     # loop on list of uniprot
+  #     for target in chembl_dic[drug]:
+  #
+  #       # make list in which to store the cath/pfam
+  #       cath_pfam = []
+  #
+  #       # append cath value, only if it exists in the dictionary
+  #       if target in cath_dic:
+  #         cath_pfam.extend(cath_dic[target])
+  #
+  #       # append pfam value, only if it exists in the dictionary
+  #       if target in pfam_dic:
+  #         cath_pfam.extend(pfam_dic[target])
+  #
+  #       #logger.debug(cath_pfam)
+  #       # check the list is not empy
+  #       if cath_pfam:
+  #       # make dictionary
+  #         each_drug_dic[target] = cath_pfam
+  #
+  #     # finished loops for all targets, we have the dictionary
+  #     # with {uniprot1:[list of arch],uniprot2:[list]}
+  #     #logger.debug(each_drug_dic)
+  #
+  #     #loop over each uniprot in new dictionary
+  #     for targ in each_drug_dic:
+  #
+  #       # dictionary for each target
+  #       each_target_dic = {}
+  #       # sanity check the arch list is not empty:
+  #       if each_drug_dic[targ]:
+  #         # loop over list of architectures
+  #         for arch in each_drug_dic[targ]:
+  #           # empty list for schisto
+  #           schisto_list = []
+  #           # check it exists in the cath dictionary
+  #           if arch in schisto_cath_dic:
+  #             schisto_list.extend(schisto_cath_dic[arch])
+  #
+  #           if arch in schisto_pfam_dic:
+  #             schisto_list.extend(schisto_pfam_dic[arch])
+  #
+  #           # check list is not empty
+  #           if schisto_list:
+  #             #logger.debug(schisto_list)
+  #             # add list as values in dictionary
+  #             each_target_dic[arch] = schisto_list
+  #
+  #             #logger.debug(each_target_dic)
+  #
+  #             chembl_repo_map[drug][targ][arch] = each_target_dic[arch]
+
+
+  return drugbank_repo_map
 ############################################################################
 
 
@@ -844,7 +925,7 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
 def filt_schisto_map(chembl_repo_map, schisto_filt):
   # empty dictionary
 
-
+  # autovivification nested dictionary
   schisto_filt_map = AutoVivification()
 
   for drug in chembl_repo_map:
@@ -1029,15 +1110,21 @@ def main():
   chembl_repo_dic = run_or_pickle(
     "chembl_repo_map", chembl_repo_map, chembl_dic, cath_dic,
     uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
-
   #logger.debug(chembl_repo_dic)
 
+  # generate big map for drugbank drugs
+  drugbank_repo_dic = run_or_pickle(
+    "drugbank_repo_map", drugbank_repo_map, drugbank_dic, cath_dic,
+    uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
+  logger.debug(drugbank_repo_dic)
 
-  # obtain filtered mapping dictionary fof riltered entries
+
+  # this one should then include the drugbank entries once they are ready
+  # obtain filtered mapping dictionary for filtered entries
   schisto_filt_map = run_or_pickle("schisto_filt_map", filt_schisto_map,
                                   chembl_repo_dic, uniprot_schisto_filt)
 
-  logger.debug(schisto_filt_map)
+  #logger.debug(schisto_filt_map)
 
 ############################################################################
 
