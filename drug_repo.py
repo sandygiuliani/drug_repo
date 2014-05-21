@@ -774,22 +774,28 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
         # make dictionary
           each_drug_dic[target] = cath_pfam
 
+          logger.debug(each_drug_dic)
+
 
           # now loop over dictionary we have just created
           for uniprot in each_drug_dic:
             # create a dictionary for each uniprot
-            #each_uniprot_dic = {}
+            each_uniprot_dic = {}
             # loop over the cath or pfam
             for arch in each_drug_dic[uniprot]:
               # empty list
               schisto_uniprot = []
               # check if it is pfam
               if 'P' in arch:
-                # put in list the schisto uniprot values
-                schisto_uniprot = schisto_pfam_dic[arch]
+                # check the list is not empty
+                if schisto_pfam_dic[arch]:
+                  # put in list the schisto uniprot values
+                  schisto_uniprot = schisto_pfam_dic[arch]
 
               else:
-                schisto_uniprot = schisto_cath_dic[arch]
+                # check the list is not empty
+                if schisto_cath_dic[arch]:
+                  schisto_uniprot = schisto_cath_dic[arch]
 
               #logger.debug(schisto_uniprot)
              # each_uniprot_dic[arch] = schisto_uniprot
@@ -798,7 +804,6 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
                 # populate main dictionary
                 chembl_repo_map[drug][target][arch] = schisto_uniprot
 
-  
 
   #logger.debug(chembl_repo_map)
   #logger.debug(each_drug_dic)
@@ -934,7 +939,9 @@ def main():
   # call archindex on cath values to find the ones from schisto
   uniprot_schisto_cath_dic = run_or_pickle(
       "uniprot_schisto_cath_dic", arch_to_uniprot, cath_list, "cath")
-  
+  # this dic has empty values! clean up!
+
+
   # generate list, flatten it and rm duplicates
   uniprot_schisto_cath_list = run_or_pickle("uniprot_schisto_cath_list", 
                               flatten_values, uniprot_schisto_cath_dic)
@@ -944,7 +951,8 @@ def main():
   # call archindex on pfam values to find ones from schisto
   uniprot_schisto_pfam_dic = run_or_pickle(
     "uniprot_schisto_pfam_dic", arch_to_uniprot, pfam_list, "pfam")
-  
+  # this dic has empty values! clean up!
+
   # generate list, flatten it and rm duplicates
   uniprot_schisto_pfam_list = run_or_pickle("uniprot_schisto_pfam_list", 
                               flatten_values, uniprot_schisto_pfam_dic)
