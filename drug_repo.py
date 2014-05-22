@@ -592,13 +592,14 @@ def uniprot_to_arch(uniprot_list,architecture):
             architect_list.append(line_split[2])
 
 
+    # check list is not empty
+    if architect_list:
 
-    # eliminate duplicates within the list (this is for each entry!!)
-    architect_list = list(set(architect_list))
+      # eliminate duplicates within the list (this is for each entry!!)
+      architect_list = list(set(architect_list))
 
-    # populate the dictionary
-    arch_dic[uniprot_id] = architect_list
-
+      # populate the dictionary
+      arch_dic[uniprot_id] = architect_list
 
   #logger.debug(cath_dic)
 
@@ -1080,6 +1081,8 @@ def main():
   # run or pickle uniprot_to_arch to retrieve cath domain architectures
   cath_dic = run_or_pickle("cath_dic", uniprot_to_arch, uniprot_list, "cath")
 
+  logger.debug(len(cath_dic))
+
   # generate list, flatten it and rm duplicates
   cath_list = run_or_pickle("cath_list", flatten_values, cath_dic)
 
@@ -1087,6 +1090,8 @@ def main():
 
   # run or pickle uniprot_to_arch to retrieve pfam domain architectures
   pfam_dic = run_or_pickle("pfam_dic", uniprot_to_arch, uniprot_list, "pfam")
+
+  logger.debug(len(pfam_dic))
 
   # generate list, flatten it and rm duplicates
   pfam_list = run_or_pickle("pfam_list", flatten_values, pfam_dic)
