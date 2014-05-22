@@ -776,7 +776,7 @@ def flatten_values(dic):
 
 
 ############################################################################
-### CHEMBL_REPO_MAP
+### CHEMBL_REPO
 ############################################################################
 # make big map for chembl ids, for both cath and pfam arch
 # format {drug1:{drug_target1:{arch1:[list os schisto uniprot], arch2:[..]},
@@ -785,7 +785,7 @@ def flatten_values(dic):
 # takes chembl to uniprot dic, uniprot to cath dic, cath to schisto dic,
 # uniprot to pfam dic, pfam to schisto dic
 
-def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
+def chembl_repo(chembl_dic, cath_dic, schisto_cath_dic,
                     pfam_dic, schisto_pfam_dic):
 
   # autovivification nested dictionary
@@ -862,7 +862,7 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
 
 
 ############################################################################
-### DRUGBANK_REPO_MAP
+### DRUGBANK_REPO
 ############################################################################
 # make big map for drugbank ids, for both cath and pfam arch
 # format {drug1:{drug_target1:{arch1:[list os schisto uniprot], arch2:[..]},
@@ -871,7 +871,7 @@ def chembl_repo_map(chembl_dic, cath_dic, schisto_cath_dic,
 # takes chembl to uniprot dic, uniprot to cath dic, cath to schisto dic,
 # uniprot to pfam dic, pfam to schisto dic
 
-def drugbank_repo_map(drugbank_dic, cath_dic, schisto_cath_dic,
+def drugbank_repo(drugbank_dic, cath_dic, schisto_cath_dic,
                     pfam_dic, schisto_pfam_dic):
 
   # autovivification nested dictionary
@@ -1036,7 +1036,10 @@ def main():
   # greeting
   logger.info("Hi there, you are running drug_repo for drug repositioning!" +
               " Let's do some mapping.")
-
+  
+  #################################
+  ### PART 1: FIND DRUG TARGETS ###
+  #################################
 
   # generate chembl dictionary
   chembl_dic = run_or_pickle("chembl_dic", process_chembl)
@@ -1069,6 +1072,11 @@ def main():
   #uniprot_list = ['Q4JEY0', 'P68363', 'P10613','P18825']
   ###
 
+
+  ############################
+  ### PART 2: FIND ARCH    ###
+  ############################
+
   # run or pickle uniprot_to_arch to retrieve cath domain architectures
   cath_dic = run_or_pickle("cath_dic", uniprot_to_arch, uniprot_list, "cath")
 
@@ -1083,6 +1091,10 @@ def main():
   # generate list, flatten it and rm duplicates
   pfam_list = run_or_pickle("pfam_list", flatten_values, pfam_dic)
 
+
+  ####################################
+  ### PART 3: FIND SCHISTO TARGETS ###
+  ####################################
 
   # call archindex on cath values to find the ones from schisto
   uniprot_schisto_cath_dic = run_or_pickle(
@@ -1112,7 +1124,7 @@ def main():
   uniprot_schisto_list = run_or_pickle("uniprot_schisto_list", merge_lists,
                         uniprot_schisto_cath_list, uniprot_schisto_pfam_list)
 
-  logger.debug(len(uniprot_schisto_list))
+  #logger.debug(len(uniprot_schisto_list))
 
   ### OVERWRITE UNIPROT_SCHISTO_LIST WITH MADE-UP LIST
   # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
@@ -1139,15 +1151,21 @@ def main():
   #uniprot_schisto_filt = ['P33676']
   ###
 
+
+  ############################
+  ### PART 4 GENERATE MAPS ###
+  ############################
+
+
   # generate big map for chembl drugs
-  chembl_repo_dic = run_or_pickle(
-    "chembl_repo_map", chembl_repo_map, chembl_dic, cath_dic,
+  chembl_repo_map = run_or_pickle(
+    "chembl_repo_map", chembl_repo, chembl_dic, cath_dic,
     uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
   #logger.debug(chembl_repo_dic)
 
   # generate big map for drugbank drugs
-  drugbank_repo_dic = run_or_pickle(
-    "drugbank_repo_map", drugbank_repo_map, drugbank_dic, cath_dic,
+  drugbank_repo_map = run_or_pickle(
+    "drugbank_repo_map", drugbank_repo, drugbank_dic, cath_dic,
     uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
   #logger.debug(drugbank_repo_dic)
 
@@ -1155,17 +1173,17 @@ def main():
   # this one should then include the drugbank entries once they are ready
   # obtain filtered mapping dictionary for filtered entries
   chembl_schisto_filt_map = run_or_pickle("chembl_schisto_filt_map",
-                                          filt_schisto_map, chembl_repo_dic,
+                                          filt_schisto_map, chembl_repo_map,
                                           uniprot_schisto_filt)
 
 
   drugbank_schisto_filt_map = run_or_pickle("drugbank_schisto_filt_map",
-                                            filt_schisto_map, drugbank_repo_dic,
+                                            filt_schisto_map, drugbank_repo_map,
                                             uniprot_schisto_filt)
 
 
-  logger.debug(chembl_schisto_filt_map)
-  logger.debug(drugbank_schisto_filt_map)
+  #logger.debug(chembl_schisto_filt_map)
+  #logger.debug(drugbank_schisto_filt_map)
 
 ############################################################################
 
