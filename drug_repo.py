@@ -658,11 +658,13 @@ def arch_to_uniprot(arch_list,architecture):
 
           uniprot_list.append(line_split[0])
 
-    # remove duplicates from list
-    uniprot_list = list(set(uniprot_list))
+    # check list is not empty
+    if uniprot_list:
+      # remove duplicates from list
+      uniprot_list = list(set(uniprot_list))
 
-    # populate the dictionary
-    uniprot_dic[arch_id] = uniprot_list
+      # populate the dictionary
+      uniprot_dic[arch_id] = uniprot_list
 
   # rm temp.txt in the end
   # this is the last temp file that overwrote the others
