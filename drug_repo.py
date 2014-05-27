@@ -56,8 +56,8 @@ from Bio import ExPASy
 from Bio import SwissProt
 
 # for http
-#from urllib2 import urlopen, HTTPError
-import urllib2
+from urllib2 import urlopen, HTTPError
+#import urllib2
 
 # set up log
 import logging
@@ -725,44 +725,9 @@ def expasy_filter(uniprot_list, filter_type):
 # filter_type == 'reviewed' if you want to keep only reviewed uniprots
 # filter_type == 'pdb' if you want to keep only the ones with pdb structures
 
-  # empty list to sore filtered entries
-  filtered_list = []
+# alternative to swissport read, should also work
+#record = SeqIO.read(handle, "swiss")
 
-  # counter for records with multiple accession numbers
-  #mult_count = 0
-
-  for entry in uniprot_list:
-
-    handle = ExPASy.get_sprot_raw(entry)
-    # swissprot read
-    record = SwissProt.read(handle)
-    # alternative to swissport read, should also work
-    #record = SeqIO.read(handle, "swiss")
-
-    # filter according to reviewed uniprot
-    if filter_type == 'reviewed':
-      if record.data_class == 'Reviewed':
-        # add reviewed entry to the list
-        filtered_list.append(entry)
-
-    # testing alternative filter
-    if filter_type == 'pdb':
-      #logger.debug(record.cross_references)
-      #so far the pdb does not exist
-      pdb_exists = False 
-      try:
-        cross_ref = record.cross_references
-        # loop over every tuple in the list
-        for tup in record.cross_references:
-          # if the first is pdb means there one or more pdb
-          if tup[0] == "PDB":
-            pdb_exists = True 
-
-      except HTTPError:
-        logger.debug('woooo')
-
-      if pdb_exists == True:
-        filtered_list.append(entry)
 
     #if len(record.accessions) > 1:
     #  mult_count = mult_count + 1
@@ -774,6 +739,53 @@ def expasy_filter(uniprot_list, filter_type):
     #  print(ref.authors)
 
 
+  # empty list to store filtered entries
+  filtered_list = []
+
+  # counter for obsolete/http err
+  obsolete = 0
+
+  for entry in uniprot_list:
+    try:
+        # get handle
+        handle = ExPASy.get_sprot_raw(entry)
+        # swissprot read
+        record = SwissProt.read(handle)
+        
+
+        # FILTER according to presence pdb structure
+        if filter_type == 'pdb':
+          #logger.debug(record.cross_references)
+          #so far the pdb does not exist
+          pdb_exists = False 
+
+          # get tuples with references (pdb, etc...)
+          cross_ref = record.cross_references
+          # loop over every tuple in the list
+          for tup in record.cross_references:
+            # if the first is pdb means there one or more pdb
+            if tup[0] == "PDB":
+              pdb_exists = True 
+
+          if pdb_exists == True:
+            # add entry to the list
+            filtered_list.append(entry)
+
+
+        # FILTER according to reviewed uniprot
+        elif filter_type == 'reviewed':
+          # check it is reviewed
+          if record.data_class == 'Reviewed':
+            # add reviewed entry to the list
+            filtered_list.append(entry)
+
+
+    except HTTPError:
+      obsolete = obsolete + 1
+      #logger.debug('uh-ho')
+
+
+  logger.debug(obsolete)
   return filtered_list
   #logger.info('The entries with multiple ids are ' + str(mult_count) + '.')
 
@@ -1090,7 +1102,7 @@ def main():
   uniprot_list = run_or_pickle("uniprot_list", merge_lists,
                               chembl_uniprot_list, drugbank_uniprot_list)
 
-  logger.debug(uniprot_list)
+  #logger.debug(uniprot_list)
 
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
@@ -1225,8 +1237,8 @@ def main():
   #uniprot_list = ['P21266']
   logger.debug(len(uniprot_list))
 
-  uniprot_list = uniprot_list[83:84]
-  logger.debug(uniprot_list)
+  #uniprot_list = uniprot_list[83:84]
+  #logger.debug(uniprot_list)
 
   uniprot_filt_pdb = run_or_pickle("5_uniprot_filt_pdb", expasy_filter, 
                                   uniprot_list, "pdb")
