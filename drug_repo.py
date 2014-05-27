@@ -55,6 +55,10 @@ from Bio import ExPASy
 # import swissprot for parsing swissprot plain text files
 from Bio import SwissProt
 
+# for http
+#from urllib2 import urlopen, HTTPError
+import urllib2
+
 # set up log
 import logging
 # set up log file to write to, it will be overwritten every time ('w' mode)
@@ -717,13 +721,12 @@ def merge_lists(list1, list2):
   #seq_record = SeqIO.read(prothandle, "gb")
   #logger.debug(seq_record)
 
-def expasy_filter(uniprot_list):
+def expasy_filter(uniprot_list, filter_type):
+# filter_type == 'reviewed' if you want to keep only reviewed uniprots
+# filter_type == 'pdb' if you want to keep only the ones with pdb structures
 
   # empty list to sore filtered entries
   filtered_list = []
-
-  # counter for reviewed entries
-  rev_count = 0
 
   # counter for records with multiple accession numbers
   #mult_count = 0
@@ -736,9 +739,30 @@ def expasy_filter(uniprot_list):
     # alternative to swissport read, should also work
     #record = SeqIO.read(handle, "swiss")
 
-    if record.data_class == 'Reviewed':
-      rev_count = rev_count + 1
-      filtered_list.append(entry)
+    # filter according to reviewed uniprot
+    if filter_type == 'reviewed':
+      if record.data_class == 'Reviewed':
+        # add reviewed entry to the list
+        filtered_list.append(entry)
+
+    # testing alternative filter
+    if filter_type == 'pdb':
+      #logger.debug(record.cross_references)
+      #so far the pdb does not exist
+      pdb_exists = False 
+      try:
+        cross_ref = record.cross_references
+        # loop over every tuple in the list
+        for tup in record.cross_references:
+          # if the first is pdb means there one or more pdb
+          if tup[0] == "PDB":
+            pdb_exists = True 
+
+      except HTTPError:
+        logger.debug('woooo')
+
+      if pdb_exists == True:
+        filtered_list.append(entry)
 
     #if len(record.accessions) > 1:
     #  mult_count = mult_count + 1
@@ -749,7 +773,6 @@ def expasy_filter(uniprot_list):
     #for ref in record.references:
     #  print(ref.authors)
 
-  logger.info('The reviewed entries are ' + str(rev_count) + '.')
 
   return filtered_list
   #logger.info('The entries with multiple ids are ' + str(mult_count) + '.')
@@ -1067,7 +1090,7 @@ def main():
   uniprot_list = run_or_pickle("uniprot_list", merge_lists,
                               chembl_uniprot_list, drugbank_uniprot_list)
 
-  #logger.debug(len(uniprot_list))
+  logger.debug(uniprot_list)
 
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
@@ -1083,7 +1106,7 @@ def main():
   # run or pickle uniprot_to_arch to retrieve cath domain architectures
   cath_dic = run_or_pickle("cath_dic", uniprot_to_arch, uniprot_list, "cath")
 
-  logger.debug(len(cath_dic))
+  #logger.debug(len(cath_dic))
 
   # generate list, flatten it and rm duplicates
   cath_list = run_or_pickle("cath_list", flatten_values, cath_dic)
@@ -1093,7 +1116,7 @@ def main():
   # run or pickle uniprot_to_arch to retrieve pfam domain architectures
   pfam_dic = run_or_pickle("pfam_dic", uniprot_to_arch, uniprot_list, "pfam")
 
-  logger.debug(len(pfam_dic))
+  #logger.debug(len(pfam_dic))
 
   # generate list, flatten it and rm duplicates
   pfam_list = run_or_pickle("pfam_list", flatten_values, pfam_dic)
@@ -1106,8 +1129,7 @@ def main():
   # call archindex on cath values to find the ones from schisto
   uniprot_schisto_cath_dic = run_or_pickle(
       "uniprot_schisto_cath_dic", arch_to_uniprot, cath_list, "cath")
-  # this dic has empty values! clean up!
-
+  #logger.debug(len(uniprot_schisto_cath_dic))
 
   # generate list, flatten it and rm duplicates
   uniprot_schisto_cath_list = run_or_pickle("uniprot_schisto_cath_list",
@@ -1118,7 +1140,7 @@ def main():
   # call archindex on pfam values to find ones from schisto
   uniprot_schisto_pfam_dic = run_or_pickle(
     "uniprot_schisto_pfam_dic", arch_to_uniprot, pfam_list, "pfam")
-  # this dic has empty values! clean up!
+  #logger.debug(len(uniprot_schisto_pfam_dic))
 
   # generate list, flatten it and rm duplicates
   uniprot_schisto_pfam_list = run_or_pickle("uniprot_schisto_pfam_list",
@@ -1130,7 +1152,6 @@ def main():
   # this is total list of unique schisto uniprot ids
   uniprot_schisto_list = run_or_pickle("uniprot_schisto_list", merge_lists,
                         uniprot_schisto_cath_list, uniprot_schisto_pfam_list)
-
   #logger.debug(len(uniprot_schisto_list))
 
   ### OVERWRITE UNIPROT_SCHISTO_LIST WITH MADE-UP LIST
@@ -1143,9 +1164,12 @@ def main():
 
   # filter list for only reviewed ones
   uniprot_schisto_filt = run_or_pickle("uniprot_schisto_filt",
-                                        expasy_filter,uniprot_schisto_list)
+                                        expasy_filter,
+                                        uniprot_schisto_list, "reviewed")
 
-  logger.debug(uniprot_schisto_filt)
+  logger.info('The reviewed uniprot entries are ' + 
+              str(len(uniprot_schisto_filt)) +  '.')
+  #logger.debug(len(uniprot_schisto_filt))
 
   # make list of cath ids that point to the uniprot_schisto_list
 
@@ -1185,12 +1209,30 @@ def main():
 
 
   drugbank_schisto_filt_map = run_or_pickle("drugbank_schisto_filt_map",
-                                            filt_schisto_map, drugbank_repo_map,
+                                            filt_schisto_map, 
+                                            drugbank_repo_map,
                                             uniprot_schisto_filt)
 
 
   #logger.debug(chembl_schisto_filt_map)
   #logger.debug(drugbank_schisto_filt_map)
+
+  ############################
+  ### PART 5 ALIGNMENTS    ###
+  ############################
+
+  # overwrite uniprot list['Q9UNK4', 'P21266', 'Q8WXA8', 'P49189', 'Q460N3']
+  #uniprot_list = ['P21266']
+  logger.debug(len(uniprot_list))
+
+  uniprot_list = uniprot_list[83:84]
+  logger.debug(uniprot_list)
+
+  uniprot_filt_pdb = run_or_pickle("5_uniprot_filt_pdb", expasy_filter, 
+                                  uniprot_list, "pdb")
+
+  logger.debug(len(uniprot_filt_pdb))
+
 
 ############################################################################
 
