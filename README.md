@@ -22,6 +22,7 @@ A. See below ARCHINDEX/ARCHSCHEMA.
 * chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes. From ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/  
 * all\_target\_ids\_all.csv - DrugBank Drug Target Identifiers/All Drugs download. From www.drugbank.ca/downloads#protein-identifiers  
 * small\_molecule\_target\_ids\_all.csv - DrugBank Drug Target Identifier/Small Molecule Drugs download. From www.drugbank.ca/downloads#protein-identifiers  
+* \*.p - any .p file is a pickle (for caching purposes) if there are any around, it means I need to move them across machines, please ignore
 
 
 
@@ -31,10 +32,14 @@ drug_repo.py development:
 - [x] ChEMBL processing - small molecule filter 
 - [x] ChEMBL processing - uniprot mapping
 - [x] DrugBank data processing
-- [x] write everything to log instead of .txt output
+- [x] write everything to log
 - [x] ChEMBL/DrugBank data merge
 - [x] domain architecture mapping (ArchSchema)
 - [x] schistosoma domains
+- [x] ChEMBL map
+- [x] DrugBank map
+- [ ] structure (pdb) filter
+- [ ] targets shortlist
 
 **ARCHINDEX/ARCHSCHEMA**  
 The main script calls archindex, code kindly provided by Dr Laskowski.   
@@ -48,6 +53,6 @@ This repository is licensed under the terms of the MIT license. Please see LICEN
 The MIT license is approved by the Open Source Initiative http://opensource.org/licenses
 
 **DISCLAIMER**  
-THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback welcome but please be kind.
+THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback is welcome but please be kind.
 
-Contact me at: sandraxgiuliani@gmail.com
+Contact me at: sandraxgiuliani [at] gmail.com
