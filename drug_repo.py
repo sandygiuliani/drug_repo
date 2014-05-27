@@ -1080,26 +1080,26 @@ def main():
   #################################
 
   # generate chembl dictionary
-  chembl_dic = run_or_pickle("chembl_dic", process_chembl)
+  chembl_dic = run_or_pickle("1_chembl_dic", process_chembl)
 
 
   # get list of uniprot ids from chembl_dic
-  chembl_uniprot_list = run_or_pickle("chembl_uniprot_list",
+  chembl_uniprot_list = run_or_pickle("1_chembl_uniprot_list",
                                       flatten_values, chembl_dic)
 
   # generate drugbank_dictionary
-  drugbank_dic = run_or_pickle("drugbank_dic", process_drugbank)
+  drugbank_dic = run_or_pickle("1_drugbank_dic", process_drugbank)
 
   #logger.debug(drugbank_dic)
 
   # get list of uniprot ids from drugbank
-  drugbank_uniprot_list = run_or_pickle("drugbank_uniprot_list",
+  drugbank_uniprot_list = run_or_pickle("1_drugbank_uniprot_list",
                                     flatten_values, drugbank_dic)
 
   #logger.debug(len(drugbank_uniprot_list))
 
   # merge lists and rm duplicates
-  uniprot_list = run_or_pickle("uniprot_list", merge_lists,
+  uniprot_list = run_or_pickle("1_uniprot_list", merge_lists,
                               chembl_uniprot_list, drugbank_uniprot_list)
 
   #logger.debug(uniprot_list)
@@ -1116,22 +1116,24 @@ def main():
   ############################
 
   # run or pickle uniprot_to_arch to retrieve cath domain architectures
-  cath_dic = run_or_pickle("cath_dic", uniprot_to_arch, uniprot_list, "cath")
+  cath_dic = run_or_pickle("2_cath_dic", uniprot_to_arch, uniprot_list, 
+                          "cath")
 
   #logger.debug(len(cath_dic))
 
   # generate list, flatten it and rm duplicates
-  cath_list = run_or_pickle("cath_list", flatten_values, cath_dic)
+  cath_list = run_or_pickle("2_cath_list", flatten_values, cath_dic)
 
   #logger.debug(len(cath_list))
 
   # run or pickle uniprot_to_arch to retrieve pfam domain architectures
-  pfam_dic = run_or_pickle("pfam_dic", uniprot_to_arch, uniprot_list, "pfam")
+  pfam_dic = run_or_pickle("2_pfam_dic", uniprot_to_arch, uniprot_list, 
+                          "pfam")
 
   #logger.debug(len(pfam_dic))
 
   # generate list, flatten it and rm duplicates
-  pfam_list = run_or_pickle("pfam_list", flatten_values, pfam_dic)
+  pfam_list = run_or_pickle("2_pfam_list", flatten_values, pfam_dic)
 
 
   ####################################
@@ -1139,30 +1141,30 @@ def main():
   ####################################
 
   # call archindex on cath values to find the ones from schisto
-  uniprot_schisto_cath_dic = run_or_pickle(
-      "uniprot_schisto_cath_dic", arch_to_uniprot, cath_list, "cath")
+  uniprot_schisto_cath_dic = run_or_pickle("3_uniprot_schisto_cath_dic", 
+                                          arch_to_uniprot, cath_list, "cath")
   #logger.debug(len(uniprot_schisto_cath_dic))
 
   # generate list, flatten it and rm duplicates
-  uniprot_schisto_cath_list = run_or_pickle("uniprot_schisto_cath_list",
+  uniprot_schisto_cath_list = run_or_pickle("3_uniprot_schisto_cath_list",
                               flatten_values, uniprot_schisto_cath_dic)
 
   #logger.debug(len(uniprot_schisto_cath_list))
 
   # call archindex on pfam values to find ones from schisto
-  uniprot_schisto_pfam_dic = run_or_pickle(
-    "uniprot_schisto_pfam_dic", arch_to_uniprot, pfam_list, "pfam")
+  uniprot_schisto_pfam_dic = run_or_pickle("3_uniprot_schisto_pfam_dic", 
+                                          arch_to_uniprot, pfam_list, "pfam")
   #logger.debug(len(uniprot_schisto_pfam_dic))
 
   # generate list, flatten it and rm duplicates
-  uniprot_schisto_pfam_list = run_or_pickle("uniprot_schisto_pfam_list",
+  uniprot_schisto_pfam_list = run_or_pickle("3_uniprot_schisto_pfam_list",
                               flatten_values, uniprot_schisto_pfam_dic)
   #logger.debug(len(uniprot_schisto_pfam_list))
 
 
   # merge and rm duplicates
   # this is total list of unique schisto uniprot ids
-  uniprot_schisto_list = run_or_pickle("uniprot_schisto_list", merge_lists,
+  uniprot_schisto_list = run_or_pickle("3_uniprot_schisto_list", merge_lists,
                         uniprot_schisto_cath_list, uniprot_schisto_pfam_list)
   #logger.debug(len(uniprot_schisto_list))
 
@@ -1175,7 +1177,7 @@ def main():
   ###
 
   # filter list for only reviewed ones
-  uniprot_schisto_filt = run_or_pickle("uniprot_schisto_filt",
+  uniprot_schisto_filt = run_or_pickle("3_uniprot_schisto_filt",
                                         expasy_filter,
                                         uniprot_schisto_list, "reviewed")
 
@@ -1201,26 +1203,28 @@ def main():
 
 
   # generate big map for chembl drugs
-  chembl_repo_map = run_or_pickle(
-    "chembl_repo_map", chembl_repo, chembl_dic, cath_dic,
-    uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
+  chembl_repo_map = run_or_pickle("4_chembl_repo_map", chembl_repo, 
+                                  chembl_dic, cath_dic,
+                                  uniprot_schisto_cath_dic, pfam_dic, 
+                                  uniprot_schisto_pfam_dic)
   #logger.debug(chembl_repo_dic)
 
   # generate big map for drugbank drugs
-  drugbank_repo_map = run_or_pickle(
-    "drugbank_repo_map", drugbank_repo, drugbank_dic, cath_dic,
-    uniprot_schisto_cath_dic, pfam_dic, uniprot_schisto_pfam_dic)
+  drugbank_repo_map = run_or_pickle("4_drugbank_repo_map", drugbank_repo, 
+                                    drugbank_dic, cath_dic,
+                                    uniprot_schisto_cath_dic, pfam_dic, 
+                                    uniprot_schisto_pfam_dic)
   #logger.debug(drugbank_repo_dic)
 
 
   # this one should then include the drugbank entries once they are ready
   # obtain filtered mapping dictionary for filtered entries
-  chembl_schisto_filt_map = run_or_pickle("chembl_schisto_filt_map",
+  chembl_schisto_filt_map = run_or_pickle("4_chembl_schisto_filt_map",
                                           filt_schisto_map, chembl_repo_map,
                                           uniprot_schisto_filt)
 
 
-  drugbank_schisto_filt_map = run_or_pickle("drugbank_schisto_filt_map",
+  drugbank_schisto_filt_map = run_or_pickle("4_drugbank_schisto_filt_map",
                                             filt_schisto_map, 
                                             drugbank_repo_map,
                                             uniprot_schisto_filt)
