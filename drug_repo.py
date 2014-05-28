@@ -1250,6 +1250,10 @@ def main():
   logger.debug(len(uniprot_filt_pdb))
 
 
+  for thing in drugbank_repo_map:
+    if thing == 'DB01058':
+      print drugbank_repo_map[thing]
+
 ############################################################################
 
 
