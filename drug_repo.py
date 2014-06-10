@@ -1244,15 +1244,17 @@ def main():
   #uniprot_list = uniprot_list[83:84]
   #logger.debug(uniprot_list)
 
+  # obtain filtered list of drug targets that have associated pdb structures
   uniprot_filt_pdb = run_or_pickle("5_uniprot_filt_pdb", expasy_filter, 
                                   uniprot_list, "pdb")
 
+
   logger.debug(len(uniprot_filt_pdb))
 
+  # make dictionary uniprot to pdb, possibly on whole set
 
-  for thing in drugbank_repo_map:
-    if thing == 'DB01058':
-      print drugbank_repo_map[thing]
+  
+  #logger.debug(drugbank_repo_map['DB01058'])
 
 ############################################################################
 
