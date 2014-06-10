@@ -1253,7 +1253,14 @@ def main():
 
   # make dictionary uniprot to pdb, possibly on whole set
 
-  
+  # apply filter
+
+  # import the pdb to het/ligand file
+
+  # each pdb should have the ligand associated to them
+
+  # look up and obtained filtered set with small mol ligands (not metals)
+
   #logger.debug(drugbank_repo_map['DB01058'])
 
 ############################################################################
