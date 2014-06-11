@@ -134,6 +134,9 @@ CATH_FORMAT = re.compile('.*\..*\..*\..*')
 # old path "./../archSchema/bin/archindex" still valid on mac
 # new path on linux machine "./../Arch/archindex"
 ARCHINDEX_PATH = "./../Arch/archindex"
+
+# uniprot to pdb csv mapping file - can also use the .tsv version if easier
+UNIPROT_PDB = "uniprot_pdb.csv"
 ############################################################################
 
 
@@ -454,9 +457,6 @@ def process_drugbank():
   incsv = csv.reader(lines)
   # skip the first line with the headers
   next(incsv)
-  # loop over each line
-  # this list_check to double check we are dealing with duplicates
-  #list_check = []
   # loop over each line
   for line in incsv:
     #list_check.append(line[col_uniprot])
@@ -1018,6 +1018,45 @@ def filt_schisto_map(chembl_repo_map, schisto_filt):
 
 
 ############################################################################
+### CSV_TO_DIC
+############################################################################
+# take csv file such as uniprot_pdb, return dictionary with first column
+# values as keys and ';'-separated values as list
+
+def csv_to_dic(csv_file):
+
+
+  # empty dictionary
+  csv_dic = {}
+
+  # open and read drug_bank input and count number
+  lines = file_to_lines(csv_file)
+
+  # read csv lines with the csv reader - deals with quotation marks etc..
+  incsv = csv.reader(lines)
+  # skip the first line with the headers
+  next(incsv)
+
+  # loop over each line
+  for line in incsv:
+    # empty list to store the pdb ids
+    pdb_list = []
+    pdb_strip = line[1].split(';')
+    for pdb in pdb_strip:
+      pdb_list.append(pdb)
+  
+   #   logger.debug(line)
+    csv_dic[line[0]] = pdb_list
+
+  #logger.debug(len(csv_dic))
+
+  return csv_dic
+
+############################################################################
+
+
+
+############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
 # run module and dump in pickle or retreive pickle without running module
@@ -1252,6 +1291,12 @@ def main():
   logger.debug(len(uniprot_filt_pdb))
 
   # make dictionary uniprot to pdb, possibly on whole set
+
+  uniprot_pdb_dic = run_or_pickle("5_uniprot_pdb_dic", csv_to_dic, 
+                                  UNIPROT_PDB)
+
+  logger.debug(uniprot_pdb_dic)
+  # test if we obtain the same list filtering through this dictionary
 
   # apply filter
 
