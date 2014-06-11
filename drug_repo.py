@@ -1102,6 +1102,42 @@ def list_second_level_dic(dictionary):
 
 
 ############################################################################
+### LST DIC
+############################################################################
+# read lst file and creat dictionary with first column as key and rest as list
+def lst_dic(lst_file):
+  lines = file_to_lines(lst_file)
+  lst_dictionary = {}
+  # iterate over lines
+  for i in range(0,len(lines)):
+    #logger.debug(line)
+    # split tab
+    splitline = lines[i].split(":")
+    #logger.debug(splitline)
+    
+    # empty list for the het groups
+    het_list = []
+
+    # remove (right strip) carriage return and the final ';'
+    het_gr = splitline[1].rstrip('\r\n').rstrip(';')
+    #het_gr = het_gr.rstrip(' ')
+    #logger.debug(het_gr)
+    het_split = het_gr.split(";")
+    #logger.debug(het_split)
+    for het_group in het_split:
+      het_list.append(het_group.strip())
+    #logger.debug(het_list)
+    # populate dictionary, stripping the carriage return
+    lst_dictionary[splitline[0].strip()] = het_list
+  
+  logger.debug(lst_dictionary)
+  return lst_dictionary
+############################################################################
+
+
+
+
+############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
 # run module and dump in pickle or retreive pickle without running module
@@ -1117,8 +1153,7 @@ def run_or_pickle(function_return_obj, function_name, arg1 = None,
     # retrieve pickle
     function_return_obj = pickle.load(
                           open((str(function_return_obj) +".p"),"rb"))
-    logger.info('You have already analysed this bit, ' +
-                'so we have pickled the ' + str(pickle_name))
+    logger.info('We have pickled ' + str(pickle_name))
   # otherwise we want to run the function
   else:
     # case 1: no arguments
@@ -1337,7 +1372,8 @@ def main():
   tot_drug_targ = run_or_pickle("5_tot_drug_targ", merge_lists, 
                                 chembl_drug_targ, drugbank_drug_targ)
 
-  logger.debug(len(tot_drug_targ))
+  logger.info('We have ' + str(len(tot_drug_targ)) + ' drug targets' +
+              ' that could be mapped to some schisto target.')
 
   # make dictionary uniprot to pdb
   uniprot_pdb_dic = run_or_pickle("5_uniprot_pdb_dic", csv_to_dic, 
@@ -1349,7 +1385,8 @@ def main():
   uniprot_filt = run_or_pickle("5_uniprot_filt", filter_dic_from_list, 
                               uniprot_pdb_dic, tot_drug_targ)
 
-  logger.debug(len(uniprot_filt))
+  logger.info('Of those, ' + str(len(uniprot_filt)) + ' have at least' +
+              ' a pdb structure associated to them.')
   # apply filter
  
   ###
@@ -1362,12 +1399,13 @@ def main():
   ###
 
 
-  # import the pdb to het/ligand file
+  # get dictionary of pdb to het group
+  pdb_het_dic = run_or_pickle("5_pdb_het_dic", lst_dic, PDB_HET)
 
-  # each pdb should have the ligand associated to them
+  logger.debug(len(pdb_het_dic))
 
-  # filtered pdb list with small mol ligands (not metals)
-
+  # filtered dictionary of our targets that have some sort of ligand
+  #target_w_lig_dic = run_or_pickle
 
   #logger.debug(drugbank_repo_map['DB01058'])
 
