@@ -140,6 +140,14 @@ UNIPROT_PDB = "uniprot_pdb.csv"
 
 # pdb to het mapping file
 PDB_HET = "het_pairs.lst"
+
+# list of xtal het groups (ligands) we are not interested in
+POINTLESS_HET = ['CD','CL','FE','ZN','CA','BE','BI','ZR','B','ER','SN',
+                'SI','TA','HF','MG','MN','NA','CU','NI','CO','AG','K','HG',
+                'SO4','PO4','MSE','GOL','EDO','ACT','PEG','PCA','PEG','ACE',
+                'TRS','NAG','DMS','ACY','HEM','MES','NH2','A5P','PGE','IMD',
+                'AGI','PG4','MAN',
+                'ALA', 'ASP', 'THR', 'GLU', 'MET', 'VAL','LYS']
 ############################################################################
 
 
@@ -1386,8 +1394,9 @@ def main():
                               uniprot_pdb_dic, tot_drug_targ)
 
   logger.info('Of those, ' + str(len(uniprot_filt)) + ' have at least' +
-              ' a pdb structure associated to them.')
+              ' one pdb structure associated to them.')
   # apply filter
+  #logger.debug(uniprot_filt)
  
   ###
   # this would be alternative method for finding entries with pdb
@@ -1402,10 +1411,23 @@ def main():
   # get dictionary of pdb to het group
   pdb_het_dic = run_or_pickle("5_pdb_het_dic", lst_dic, PDB_HET)
 
-  logger.debug(len(pdb_het_dic))
+  logger.debug(pdb_het_dic)
+
+  # TAKE IT FROM HERE!
+  # filter pdbs before or after?
+  # take all the pdbs
+
+  # filter those that only have useful ligands
+  # obtain filtered dictionary
+
+  # if necessary make dictionary of dictionaries..
+  # otherwise just keep the two dics
 
   # filtered dictionary of our targets that have some sort of ligand
-  #target_w_lig_dic = run_or_pickle
+  #targ_w_lig_dic = run_or_pickle("5_targ_w_lig_dic", filter_dic_from_list,
+     #                           pdb_het_dic, uniprot_filt)
+
+  #logger.debug(len(targ_w_lig_dic))
 
   #logger.debug(drugbank_repo_map['DB01058'])
 
