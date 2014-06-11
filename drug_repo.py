@@ -137,6 +137,9 @@ ARCHINDEX_PATH = "./../Arch/archindex"
 
 # uniprot to pdb csv mapping file - can also use the .tsv version if easier
 UNIPROT_PDB = "uniprot_pdb.csv"
+
+# pdb to het mapping file
+PDB_HET = "het_pairs.lst"
 ############################################################################
 
 
@@ -1314,9 +1317,9 @@ def main():
   #logger.debug(chembl_schisto_filt_map)
   #logger.debug(drugbank_schisto_filt_map)
 
-  ############################
-  ### PART 5 ALIGNMENTS    ###
-  ############################
+  ##################################################
+  ### PART 5 DRUG TARGETS WITH STRUCTURAL INFO   ###
+  ##################################################
 
   # obtain list of targets from drugbank_repo_map and chembl_repo_map
   # these are all the uniprot values that are targets of our potential
@@ -1342,7 +1345,6 @@ def main():
 
   #logger.debug(uniprot_pdb_dic)
 
-  # create filtered dictionary with the ones we are interested about
   # this is list of drug targets that have at least one pdb structure
   uniprot_filt = run_or_pickle("5_uniprot_filt", filter_dic_from_list, 
                               uniprot_pdb_dic, tot_drug_targ)
