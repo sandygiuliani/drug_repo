@@ -22,6 +22,7 @@ A. See below ARCHINDEX/ARCHSCHEMA.
 * chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes. From ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/  
 * all\_target\_ids\_all.csv - DrugBank Drug Target Identifiers/All Drugs download. From www.drugbank.ca/downloads#protein-identifiers  
 * small\_molecule\_target\_ids\_all.csv - DrugBank Drug Target Identifier/Small Molecule Drugs download. From www.drugbank.ca/downloads#protein-identifiers  
+* uniprot_pdb.*sv (csv and tsv) - Uniprot to pdb mapping file. From http://www.ebi.ac.uk/pdbe/docs/sifts/quick.html, accessed 12/06/2014  
 * \*.p - any .p file is a pickle (for caching purposes) if there are any around, it means I need to move them across machines, please ignore
 
 
