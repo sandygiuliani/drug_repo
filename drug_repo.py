@@ -1078,6 +1078,27 @@ def filter_dic_from_list(dictionary,filt_list):
 
 
 ############################################################################
+### LIST_SECOND_LEVEL_DIC
+############################################################################
+# take dictionary of dictionaries and return unique list of the secodn level
+
+def list_second_level_dic(dictionary):
+  second_list = []
+
+  for item in dictionary:
+    for sec in dictionary[item]:
+      second_list.append(sec)
+
+  second_list = list(set(second_list))
+
+  return second_list
+
+############################################################################
+
+
+
+
+############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
 # run module and dump in pickle or retreive pickle without running module
@@ -1162,7 +1183,7 @@ def main():
   uniprot_list = run_or_pickle("1_uniprot_list", merge_lists,
                               chembl_uniprot_list, drugbank_uniprot_list)
 
-  #logger.debug(uniprot_list)
+  #logger.debug(len(uniprot_list))
 
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
@@ -1297,12 +1318,23 @@ def main():
   ### PART 5 ALIGNMENTS    ###
   ############################
 
-  # overwrite uniprot list['Q9UNK4', 'P21266', 'Q8WXA8', 'P49189', 'Q460N3']
-  #uniprot_list = ['P21266']
-  logger.debug(len(uniprot_list))
+  # obtain list of targets from drugbank_repo_map and chembl_repo_map
+  # these are all the uniprot values that are targets of our potential
+  # drug repo candidates
+  chembl_drug_targ = run_or_pickle("5_chembl_drug_targ", 
+                                  list_second_level_dic, chembl_repo_map)
+  #logger.debug(len(chembl_drug_targ))
+  
+  drugbank_drug_targ = run_or_pickle("5_drugbank_drug_targ", 
+                                  list_second_level_dic, drugbank_repo_map)
 
-  #uniprot_list = uniprot_list[83:84]
-  #logger.debug(uniprot_list)
+
+  # logger.debug(len(drugbank_drug_targ))
+
+  tot_drug_targ = run_or_pickle("5_tot_drug_targ", merge_lists, 
+                                chembl_drug_targ, drugbank_drug_targ)
+
+  logger.debug(len(tot_drug_targ))
 
   # make dictionary uniprot to pdb
   uniprot_pdb_dic = run_or_pickle("5_uniprot_pdb_dic", csv_to_dic, 
@@ -1311,10 +1343,11 @@ def main():
   #logger.debug(uniprot_pdb_dic)
 
   # create filtered dictionary with the ones we are interested about
+  # this is list of drug targets that have at least one pdb structure
   uniprot_filt = run_or_pickle("5_uniprot_filt", filter_dic_from_list, 
-                              uniprot_pdb_dic, uniprot_list)
+                              uniprot_pdb_dic, tot_drug_targ)
 
-  logger.debug(uniprot_filt)
+  logger.debug(len(uniprot_filt))
   # apply filter
  
   ###
