@@ -1056,6 +1056,27 @@ def csv_to_dic(csv_file):
 
 
 
+
+############################################################################
+### FILTER_DIC_FROM_LIST
+############################################################################
+# take dictionary and return filtered dictionary with only entries that are
+# in the given list
+
+def filter_dic_from_list(dictionary,filt_list):
+  filtered_dic = {}
+
+  for item in dictionary:
+    if item in filt_list:
+      filtered_dic[item] = dictionary[item]
+
+  return filtered_dic
+
+############################################################################
+
+
+
+
 ############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
@@ -1283,28 +1304,35 @@ def main():
   #uniprot_list = uniprot_list[83:84]
   #logger.debug(uniprot_list)
 
-  # obtain filtered list of drug targets that have associated pdb structures
-  uniprot_filt_pdb = run_or_pickle("5_uniprot_filt_pdb", expasy_filter, 
-                                  uniprot_list, "pdb")
-
-
-  logger.debug(len(uniprot_filt_pdb))
-
-  # make dictionary uniprot to pdb, possibly on whole set
-
+  # make dictionary uniprot to pdb
   uniprot_pdb_dic = run_or_pickle("5_uniprot_pdb_dic", csv_to_dic, 
                                   UNIPROT_PDB)
 
-  logger.debug(uniprot_pdb_dic)
-  # test if we obtain the same list filtering through this dictionary
+  #logger.debug(uniprot_pdb_dic)
 
+  # create filtered dictionary with the ones we are interested about
+  uniprot_filt = run_or_pickle("5_uniprot_filt", filter_dic_from_list, 
+                              uniprot_pdb_dic, uniprot_list)
+
+  logger.debug(uniprot_filt)
   # apply filter
+ 
+  ###
+  # this would be alternative method for finding entries with pdb
+  # BUT! it returns larger list (eg 2751 instead of 2711) because it includes
+  # pdb ids that point to model structures, not accepted in the pdb anymore
+  # # obtain filtered list of drug targets that have associated pdbs
+  # uniprot_filt_pdb = run_or_pickle("5_uniprot_filt_pdb", expasy_filter, 
+  #                                 uniprot_list, "pdb")
+  ###
+
 
   # import the pdb to het/ligand file
 
   # each pdb should have the ligand associated to them
 
-  # look up and obtained filtered set with small mol ligands (not metals)
+  # filtered pdb list with small mol ligands (not metals)
+
 
   #logger.debug(drugbank_repo_map['DB01058'])
 
