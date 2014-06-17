@@ -57,7 +57,7 @@ The MIT license is approved by the [Open Source Initiative](http://opensource.or
 **DISCLAIMER**  
 THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback is welcome but please be kind.  
 
-**CONTACT**
+**CONTACT**  
 Drop me a line at: sandraxgiuliani [at] gmail [dot] com  
 You might also want to..  
 follow me on Twitter at: [@sandygiuliani](https://twitter.com/sandygiuliani)  
