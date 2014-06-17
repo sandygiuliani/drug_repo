@@ -1180,14 +1180,20 @@ def lst_dic(lst_file):
 # take dictionary and return filtered dictionary excluding values that do
 # come up in list
 
-def exclude_values_from_dic(dictionary,unwanted_list):
+def exclude_values_from_dic(dictionary, filt_list, flag):
   filtered_dic = {}
 
   for item in dictionary:
     pass_list = []
     for value in dictionary[item]:
-      if value not in unwanted_list:
-        pass_list.append(value)
+      # if we want to exclude the ones that are in the list
+      if flag == 'exclude':
+        if value not in filt_list:
+          pass_list.append(value)
+      # if we want only the ones that are in the list
+      elif flag == 'include':
+        if value in filt_list:
+          pass_list.append(value)
     # check the list is not empty
     if pass_list:
       # popolate filtered dic
@@ -1233,7 +1239,11 @@ def run_or_pickle(function_return_obj, function_name, arg1 = None,
     elif arg3 == None and arg4 == None and arg5 == None:
       function_return_obj = function_name(arg1, arg2)
 
-    #case 4: all arguments
+    # case 4: three arguments
+    elif arg4 == None and arg5 == None:
+      function_return_obj = function_name(arg1, arg2, arg3)
+
+    #case 5: all arguments
     else:
       function_return_obj = function_name(arg1, arg2, arg3, arg4, arg5)
 
@@ -1307,7 +1317,7 @@ def main():
   # generate list, flatten it and rm duplicates
   cath_list = run_or_pickle("2_cath_list", flatten_dic, cath_dic, "values")
 
-  logger.debug(len(cath_list))
+  # logger.debug(len(cath_list))
 
   # run or pickle uniprot_to_arch to retrieve pfam domain architectures
   pfam_dic = run_or_pickle("2_pfam_dic", uniprot_to_arch, uniprot_list, 
@@ -1317,7 +1327,7 @@ def main():
 
   # generate list, flatten it and rm duplicates
   pfam_list = run_or_pickle("2_pfam_list", flatten_dic, pfam_dic, "values")
-  logger.debug(len(pfam_list))
+  # logger.debug(len(pfam_list))
 
   ####################################
   ### PART 3: FIND SCHISTO TARGETS ###
@@ -1332,7 +1342,7 @@ def main():
   uniprot_schisto_cath_list = run_or_pickle("3_uniprot_schisto_cath_list",
                               flatten_dic, uniprot_schisto_cath_dic, "values")
 
-  logger.debug(len(uniprot_schisto_cath_list))
+  # logger.debug(len(uniprot_schisto_cath_list))
 
   # call archindex on pfam values to find ones from schisto
   uniprot_schisto_pfam_dic = run_or_pickle("3_uniprot_schisto_pfam_dic", 
@@ -1342,7 +1352,7 @@ def main():
   # generate list, flatten it and rm duplicates
   uniprot_schisto_pfam_list = run_or_pickle("3_uniprot_schisto_pfam_list",
                               flatten_dic, uniprot_schisto_pfam_dic, "values")
-  logger.debug(len(uniprot_schisto_pfam_list))
+  # logger.debug(len(uniprot_schisto_pfam_list))
 
 
   # merge and rm duplicates
@@ -1449,6 +1459,8 @@ def main():
   uniprot_filt = run_or_pickle("5_uniprot_filt", filter_dic_from_list, 
                               uniprot_pdb_dic, tot_drug_targ)
 
+  logger.debug(len(uniprot_filt))
+
 
 
   logger.info('Of those, ' + str(len(uniprot_filt)) + ' have at least' +
@@ -1469,22 +1481,36 @@ def main():
   # get dictionary of pdb to het group
   pdb_het_dic = run_or_pickle("5_pdb_het_dic", lst_dic, PDB_HET)
 
-  #logger.debug(pdb_het_dic)
+  logger.debug(pdb_het_dic['4dv6'])
   # pdb_het_dic = {'1w27': ['MDO', 'DTT'], '4pww': ['PO4', 'ACY'], '3wng': 
   # ['PRO', 'LYS', 'ILE', 'ASP', 'ASN', 'DPR', 'SO4', 'CL', 'CD'], '2fg4': ['CD']}
-  logger.debug(len(pdb_het_dic))
+  # logger.debug(len(pdb_het_dic))
   #values = flatten_values(pdb_het_dic)
 
   #values = sorted(values)
 
   #logger.debug(values[100:1000])
 
+  # filter dictionary pdb to het, excluding het values that in the 'pointless'
+  # list
   pdb_het_filt_dic = run_or_pickle("5_pdb_het_filt_dic",
                                     exclude_values_from_dic, pdb_het_dic, 
-                                    POINTLESS_HET)
+                                    POINTLESS_HET, "exclude")
   logger.debug(len(pdb_het_filt_dic))
-  # filter those that only have useful ligands
-  # obtain filtered dictionary
+
+  # make list of allowed pdbs (with useful ligands)
+  pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
+                                pdb_het_filt_dic, "keys")
+
+  # logger.debug(pdb_w_lig_list)
+
+  # take dic of drug target uniprot to pdb and keep only ones with the pdb
+  # we want (ligands)
+  uniprot_pdb_w_lig = run_or_pickle("5_uniprot_pdb_w_lig", 
+                                    exclude_values_from_dic, uniprot_filt,
+                                    pdb_w_lig_list, "include")
+
+  logger.debug(len(uniprot_pdb_w_lig))
 
   # if necessary make dictionary of dictionaries..
   # otherwise just keep the two dics
