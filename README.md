@@ -14,9 +14,7 @@ A. A very nasty parasitic disease affecting over 200 million people. Learn more 
 Q. How does the tool work?  
 A. By mapping! known drugs -> their targets -> their domain architecture -> parasite targets  
 Q. What is archindex?  
-A. The main script calls archindex, code kindly provided by Dr Laskowski.    
-For more information, please visit the [ArchSchema website](http://www.ebi.ac.uk/thornton-srv/databases/archschema)  
-Find the main reference for ArchSchema [here](http://www.ncbi.nlm.nih.gov/pubmed/20299327)  
+A. The main script calls archindex, code kindly provided by Dr Laskowski. For more information, please visit the [ArchSchema website](http://www.ebi.ac.uk/thornton-srv/databases/archschema), or read the [main reference for ArchSchema](http://www.ncbi.nlm.nih.gov/pubmed/20299327)  
 
 
 **CONTENTS**
