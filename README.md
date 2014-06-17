@@ -17,14 +17,14 @@ A. See below ARCHINDEX/ARCHSCHEMA.
 
 **CONTENTS**
 * drug_repo.py - Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.
-* chembl\_drugs.txt - ChEMBL drugs. From www.ebi.ac.uk/chembl/drugstore ('browse drugs')
-* chembl\_drugtargets.txt - ChEMBL drug targets. From www.ebi.ac.uk/chembl/drug/targets ('browse drug targets'). Manually edited to strip a newline character at lines 383/384.  
-* chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes. From ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/  
-* all\_target\_ids\_all.csv - DrugBank Drug Target Identifiers/All Drugs download. From www.drugbank.ca/downloads#protein-identifiers  
-* small\_molecule\_target\_ids\_all.csv - DrugBank Drug Target Identifier/Small Molecule Drugs download. From www.drugbank.ca/downloads#protein-identifiers  
-* uniprot_pdb.*sv (csv and tsv) - Uniprot to pdb mapping file. From http://www.ebi.ac.uk/pdbe/docs/sifts/quick.html, accessed 12/06/2014  
-* het_pairs.lst - pdb to Het groups mapping file. Downloaded from [PdbSum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a,"PdbSum download page"), accessed 12/06/2014  
-* lig_pairs.lst - pdb to ligand mapping file. Downloaded from [PdbSum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a,"PdbSum download page"), accessed 17/06/2014  
+* chembl\_drugs.txt - ChEMBL drugs. Downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drugstore) (Follow 'browse drugs')
+* chembl\_drugtargets.txt - ChEMBL drug targets. From [ChEMBL](www.ebi.ac.uk/chembl/drug/targets) (Follow 'browse drug targets'). Manually edited to strip a newline character at lines 383/384.  
+* chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes. Downloaded from [ChEMBL 18 release page](ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/)  
+* all\_target\_ids\_all.csv - DrugBank Drug Target Identifiers/All Drugs download. Downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers)  
+* small\_molecule\_target\_ids\_all.csv - DrugBank Drug Target Identifier/Small Molecule Drugs download. Downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers)  
+* uniprot_pdb.*sv (csv and tsv) - Uniprot to pdb mapping file. Downloaded from [SIFTS](http://www.ebi.ac.uk/pdbe/docs/sifts/quick.html), accessed 12/06/2014  
+* het_pairs.lst - pdb to Het groups mapping file. Downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a,"PDBsum download page"), accessed 12/06/2014  
+* lig_pairs.lst - pdb to ligand mapping file. Downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a,"PDBsum download page"), accessed 17/06/2014  
 * \*.p - any .p file is a pickle (for caching purposes) if there are any around, it means I need to move them across machines, please ignore
 
 
@@ -45,10 +45,9 @@ drug_repo.py development:
 - [ ] targets shortlist
 
 **ARCHINDEX/ARCHSCHEMA**  
-The main script calls archindex, code kindly provided by Dr Laskowski.   
-Main reference: www.ncbi.nlm.nih.gov/pubmed/20299327  
-For more information on ArchSchema, please visit:  
-http://www.ebi.ac.uk/thornton-srv/databases/archschema  
+The main script calls archindex, code kindly provided by Dr Laskowski.    
+For more information, please visit the [ArchSchema website](http://www.ebi.ac.uk/thornton-srv/databases/archschema)  
+Find the main reference for ArchSchema [here](http://www.ncbi.nlm.nih.gov/pubmed/20299327)  
 
 **LICENSE**  
 Copyright &copy; 2014 Sandra Giuliani  
