@@ -55,6 +55,10 @@ This repository is licensed under the terms of the MIT license. Please see LICEN
 The MIT license is approved by the [Open Source Initiative](http://opensource.org/licenses)
 
 **DISCLAIMER**  
-THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback is welcome but please be kind.
+THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback is welcome but please be kind.  
 
-Contact me at: sandraxgiuliani [at] gmail [dot] com
+**CONTACT**
+Drop me a line at: sandraxgiuliani [at] gmail [dot] com  
+You might also want to..  
+follow me on Twitter at: [@sandygiuliani](https://twitter.com/sandygiuliani)  
+visit my [personal website](http://www.sandragiuliani.com/)  
