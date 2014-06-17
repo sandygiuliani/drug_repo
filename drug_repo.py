@@ -142,12 +142,19 @@ UNIPROT_PDB = "uniprot_pdb.csv"
 PDB_HET = "het_pairs.lst"
 
 # list of xtal het groups (ligands) we are not interested in
-POINTLESS_HET = ['CD','CL','FE','ZN','CA','BE','BI','ZR','B','ER','SN',
-                'SI','TA','HF','MG','MN','NA','CU','NI','CO','AG','K','HG',
-                'SO4','PO4','MSE','GOL','EDO','ACT','PEG','PCA','PEG','ACE',
-                'TRS','NAG','DMS','ACY','HEM','MES','NH2','A5P','PGE','IMD',
-                'AGI','PG4','MAN',
-                'ALA', 'ASP', 'THR', 'GLU', 'MET', 'VAL','LYS']
+# metals, various ligands and 20 aminoacids
+# aminoacids: 'ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE',
+#                'LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL']
+POINTLESS_HET = ['A5P', 'ACE', 'ACT', 'ACY', 'AG', 'AGI', 'ALA', 'ARG', 'ASN',
+                 'ASP', 'AZI','B', 'BE', 'BI', 'CA', 'CD','CIT', 'CL', 'CO', 
+                 'CU', 'CYS', 
+                 'DMS', 'EDO', 'ER', 'FE', 'GLN', 'GLU', 'GLY', 'GOL', 'HEM', 
+                 'HF', 'HG', 'HIS', 'ILE', 'IMD', 'K', 'LEU', 'LYS', 'MAN', 
+                 'MES', 'MET', 'MG', 'MN', 'MSE', 'NA', 'NAG', 'NH2', 'NI', 
+                 'OH','PCA', 'PEG', 'PEG', 'PG4', 'PGE', 'PHE', 'PO4', 
+                 'PRO', 'SER', 'SI', 'SN', 'SO4', 'TA', 'THR', 'TRP', 'TRS', 
+                 'TYR', 'VAL', 'ZN', 'ZR']
+
 ############################################################################
 
 
@@ -1411,7 +1418,13 @@ def main():
   # get dictionary of pdb to het group
   pdb_het_dic = run_or_pickle("5_pdb_het_dic", lst_dic, PDB_HET)
 
-  logger.debug(pdb_het_dic)
+  #logger.debug(pdb_het_dic)
+
+  values = flatten_values(pdb_het_dic)
+
+  values = sorted(values)
+
+  logger.debug(values[100:1000])
 
   # TAKE IT FROM HERE!
   # filter pdbs before or after?
