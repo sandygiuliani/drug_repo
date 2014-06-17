@@ -19,14 +19,14 @@ A. The main script calls archindex, code kindly provided by Dr Laskowski. For mo
 
 **CONTENTS**
 * drug_repo.py - Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.
-* chembl\_drugs.txt - ChEMBL drugs. Downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drugstore/)
-* chembl\_drugtargets.txt - ChEMBL drug targets. From [ChEMBL](http://www.ebi.ac.uk/chembl/drug/targets/) Manually edited to strip a newline character at lines 383/384.  
-* chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes. Downloaded from the ChEMBL 18 release page: ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/  
-* all\_target\_ids\_all.csv - DrugBank Drug Target Identifiers/All Drugs download. Downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers)  
-* small\_molecule\_target\_ids\_all.csv - DrugBank Drug Target Identifier/Small Molecule Drugs download. Downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers)  
-* uniprot_pdb.*sv (csv and tsv) - Uniprot to pdb mapping file. Downloaded from [SIFTS](http://www.ebi.ac.uk/pdbe/docs/sifts/quick.html), accessed 12/06/2014  
-* het_pairs.lst - pdb to Het groups mapping file. Downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a) , accessed 12/06/2014  
-* lig_pairs.lst - pdb to ligand mapping file. Downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a) , accessed 17/06/2014  
+* chembl\_drugs.txt - ChEMBL drugs; downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drugstore/)
+* chembl\_drugtargets.txt - ChEMBL drug targets; downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drug/targets/) and manually edited to strip a newline character at lines 383/384.  
+* chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes; downloaded from the ChEMBL 18 release page: ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/  
+* all\_target\_ids\_all.csv - DrugBank Drug Target Identifiers/All Drugs; downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers)  
+* small\_molecule\_target\_ids\_all.csv - DrugBank Drug Target Identifier/Small Molecule Drugs; downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers)  
+* uniprot_pdb.*sv (csv and tsv) - Uniprot to pdb mapping file; downloaded from [SIFTS](http://www.ebi.ac.uk/pdbe/docs/sifts/quick.html), accessed 12/06/2014  
+* het_pairs.lst - pdb to Het groups mapping file; downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a), accessed 12/06/2014  
+* lig_pairs.lst - pdb to ligand mapping file; downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a), accessed 17/06/2014  
 * \*.p - any .p file is a pickle (for caching purposes) if there are any around, it means I need to move them across machines, please ignore
 
 
@@ -58,6 +58,4 @@ THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL
 
 **CONTACT**  
 Drop me a line at: sandraxgiuliani [at] gmail [dot] com  
-You might also want to..  
-follow me on Twitter at: [@sandygiuliani](https://twitter.com/sandygiuliani)  
-visit my [personal website](http://www.sandragiuliani.com/)  
+You might also want to follow me on Twitter [@sandygiuliani](https://twitter.com/sandygiuliani) or visit my [personal website](http://www.sandragiuliani.com/).  
