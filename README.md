@@ -7,9 +7,9 @@ applied to schistosomiasis.
 
 **FAQ**  
 Q. What is drug repositioning?   
-A. The usage of a known drug for a different therapeutic indication. For a few examples, see http://en.wikipedia.org/wiki/Drug_repositioning  
+A. The usage of a known drug for a different therapeutic indication. If you are not familiar with this at all, try [Wikipedia](http://en.wikipedia.org/wiki/Drug_repositioning)  
 Q. What is schistosomiasis?  
-A. A very nasty parasitic disease affecting over 200 million people. Learn more at: http://www.who.int/topics/schistosomiasis/en/  
+A. A very nasty parasitic disease affecting over 200 million people. Learn more about schistosomiasis on the [World Health Organization website](http://www.who.int/topics/schistosomiasis/en/)  
 Q. How does the tool work?  
 A. By mapping! known drugs -> their targets -> their domain architecture -> parasite targets  
 Q. What is archindex?  
@@ -52,9 +52,9 @@ Find the main reference for ArchSchema [here](http://www.ncbi.nlm.nih.gov/pubmed
 **LICENSE**  
 Copyright &copy; 2014 Sandra Giuliani  
 This repository is licensed under the terms of the MIT license. Please see LICENSE.md for more information.  
-The MIT license is approved by the Open Source Initiative http://opensource.org/licenses
+The MIT license is approved by the [Open Source Initiative](http://opensource.org/licenses)
 
 **DISCLAIMER**  
 THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback is welcome but please be kind.
 
-Contact me at: sandraxgiuliani [at] gmail.com
+Contact me at: sandraxgiuliani [at] gmail [dot] com
