@@ -145,15 +145,32 @@ PDB_HET = "het_pairs.lst"
 # metals, various ligands and 20 aminoacids
 # aminoacids: 'ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE',
 #                'LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL']
-POINTLESS_HET = ['A5P', 'ACE', 'ACT', 'ACY', 'AG', 'AGI', 'ALA', 'ARG', 'ASN',
-                 'ASP', 'AZI','B', 'BE', 'BI', 'CA', 'CD','CIT', 'CL', 'CO', 
-                 'CU', 'CYS', 
-                 'DMS', 'EDO', 'ER', 'FE', 'GLN', 'GLU', 'GLY', 'GOL', 'HEM', 
-                 'HF', 'HG', 'HIS', 'ILE', 'IMD', 'K', 'LEU', 'LYS', 'MAN', 
-                 'MES', 'MET', 'MG', 'MN', 'MSE', 'NA', 'NAG', 'NH2', 'NI', 
-                 'OH','PCA', 'PEG', 'PEG', 'PG4', 'PGE', 'PHE', 'PO4', 
-                 'PRO', 'SER', 'SI', 'SN', 'SO4', 'TA', 'THR', 'TRP', 'TRS', 
-                 'TYR', 'VAL', 'ZN', 'ZR']
+POINTLESS_HET = ['0KA','1CU','2OF','3GR','3OF','5GP','A5P',
+                  'ACE','ACT','ACY','ADP','ADN','AG',
+                  'AGI', 'ALA', 'ARG','ARS','ASN',
+                 'ASP', 'AU','AZI','B','BA','BCT', 'BE', 'BI','BMA','BO3',
+                 'CA', 'CD','CD1','CD3','CD5','CIT', 
+                 'CL','CMO','CO','CO3','CO5','CR','CU', 'CYS', 
+                 'DMS', 'DOD','EDO','EOH', 'ER', 'EU','FAD','FE','FES', 'FMT',
+                 'FOR','GDP','GLN','GLU', 
+                 'GLY','GOL','GSH','GTP', 
+                 'HC0','HC1','HEM', 
+                 'HF', 'HG','HIS','HOE','ILE','IMD','IN','IPA','K','KO4',
+                 'LEU','LI','LYS', 'MAN', 
+                 'MES', 'MET', 'MG', 'MN','MN5','MN6','MO','MO1',
+                 'MO2','MO3','MO4','MO5', 'MO6','MSE','MTO',
+                 'MW1','MW3','NA', 
+                 'NA2','NA5', 'NA6','NAD','NAG', 'NAO','NAW',
+                 'NH2', 'NH4','NI','NI1','NI2','NI3','NO',
+                 'NO3','O','OC1','OC2','OC3','OC4','OC5','OC6','OC7','OCL',
+                 'OCM','OCN','OCO','OC8','OF1','OF3','OH','ORO','OS',
+                 'OXY','PB','PCA', 'PEG', 
+                 'PEG','PLM', 
+                 'PG4', 'PGE','PHE','PO4', 
+                  'PRO', 'PYR','RB','RE','RU','SER', 'SI', 'SN', 
+                  'SO3','SO4','SR', 'TA','THR','TRP', 
+                 'TRS', 'TYR','UNL', 'UNX','URE','VAL', 'XYL','YH',
+                 'ZN','ZN3','ZNO','ZO3', 'ZR']
 
 ############################################################################
 
