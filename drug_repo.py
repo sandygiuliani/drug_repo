@@ -1437,9 +1437,11 @@ def main():
 
   #logger.debug(uniprot_pdb_dic)
 
-  # this is list of drug targets that have at least one pdb structure
+  # this is dictionary of drug targets that have at least one pdb structure
   uniprot_filt = run_or_pickle("5_uniprot_filt", filter_dic_from_list, 
                               uniprot_pdb_dic, tot_drug_targ)
+
+
 
   logger.info('Of those, ' + str(len(uniprot_filt)) + ' have at least' +
               ' one pdb structure associated to them.')
