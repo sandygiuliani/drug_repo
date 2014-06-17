@@ -142,7 +142,7 @@ UNIPROT_PDB = "uniprot_pdb.csv"
 PDB_HET = "het_pairs.lst"
 
 # list of xtal het groups (ligands) we are not interested in
-# metals, various ligands and 20 aminoacids
+# metals, metal-water complexes, various ligands and 20 aminoacids
 # aminoacids: 'ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE',
 #                'LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL']
 POINTLESS_HET = ['0KA','1CU','2OF','3GR','3OF','5GP','A5P',
@@ -153,8 +153,7 @@ POINTLESS_HET = ['0KA','1CU','2OF','3GR','3OF','5GP','A5P',
                  'CL','CMO','CO','CO3','CO5','CR','CU', 'CYS', 
                  'DMS', 'DOD','EDO','EOH', 'ER', 'EU','FAD','FE','FES', 'FMT',
                  'FOR','GDP','GLN','GLU', 
-                 'GLY','GOL','GSH','GTP', 
-                 'HC0','HC1','HEM', 
+                 'GLY','GOL','GSH','GTP','HC0','HC1','HEM', 
                  'HF', 'HG','HIS','HOE','ILE','IMD','IN','IPA','K','KO4',
                  'LEU','LI','LYS', 'MAN', 
                  'MES', 'MET', 'MG', 'MN','MN5','MN6','MO','MO1',
@@ -164,8 +163,7 @@ POINTLESS_HET = ['0KA','1CU','2OF','3GR','3OF','5GP','A5P',
                  'NH2', 'NH4','NI','NI1','NI2','NI3','NO',
                  'NO3','O','OC1','OC2','OC3','OC4','OC5','OC6','OC7','OCL',
                  'OCM','OCN','OCO','OC8','OF1','OF3','OH','ORO','OS',
-                 'OXY','PB','PCA', 'PEG', 
-                 'PEG','PLM', 
+                 'OXY','PB','PCA', 'PEG','PEG','PLM', 
                  'PG4', 'PGE','PHE','PO4', 
                   'PRO', 'PYR','RB','RE','RU','SER', 'SI', 'SN', 
                   'SO3','SO4','SR', 'TA','THR','TRP', 
@@ -1115,7 +1113,7 @@ def filter_dic_from_list(dictionary,filt_list):
 ############################################################################
 ### LIST_SECOND_LEVEL_DIC
 ############################################################################
-# take dictionary of dictionaries and return unique list of the secodn level
+# take dictionary of dictionaries and return unique list of the second level
 
 def list_second_level_dic(dictionary):
   second_list = []
@@ -1134,7 +1132,7 @@ def list_second_level_dic(dictionary):
 
 
 ############################################################################
-### LST DIC
+### LST_DIC
 ############################################################################
 # read lst file and creat dictionary with first column as key and rest as list
 def lst_dic(lst_file):
@@ -1162,8 +1160,34 @@ def lst_dic(lst_file):
     # populate dictionary, stripping the carriage return
     lst_dictionary[splitline[0].strip()] = het_list
   
-  logger.debug(lst_dictionary)
+  #logger.debug(lst_dictionary)
   return lst_dictionary
+############################################################################
+
+
+
+
+############################################################################
+### EXCLUDE_VALUES_FROM_DIC
+############################################################################
+# take dictionary and return filtered dictionary excluding values that do
+# come up in list
+
+def exclude_values_from_dic(dictionary,unwanted_list):
+  filtered_dic = {}
+
+  for item in dictionary:
+    pass_list = []
+    for value in dictionary[item]:
+      if value not in unwanted_list:
+        pass_list.append(value)
+    # check the list is not empty
+    if pass_list:
+      # popolate filtered dic
+      filtered_dic[item] = pass_list
+
+  return filtered_dic
+
 ############################################################################
 
 
@@ -1436,17 +1460,19 @@ def main():
   pdb_het_dic = run_or_pickle("5_pdb_het_dic", lst_dic, PDB_HET)
 
   #logger.debug(pdb_het_dic)
+  # pdb_het_dic = {'1w27': ['MDO', 'DTT'], '4pww': ['PO4', 'ACY'], '3wng': 
+  # ['PRO', 'LYS', 'ILE', 'ASP', 'ASN', 'DPR', 'SO4', 'CL', 'CD'], '2fg4': ['CD']}
+  logger.debug(len(pdb_het_dic))
+  #values = flatten_values(pdb_het_dic)
 
-  values = flatten_values(pdb_het_dic)
+  #values = sorted(values)
 
-  values = sorted(values)
+  #logger.debug(values[100:1000])
 
-  logger.debug(values[100:1000])
-
-  # TAKE IT FROM HERE!
-  # filter pdbs before or after?
-  # take all the pdbs
-
+  pdb_het_filt_dic = run_or_pickle("5_pdb_het_filt_dic",
+                                    exclude_values_from_dic, pdb_het_dic, 
+                                    POINTLESS_HET)
+  logger.debug(len(pdb_het_filt_dic))
   # filter those that only have useful ligands
   # obtain filtered dictionary
 
