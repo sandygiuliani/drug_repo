@@ -138,8 +138,11 @@ ARCHINDEX_PATH = "./../Arch/archindex"
 # uniprot to pdb csv mapping file - can also use the .tsv version if easier
 UNIPROT_PDB = "uniprot_pdb.csv"
 
-# pdb to het mapping file
+# pdb to het mapping file, contains all het groups
 PDB_HET = "het_pairs.lst"
+
+# pdb to lig mapping file
+PDB_LIG = "lig_pairs.lst"
 
 # list of xtal het groups (ligands) we are not interested in
 # metals, metal-water complexes, various ligands and 20 aminoacids
