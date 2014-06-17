@@ -828,14 +828,21 @@ def expasy_filter(uniprot_list, filter_type):
 
 
 ############################################################################
-### FLATTEN_VALUES
+### FLATTEN_DIC
 ############################################################################
-# list from dictionary values and flatten it (from list of lists to simple
-# list, also eliminate duplicates
+# list from dictionary's key OR values and flatten it 
+# for the values, flatten list (from list of lists to simple list) 
+# also eliminate duplicates
 
-def flatten_values(dic):
-  # generate list and flatten it
-  flat_list = list(itertools.chain(*list(dic.values())))
+def flatten_dic(dic, keys_or_val):
+  # generate list from values
+  if keys_or_val == "values":
+    # generate list and flatten it
+    flat_list = list(itertools.chain(*list(dic.values())))
+  # generate list from keys
+  elif keys_or_val == "keys":
+    flat_list = dic.keys()
+
 
   # rm duplicates
   flat_list = list(set(flat_list))
@@ -1260,7 +1267,8 @@ def main():
 
   # get list of uniprot ids from chembl_dic
   chembl_uniprot_list = run_or_pickle("1_chembl_uniprot_list",
-                                      flatten_values, chembl_dic)
+                                      flatten_dic, chembl_dic, "values")
+  logger.debug(len(chembl_uniprot_list))
 
   # generate drugbank_dictionary
   drugbank_dic = run_or_pickle("1_drugbank_dic", process_drugbank)
@@ -1269,9 +1277,9 @@ def main():
 
   # get list of uniprot ids from drugbank
   drugbank_uniprot_list = run_or_pickle("1_drugbank_uniprot_list",
-                                    flatten_values, drugbank_dic)
+                                    flatten_dic, drugbank_dic, "values")
 
-  #logger.debug(len(drugbank_uniprot_list))
+  logger.debug(len(drugbank_uniprot_list))
 
   # merge lists and rm duplicates
   uniprot_list = run_or_pickle("1_uniprot_list", merge_lists,
@@ -1297,9 +1305,9 @@ def main():
   #logger.debug(len(cath_dic))
 
   # generate list, flatten it and rm duplicates
-  cath_list = run_or_pickle("2_cath_list", flatten_values, cath_dic)
+  cath_list = run_or_pickle("2_cath_list", flatten_dic, cath_dic, "values")
 
-  #logger.debug(len(cath_list))
+  logger.debug(len(cath_list))
 
   # run or pickle uniprot_to_arch to retrieve pfam domain architectures
   pfam_dic = run_or_pickle("2_pfam_dic", uniprot_to_arch, uniprot_list, 
@@ -1308,8 +1316,8 @@ def main():
   #logger.debug(len(pfam_dic))
 
   # generate list, flatten it and rm duplicates
-  pfam_list = run_or_pickle("2_pfam_list", flatten_values, pfam_dic)
-
+  pfam_list = run_or_pickle("2_pfam_list", flatten_dic, pfam_dic, "values")
+  logger.debug(len(pfam_list))
 
   ####################################
   ### PART 3: FIND SCHISTO TARGETS ###
@@ -1322,9 +1330,9 @@ def main():
 
   # generate list, flatten it and rm duplicates
   uniprot_schisto_cath_list = run_or_pickle("3_uniprot_schisto_cath_list",
-                              flatten_values, uniprot_schisto_cath_dic)
+                              flatten_dic, uniprot_schisto_cath_dic, "values")
 
-  #logger.debug(len(uniprot_schisto_cath_list))
+  logger.debug(len(uniprot_schisto_cath_list))
 
   # call archindex on pfam values to find ones from schisto
   uniprot_schisto_pfam_dic = run_or_pickle("3_uniprot_schisto_pfam_dic", 
@@ -1333,8 +1341,8 @@ def main():
 
   # generate list, flatten it and rm duplicates
   uniprot_schisto_pfam_list = run_or_pickle("3_uniprot_schisto_pfam_list",
-                              flatten_values, uniprot_schisto_pfam_dic)
-  #logger.debug(len(uniprot_schisto_pfam_list))
+                              flatten_dic, uniprot_schisto_pfam_dic, "values")
+  logger.debug(len(uniprot_schisto_pfam_list))
 
 
   # merge and rm duplicates
