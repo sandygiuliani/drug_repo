@@ -173,6 +173,9 @@ POINTLESS_HET = ['0KA','1CU','2OF','3GR','3OF','5GP','A5P',
                  'TRS', 'TYR','UNL', 'UNX','URE','VAL', 'XYL','YH',
                  'ZN','ZN3','ZNO','ZO3', 'ZR']
 
+# regular expression for string containing at least one dash
+#CONTAINS_DASH = re.compile('.*-.*')
+
 ############################################################################
 
 
@@ -1511,7 +1514,7 @@ def main():
   pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
                                     exclude_values_from_dic, pdb_lig_dic, 
                                     POINTLESS_HET, "exclude")
-  logger.debug(len(pdb_lig_filt_dic))
+  #logger.debug(pdb_lig_filt_dic)
 
 
 
@@ -1527,7 +1530,7 @@ def main():
                                     exclude_values_from_dic, uniprot_filt,
                                     pdb_w_lig_list, "include")
 
-  logger.debug(len(uniprot_pdb_w_lig))
+  #logger.debug(uniprot_pdb_w_lig))
 
   # if necessary make dictionary of dictionaries..
   # otherwise just keep the two dics
