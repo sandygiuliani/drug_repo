@@ -1484,7 +1484,12 @@ def main():
   # get dictionary of pdb to het group
   pdb_het_dic = run_or_pickle("5_pdb_het_dic", lst_dic, PDB_HET)
 
-  logger.debug(pdb_het_dic['4dv6'])
+  logger.debug(len(pdb_het_dic))
+
+  pdb_lig_dic = run_or_pickle("5_pdb_lig_dic", lst_dic, PDB_LIG)
+
+  logger.debug(len(pdb_lig_dic))
+
   # pdb_het_dic = {'1w27': ['MDO', 'DTT'], '4pww': ['PO4', 'ACY'], '3wng': 
   # ['PRO', 'LYS', 'ILE', 'ASP', 'ASN', 'DPR', 'SO4', 'CL', 'CD'], '2fg4': ['CD']}
   # logger.debug(len(pdb_het_dic))
@@ -1494,12 +1499,21 @@ def main():
 
   #logger.debug(values[100:1000])
 
-  # filter dictionary pdb to het, excluding het values that in the 'pointless'
-  # list
+  # filter dictionary pdb to het, excluding het values that are in the 
+  #'pointless' list
   pdb_het_filt_dic = run_or_pickle("5_pdb_het_filt_dic",
                                     exclude_values_from_dic, pdb_het_dic, 
                                     POINTLESS_HET, "exclude")
   logger.debug(len(pdb_het_filt_dic))
+
+  # filter dictionary pdb to lig, excluding lig that are in the 'pointless'
+  # list
+  pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
+                                    exclude_values_from_dic, pdb_lig_dic, 
+                                    POINTLESS_HET, "exclude")
+  logger.debug(len(pdb_lig_filt_dic))
+
+
 
   # make list of allowed pdbs (with useful ligands)
   pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
