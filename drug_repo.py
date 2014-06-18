@@ -148,33 +148,38 @@ PDB_LIG = "lig_pairs.lst"
 # metals, metal-water complexes, various ligands and 20 aminoacids
 # aminoacids: 'ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE',
 #                'LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL']
-POINTLESS_HET = ['0KA','1CU','2OF','3GR','3OF','5GP','A5P',
+POINTLESS_HET = ['0KA','1CU','2OF','3GR','3OF','5GP','__A','A5P',
                   'ACE','ACT','ACY','ADP','ADN','AG',
                   'AGI', 'ALA', 'ARG','ARS','ASN',
-                 'ASP', 'AU','AZI','B','BA','BCT', 'BE', 'BI','BMA','BO3',
-                 'CA', 'CD','CD1','CD3','CD5','CIT', 
-                 'CL','CMO','CO','CO3','CO5','CR','CU', 'CYS', 
-                 'DMS', 'DOD','DPR','DTT','EDO','EOH', 'ER', 'EU','FAD',
-                 'FE','FES', 'FMT','FOR','GDP','GLN','GLU', 
+                 'ASP', 'ATP','AU','AZI','B','BA','BCT', 'BE', 
+                 'BI','BMA','BO3',
+                 '__C','CA', '_CA','CD','CD1','CD3','CD5','CIT', 
+                 'CL','_CL','CMO','CN','_CN','CO','CO3','CO5','CP','_CP',
+                 'CR','CU','_CU', 'CYS', 
+                 'DMS', 'DOD','DPR','DT','_DT','DTT','EDO','EOH', 
+                 'ER', 'EU','FAD',
+                 'FE','FES', 'FMT','FOR','FS4','__G','GDP','GLN','GLU', 
                  'GLY','GOL','GSH','GTP','HC0','HC1','HEM', 
                  'HF', 'HG','HIS','HOE','ILE','IMD','IN','IPA','K','KO4',
                  'LEU','LI','LYS', 'MAN', 
                  'MES', 'MET', 'MG', 'MN','MN5','MN6','MO','MO1',
                  'MO2','MO3','MO4','MO5', 'MO6','MSE','MTO',
-                 'MW1','MW3','NA', 
-                 'NA2','NA5', 'NA6','NAD','NAG', 'NAO','NAW',
-                 'NH2', 'NH4','NI','NI1','NI2','NI3','NO',
-                 'NO3','O','OC1','OC2','OC3','OC4','OC5','OC6','OC7','OCL',
-                 'OCM','OCN','OCO','OC8','OF1','OF3','OH','ORO','OS',
+                 'MW1','MW3','__N','NA', 
+                 'NA2','NA5', 'NA6','NAD','NAG', 'NAO', 'NAP','NAW',
+                 'NH2', 'NH4','NI','NI1','NI2','NI3','NO','_NO',
+                 'NO3','__O','O','OC1','OC2','OC3','OC4','OC5',
+                 'OC6','OC7','OCL',
+                 'OCM','OCN','OCO','OC8','OF1','OF3','OH','_OH','ORO','OS',
                  'OXY','PB','PCA', 'PEG','PEG','PLM', 
-                 'PG4', 'PGE','PHE','PO4', 
+                 'PG4', 'PGE','PHE','PO4', 'POP',
                   'PRO', 'PYR','RB','RE','RU','SER', 'SI', 'SN', 
                   'SO3','SO4','SR', 'TA','THR','TRP', 
-                 'TRS', 'TYR','UNL', 'UNX','URE','VAL', 'XYL','YH',
-                 'ZN','ZN3','ZNO','ZO3', 'ZR']
+                 'TRS', 'TYR','__U','UNL', 'UNX','URE','VAL', 'XE','_XE',
+                 'XYL','YH',
+                 'ZN','_ZN','ZN3','ZNO','ZO3', 'ZR']
 
 # regular expression for string containing at least one dash
-#CONTAINS_DASH = re.compile('.*-.*')
+CONTAINS_DASH = re.compile('.*-.*')
 
 ############################################################################
 
@@ -1185,6 +1190,9 @@ def lst_dic(lst_file):
 ############################################################################
 # take dictionary and return filtered dictionary excluding values that do
 # come up in list
+# flag exclude - keep values that are not in the list
+# flag include - only keep values that are in the list
+# flag nomatch - keep values that do not match the expression
 
 def exclude_values_from_dic(dictionary, filt_list, flag):
   filtered_dic = {}
@@ -1199,6 +1207,10 @@ def exclude_values_from_dic(dictionary, filt_list, flag):
       # if we want only the ones that are in the list
       elif flag == 'include':
         if value in filt_list:
+          pass_list.append(value)
+
+      elif flag == 'nomatch':
+        if not filt_list.match(value):
           pass_list.append(value)
     # check the list is not empty
     if pass_list:
@@ -1484,11 +1496,12 @@ def main():
   ###
 
 
-  # get dictionary of pdb to het group
-  pdb_het_dic = run_or_pickle("5_pdb_het_dic", lst_dic, PDB_HET)
+  # # get dictionary of pdb to het group
+  # pdb_het_dic = run_or_pickle("5_pdb_het_dic", lst_dic, PDB_HET)
 
-  logger.debug(len(pdb_het_dic))
+  # logger.debug(len(pdb_het_dic))
 
+  # make dictionary of pdb to ligands
   pdb_lig_dic = run_or_pickle("5_pdb_lig_dic", lst_dic, PDB_LIG)
 
   logger.debug(len(pdb_lig_dic))
@@ -1504,23 +1517,33 @@ def main():
 
   # filter dictionary pdb to het, excluding het values that are in the 
   #'pointless' list
-  pdb_het_filt_dic = run_or_pickle("5_pdb_het_filt_dic",
-                                    exclude_values_from_dic, pdb_het_dic, 
-                                    POINTLESS_HET, "exclude")
-  logger.debug(len(pdb_het_filt_dic))
+  # pdb_het_filt_dic = run_or_pickle("5_pdb_het_filt_dic",
+  #                                   exclude_values_from_dic, pdb_het_dic, 
+  #                                   POINTLESS_HET, "exclude")
+  # logger.debug(len(pdb_het_filt_dic))
 
   # filter dictionary pdb to lig, excluding lig that are in the 'pointless'
   # list
-  pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
+  pdb_lig_pointless_dic = run_or_pickle("5_pdb_lig_pointless_dic",
                                     exclude_values_from_dic, pdb_lig_dic, 
                                     POINTLESS_HET, "exclude")
-  #logger.debug(pdb_lig_filt_dic)
+  logger.debug(len(pdb_lig_pointless_dic))
+  
+  # second filter, to eliminate those with dash
+  pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
+                                    exclude_values_from_dic, 
+                                    pdb_lig_pointless_dic, 
+                                    CONTAINS_DASH, "nomatch")
+  logger.debug(len(pdb_lig_filt_dic))
 
+  flatties = flatten_dic(pdb_lig_filt_dic, "values")
+  flatties.sort()
+  logger.debug(len(flatties))
 
 
   # make list of allowed pdbs (with useful ligands)
   pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
-                                pdb_het_filt_dic, "keys")
+                                pdb_lig_filt_dic, "keys")
 
   # logger.debug(pdb_w_lig_list)
 
@@ -1530,7 +1553,9 @@ def main():
                                     exclude_values_from_dic, uniprot_filt,
                                     pdb_w_lig_list, "include")
 
-  #logger.debug(uniprot_pdb_w_lig))
+  logger.debug(len(uniprot_pdb_w_lig))
+
+
 
   # if necessary make dictionary of dictionaries..
   # otherwise just keep the two dics
@@ -1541,8 +1566,13 @@ def main():
 
   #logger.debug(len(targ_w_lig_dic))
 
-  #logger.debug(drugbank_repo_map['DB01058'])
 
+  # damn = re.compile('.*-.*')
+  # if damn.match(''):
+  #   print('hell yeah')
+
+  # else:
+  #   print('oh no')
 ############################################################################
 
 
