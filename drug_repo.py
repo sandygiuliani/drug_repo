@@ -71,7 +71,7 @@ logger.setLevel(logging.DEBUG)
 # create console handler
 ch = logging.StreamHandler()
 # CHANGE THIS TO TUNE LOGGING LEVEL from DEBUG/INFO/WARNING
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 # create formatter, you can add:
 # '%(levelname)s' for level eg DEBUG, INFO..
 # '%(name)s' for level name, eg __main__ in the log
@@ -260,13 +260,11 @@ def swap_dic(tab_file):
 ############################################################################
 
 # in the end we need a dictionary of chembl ids vs uniprot ids
-def process_chembl():
+def process_chembl(input_file):
   # open chembldrugs.txt for reading
-  lines = file_to_lines(CHEMBL_INPUT)
-  logger.info('We are now analysing the ChEMBL input file ' +
-              str(CHEMBL_INPUT) + ', containing a total of '
-              + str(len(lines)-1) + ' drugs.')
-
+  lines = file_to_lines(input_file)
+  # logger.info('The ChEMBL input file contains a total of '
+  #             + str(len(lines)-1) + ' drugs.')
 
   ### ANALYSE HEADERS AND OBTAIN COLUMN NUMBERS
 
@@ -303,10 +301,10 @@ def process_chembl():
     else:
       phase_unknown = phase_unknown + 1
 
-  logger.info('The number of drugs in phase 1 is: ' + str(phase1) +
-              '; in phase 2 is: ' + str(phase2) + '; in phase 3 is: ' +
-              str(phase3)+'; in phase 4 is: ' + str(phase4) +
-              '; in unknown phase is: ' + str(phase_unknown) + '.')
+  # logger.info('The number of drugs in phase 1 is: ' + str(phase1) +
+  #             '; in phase 2 is: ' + str(phase2) + '; in phase 3 is: ' +
+  #             str(phase3)+'; in phase 4 is: ' + str(phase4) +
+  #             '; in unknown phase is: ' + str(phase_unknown) + '.')
   ###
 
 
@@ -403,7 +401,6 @@ def process_chembl():
   ###
 
 
-
   # create dictionary from the chembl/uniprot mapping file
   # the dictionary will be {'chemblID1':'uniprotid1', etc..}
   # the dictionary has to be this way because more than one chembl id
@@ -445,21 +442,6 @@ def process_chembl():
     if uniprot_list != []:
       chembl_dic[drug] = uniprot_list
 
-  # flat list of uniprot codes from the dictionary
-  uniprot_ids = list(itertools.chain(*list(chembl_dic.values())))
-  #logger.debug(len(drug_ids))
-
-  # eliminate duplicates
-  uniprot_ids = list(set(uniprot_ids))
-
-
-  # NB the len of target_ids and chembl_target_drug_dic is the same!
-  logger.info(str(len(chembl_dic)) + ' ChEMBL drugs could be associated ' +
-              'with ' + str(len(uniprot_ids)) + ' unique UniProt ID.')
-
-  #logger.debug(len(list(itertools.chain(*list(chembl_dic.values())))))
-  #logger.debug(chembl_dic)
-
   # return dictionary {uniprot1:(list of chembl ids)}
   return chembl_dic
 ############################################################################
@@ -472,14 +454,13 @@ def process_chembl():
 ############################################################################
 # process drugbank file, return a dictionary of drugs vs uniprot ids. Deal
 # with duplicate values and append to list in the dictionary.
-def process_drugbank():
+def process_drugbank(input_file):
 
   # open and read drug_bank input and count number
-  lines = file_to_lines(DRUGBANK_INPUT)
+  lines = file_to_lines(input_file)
   # number of entries (remember there is header)
-  logger.info('We are now analysing the DrugBank input file ' +
-              str(DRUGBANK_INPUT) + ', containing ' + str(len(lines)-1) +
-              ' entries.')
+  # logger.info('The DrugBank input file contains ' + str(len(lines)-1) +
+  #             ' entries.')
 
   # headers are first line of the file, stripped of carriage return
   headers = lines[0].rstrip('\r\n')
@@ -1240,7 +1221,7 @@ def run_or_pickle(function_return_obj, function_name, arg1 = None,
     # retrieve pickle
     function_return_obj = pickle.load(
                           open((str(function_return_obj) +".p"),"rb"))
-    logger.info('We have pickled ' + str(pickle_name))
+    logger.debug('We have pickled ' + str(pickle_name))
   # otherwise we want to run the function
   else:
     # case 1: no arguments
@@ -1282,32 +1263,44 @@ def run_or_pickle(function_return_obj, function_name, arg1 = None,
 
 def main():
   # greeting
-  logger.info("Hi there, you are running drug_repo for drug repositioning!" +
-              " Let's do some mapping.")
+  logger.info("Hi there, you are running drug_repo.py for repositioning " +
+              "of known drugs for schistosomiasis." +
+              " Let's do some mapping!")
   
   #################################
   ### PART 1: FIND DRUG TARGETS ###
   #################################
-
+  
+  logger.info('We are first analysing the ChEMBL input file.')
+  
   # generate chembl dictionary
-  chembl_dic = run_or_pickle("1_chembl_dic", process_chembl)
-
+  chembl_dic = run_or_pickle("1_chembl_dic", process_chembl, CHEMBL_INPUT)
 
   # get list of uniprot ids from chembl_dic
   chembl_uniprot_list = run_or_pickle("1_chembl_uniprot_list",
                                       flatten_dic, chembl_dic, "values")
-  logger.debug(len(chembl_uniprot_list))
+
+  # info
+  logger.info(str(len(chembl_dic)) + ' ChEMBL drugs could be mapped to ' +
+               str(len(chembl_uniprot_list)) + ' unique UniProt ID.')
+
+  logger.info('We are now looking at the DrugBank input file.')
 
   # generate drugbank_dictionary
-  drugbank_dic = run_or_pickle("1_drugbank_dic", process_drugbank)
+  drugbank_dic = run_or_pickle("1_drugbank_dic", process_drugbank, 
+                              DRUGBANK_INPUT)
 
   #logger.debug(drugbank_dic)
 
   # get list of uniprot ids from drugbank
   drugbank_uniprot_list = run_or_pickle("1_drugbank_uniprot_list",
                                     flatten_dic, drugbank_dic, "values")
+  
+  # info
+  logger.info(str(len(drugbank_dic)) + ' DrugBank drugs could be mapped to ' +
+               str(len(drugbank_uniprot_list)) + ' unique UniProt ID.')
 
-  logger.debug(len(drugbank_uniprot_list))
+
 
   # merge lists and rm duplicates
   uniprot_list = run_or_pickle("1_uniprot_list", merge_lists,
@@ -1325,6 +1318,8 @@ def main():
   ############################
   ### PART 2: FIND ARCH    ###
   ############################
+
+  logger.info('We are now building dictionaries of CATH/Pfam to UniProt ids.')
 
   # run or pickle uniprot_to_arch to retrieve cath domain architectures
   cath_dic = run_or_pickle("2_cath_dic", uniprot_to_arch, uniprot_list, 
@@ -1377,7 +1372,8 @@ def main():
   # this is total list of unique schisto uniprot ids
   uniprot_schisto_list = run_or_pickle("3_uniprot_schisto_list", merge_lists,
                         uniprot_schisto_cath_list, uniprot_schisto_pfam_list)
-  #logger.debug(len(uniprot_schisto_list))
+  logger.info('We have identified ' + str(len(uniprot_schisto_list)) + 
+              ' unique schisto targets that point to known drugs.')
 
   ### OVERWRITE UNIPROT_SCHISTO_LIST WITH MADE-UP LIST
   # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
@@ -1392,9 +1388,8 @@ def main():
                                         expasy_filter,
                                         uniprot_schisto_list, "reviewed")
 
-  logger.info('The reviewed uniprot entries are ' + 
+  logger.info('Of those targets, the reviewed uniprot entries are ' + 
               str(len(uniprot_schisto_filt)) +  '.')
-  #logger.debug(len(uniprot_schisto_filt))
 
   # make list of cath ids that point to the uniprot_schisto_list
 
@@ -1448,6 +1443,8 @@ def main():
   ### PART 5 DRUG TARGETS WITH STRUCTURAL INFO   ###
   ##################################################
 
+  logger.info('We are now looking at the drug targets and the  ' +
+              'structural information available about them.')
   # obtain list of targets from drugbank_repo_map and chembl_repo_map
   # these are all the uniprot values that are targets of our potential
   # drug repo candidates
@@ -1464,8 +1461,8 @@ def main():
   tot_drug_targ = run_or_pickle("5_tot_drug_targ", merge_lists, 
                                 chembl_drug_targ, drugbank_drug_targ)
 
-  logger.info('We have ' + str(len(tot_drug_targ)) + ' drug targets' +
-              ' that could be mapped to some schisto target.')
+  logger.info('Overall, we have ' + str(len(tot_drug_targ)) + 
+              ' drug targets that could be mapped to some schisto target.')
 
   # make dictionary uniprot to pdb
   uniprot_pdb_dic = run_or_pickle("5_uniprot_pdb_dic", csv_to_dic, 
@@ -1495,16 +1492,11 @@ def main():
   #                                 uniprot_list, "pdb")
   ###
 
-
-  # # get dictionary of pdb to het group
-  # pdb_het_dic = run_or_pickle("5_pdb_het_dic", lst_dic, PDB_HET)
-
-  # logger.debug(len(pdb_het_dic))
-
   # make dictionary of pdb to ligands
   pdb_lig_dic = run_or_pickle("5_pdb_lig_dic", lst_dic, PDB_LIG)
 
-  logger.debug(len(pdb_lig_dic))
+  logger.info('We made a dictionary of '+ str(len(pdb_lig_dic)) + 
+            ' pdb entries mapped to their ligand identifiers.')
 
   # pdb_het_dic = {'1w27': ['MDO', 'DTT'], '4pww': ['PO4', 'ACY'], '3wng': 
   # ['PRO', 'LYS', 'ILE', 'ASP', 'ASN', 'DPR', 'SO4', 'CL', 'CD'], '2fg4': ['CD']}
@@ -1527,25 +1519,27 @@ def main():
   pdb_lig_pointless_dic = run_or_pickle("5_pdb_lig_pointless_dic",
                                     exclude_values_from_dic, pdb_lig_dic, 
                                     POINTLESS_HET, "exclude")
-  logger.debug(len(pdb_lig_pointless_dic))
+  # logger.debug(len(pdb_lig_pointless_dic))
   
   # second filter, to eliminate those with dash
   pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
                                     exclude_values_from_dic, 
                                     pdb_lig_pointless_dic, 
                                     CONTAINS_DASH, "nomatch")
-  logger.debug(len(pdb_lig_filt_dic))
+  logger.info('We have excluded the pdb entries that only have ' +
+              'ions, metals, peptidic ligands, ' + 
+              'to obtaining ' + str(len(pdb_lig_filt_dic)) +
+              ' pdb entries.')
 
-  flatties = flatten_dic(pdb_lig_filt_dic, "values")
-  flatties.sort()
-  logger.debug(len(flatties))
-
+  # flatties = flatten_dic(pdb_lig_filt_dic, "values")
+  # flatties.sort()S
+  # logger.debug(len(flatties))
 
   # make list of allowed pdbs (with useful ligands)
   pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
                                 pdb_lig_filt_dic, "keys")
-
-  # logger.debug(pdb_w_lig_list)
+  # the length here is obviously the same as the length of dic!
+  #logger.debug(len(pdb_w_lig_list))
 
   # take dic of drug target uniprot to pdb and keep only ones with the pdb
   # we want (ligands)
@@ -1553,26 +1547,9 @@ def main():
                                     exclude_values_from_dic, uniprot_filt,
                                     pdb_w_lig_list, "include")
 
-  logger.debug(len(uniprot_pdb_w_lig))
+  logger.debug(uniprot_pdb_w_lig)
 
 
-
-  # if necessary make dictionary of dictionaries..
-  # otherwise just keep the two dics
-
-  # filtered dictionary of our targets that have some sort of ligand
-  #targ_w_lig_dic = run_or_pickle("5_targ_w_lig_dic", filter_dic_from_list,
-     #                           pdb_het_dic, uniprot_filt)
-
-  #logger.debug(len(targ_w_lig_dic))
-
-
-  # damn = re.compile('.*-.*')
-  # if damn.match(''):
-  #   print('hell yeah')
-
-  # else:
-  #   print('oh no')
 ############################################################################
 
 
