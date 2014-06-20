@@ -153,15 +153,15 @@ POINTLESS_HET = ['0KA','1CU','2OF','3GR','3OF','5GP','__A','A5P',
                   'AGI', 'ALA', 'ARG','ARS','ASN',
                  'ASP', 'ATP','AU','AZI','B','BA','BCT', 'BE', 
                  'BI','BMA','BO3',
-                 '__C','CA', '_CA','CD','CD1','CD3','CD5','CIT', 
+                 '__C','CA', '_CA','CA+','CD','CD1','CD3','CD5','CE1','CIT', 
                  'CL','_CL','CMO','CN','_CN','CO','CO3','CO5','CP','_CP',
                  'CR','CU','_CU', 'CYS', 
                  'DMS', 'DOD','DPR','DT','_DT','DTT','EDO','EOH', 
                  'ER', 'EU','FAD',
                  'FE','FES', 'FMT','FOR','FS4','__G','GDP','GLN','GLU', 
                  'GLY','GOL','GSH','GTP','HC0','HC1','HEM', 
-                 'HF', 'HG','HIS','HOE','ILE','IMD','IN','IPA','K','KO4',
-                 'LEU','LI','LYS', 'MAN', 
+                 'HF', 'HG','HIS','HOE','I','__I','ILE','IMD','IN',
+                 'IPA','K','KO4','LEU','LI','LYS', 'MAN', 
                  'MES', 'MET', 'MG', 'MN','MN5','MN6','MO','MO1',
                  'MO2','MO3','MO4','MO5', 'MO6','MSE','MTO',
                  'MW1','MW3','__N','NA', 
@@ -1474,9 +1474,7 @@ def main():
   uniprot_filt = run_or_pickle("5_uniprot_filt", filter_dic_from_list, 
                               uniprot_pdb_dic, tot_drug_targ)
 
-  logger.debug(len(uniprot_filt))
-
-
+  #logger.debug(uniprot_filt)
 
   logger.info('Of those, ' + str(len(uniprot_filt)) + ' have at least' +
               ' one pdb structure associated to them.')
@@ -1528,12 +1526,13 @@ def main():
                                     CONTAINS_DASH, "nomatch")
   logger.info('We have excluded the pdb entries that only have ' +
               'ions, metals, peptidic ligands, ' + 
-              'to obtaining ' + str(len(pdb_lig_filt_dic)) +
+              'to obtain ' + str(len(pdb_lig_filt_dic)) +
               ' pdb entries.')
 
-  # flatties = flatten_dic(pdb_lig_filt_dic, "values")
-  # flatties.sort()S
-  # logger.debug(len(flatties))
+  #logger.debug(pdb_lig_filt_dic)
+  filtered_ligs = flatten_dic(pdb_lig_filt_dic, "values")
+  filtered_ligs.sort()
+  logger.info(filtered_ligs)
 
   # make list of allowed pdbs (with useful ligands)
   pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
@@ -1547,9 +1546,11 @@ def main():
                                     exclude_values_from_dic, uniprot_filt,
                                     pdb_w_lig_list, "include")
 
-  logger.debug(uniprot_pdb_w_lig)
+  logger.info('We have identified ' + str(len(uniprot_pdb_w_lig)) +
+              ' drug targets that have at least one pdb structure ' +
+              'in complex with a small molecule associated to them.')
 
-
+  # logger.debug(uniprot_pdb_w_lig)
 ############################################################################
 
 
