@@ -148,34 +148,38 @@ PDB_LIG = "lig_pairs.lst"
 # metals, metal-water complexes, various ligands and 20 aminoacids
 # aminoacids: 'ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE',
 #                'LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL']
-POINTLESS_HET = ['0KA','1CU','2OF','3GR','3OF','5GP','__A','A5P',
+POINTLESS_HET = ['0KA','1CU','2OF','3AT','3GR','3OF','5GP','__A','A5P',
                   'ACE','ACT','ACY','ADP','ADN','AG',
-                  'AGI', 'ALA', 'ARG','ARS','ASN',
+                  'AGI', 'ALA','AOV','APC', 'ARG','ARS','ASN',
                  'ASP', 'ATP','AU','AZI','B','BA','BCT', 'BE', 
                  'BI','BMA','BO3',
-                 '__C','CA', '_CA','CA+','CD','CD1','CD3','CD5','CE1','CIT', 
-                 'CL','_CL','CMO','CN','_CN','CO','CO3','CO5','CP','_CP',
+                 '__C','CA', '_CA','CA+','CAC','CD','CD1','CD3','CD5',
+                 'CE1','CIT', 
+                 'CL','_CL','CMO','CMP','CN','_CN','CO','CO3','CO5',
+                 'CP','_CP',
                  'CR','CU','_CU', 'CYS', 
-                 'DMS', 'DOD','DPR','DT','_DT','DTT','EDO','EOH', 
+                 'DMS', 'DOD','DOT','DPR','DT','_DT','DTT','EDO','EMA','EOH', 
                  'ER', 'EU','FAD',
-                 'FE','FES', 'FMT','FOR','FS4','__G','GDP','GLN','GLU', 
+                 'FE','_FE','FE2','FES', 'FMN','FMT','FOR','FS4','__G','G',
+                 'GDP','GLN','GLU', 
                  'GLY','GOL','GSH','GTP','HC0','HC1','HEM', 
-                 'HF', 'HG','HIS','HOE','I','__I','ILE','IMD','IN',
-                 'IPA','K','KO4','LEU','LI','LYS', 'MAN', 
-                 'MES', 'MET', 'MG', 'MN','MN5','MN6','MO','MO1',
-                 'MO2','MO3','MO4','MO5', 'MO6','MSE','MTO',
-                 'MW1','MW3','__N','NA', 
+                 'HF', 'HG','HIS','HLT','HOE','I','__I','ILE','IMD','IN',
+                 'IPA','K','KO4','LA','LEU','LI','LYS', 'MAN', 
+                 'MES', 'MET', 'MG', '_MG','MN','MN5','MN6','MO','MO1',
+                 'MO2','MO3','MO4','MO5', 'MO6','MPD','MSE','MTO',
+                 'MW1','MW3','MYR','__N','NA', 
                  'NA2','NA5', 'NA6','NAD','NAG', 'NAO', 'NAP','NAW',
                  'NH2', 'NH4','NI','NI1','NI2','NI3','NO','_NO',
                  'NO3','__O','O','OC1','OC2','OC3','OC4','OC5',
                  'OC6','OC7','OCL',
-                 'OCM','OCN','OCO','OC8','OF1','OF3','OH','_OH','ORO','OS',
-                 'OXY','PB','PCA', 'PEG','PEG','PLM', 
+                 'OCM','OCN','OCO','OC8','OF1','OF3','OGA','OH','_OH',
+                 'ORO','OS',
+                 'OXY','PB','PCA', 'PEG','PEG','PLM', 'PLP',
                  'PG4', 'PGE','PHE','PO4', 'POP',
                   'PRO', 'PYR','RB','RE','RU','SER', 'SI', 'SN', 
-                  'SO3','SO4','SR', 'TA','THR','TRP', 
+                  'SO3','SO4','SR', 'TA','TB','TBU','THR','TRP', 
                  'TRS', 'TYR','__U','UNL', 'UNX','URE','VAL', 'XE','_XE',
-                 'XYL','YH',
+                 'XYL','YB','YH',
                  'ZN','_ZN','ZN3','ZNO','ZO3', 'ZR']
 
 # regular expression for string containing at least one dash
@@ -1497,7 +1501,8 @@ def main():
             ' pdb entries mapped to their ligand identifiers.')
 
   # pdb_het_dic = {'1w27': ['MDO', 'DTT'], '4pww': ['PO4', 'ACY'], '3wng': 
-  # ['PRO', 'LYS', 'ILE', 'ASP', 'ASN', 'DPR', 'SO4', 'CL', 'CD'], '2fg4': ['CD']}
+  # ['PRO', 'LYS', 'ILE', 'ASP', 'ASN', 'DPR', 'SO4', 'CL', 'CD'], 
+  # '2fg4': ['CD']}
   # logger.debug(len(pdb_het_dic))
   #values = flatten_values(pdb_het_dic)
 
@@ -1532,7 +1537,7 @@ def main():
   #logger.debug(pdb_lig_filt_dic)
   filtered_ligs = flatten_dic(pdb_lig_filt_dic, "values")
   filtered_ligs.sort()
-  logger.info(filtered_ligs)
+  #logger.info(filtered_ligs)
 
   # make list of allowed pdbs (with useful ligands)
   pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
@@ -1551,6 +1556,11 @@ def main():
               'in complex with a small molecule associated to them.')
 
   # logger.debug(uniprot_pdb_w_lig)
+
+
+###test to identify one drug for clustering###
+  logger.info(uniprot_pdb_w_lig)
+
 ############################################################################
 
 
