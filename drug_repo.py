@@ -1219,22 +1219,21 @@ def txt_to_dic(input_file, header1, header2):
   lines = file_to_lines(input_file)
   # get the headers
   headers = lines[0]
-  logger.debug(headers)
+  # logger.debug(headers)
 
   # empty dic
   dic = {}
-  things  = lines[0].split("\t")
-  logger.debug(things)
-  h1_num = header_count(headers, "\t", header1)
-  logger.debug(h1_num)
-  h2_num = header_count(headers, "\t","CANONICAL_SMILES" )
-  logger.debug(h2_num)
 
+  # number of header 1 nad 2
+  h1 = header_count(headers, "\t", header1)
+  h2 = header_count(headers, "\t", header2)
+
+  # populate dictionary
   for i in range(1,len(lines)):
-    dic[lines[i].split("\t")[h1_num]] =  lines[i].split("\t")[h2_num]
+    dic[lines[i].split("\t")[h1]] =  lines[i].split("\t")[h2].rstrip('\r\n')
   
 
-  #return dic
+  return dic
 
 ############################################################################
 
@@ -1590,13 +1589,19 @@ def main():
   # logger.debug(uniprot_pdb_w_lig)
 
 
+  ####################################
+  ### PART 6 MOLECULE CLUSTERING   ###
+  ####################################
+
+
 ###test to identify one drug for clustering###
   #logger.info(uniprot_pdb_w_lig)
 
-  chembl_id_smi_dic = txt_to_dic(CHEMBL_INPUT, "CHEMBL_ID",
-                                       "CANONICAL_SMILES")
+  chembl_id_smi_dic = run_or_pickle("6_chembl_id_smi_dic", txt_to_dic, 
+                                    CHEMBL_INPUT, "CHEMBL_ID",
+                                    "CANONICAL_SMILES")
 
-  logger.debug(chembl_id_smi_dic)
+  logger.debug(chembl_id_smi_dic['CHEMBL960'])
 
 ############################################################################
 
