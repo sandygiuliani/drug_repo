@@ -186,8 +186,8 @@ POINTLESS_HET = ['0KA','1CU','2OF','3AT','3GR','3OF','5GP','__A','A5P',
 # regular expression for string containing at least one dash
 CONTAINS_DASH = re.compile('.*-.*')
 
-# chemical component smilkes dictionary
-CC_SMI = "Components-smiles-stereo-oe.smi"
+# chemical component smiles dictionary
+CC_SMI = "Components-smiles-oe.smi"
 
 ############################################################################
 
@@ -1316,7 +1316,17 @@ def dic_to_txt(dic, file_name):
 ### BABEL_SMI_TO_SDF
 ############################################################################
 # call open babel to convert smiles into sdf
-#def babel_smi_to_sdf():
+# add --gen3d for coordinates + " --gen3d"
+def babel_smi_to_sdf(input_file, output_file):
+  # check if the output exists already
+  if os.path.isfile(output_file) == True:
+    logger.info('The converted file ' + str(output_file) + 
+                ' exists already. If you wish to run the conversion again,' +
+                ' delete it.')
+
+  else:
+   subprocess.call("babel" + " -ismi " + str(input_file) +
+                  " -osdf " + str(output_file) + " --gen2d", shell=True)
 
 ############################################################################
 
@@ -1559,7 +1569,7 @@ def main():
   ### PART 5 DRUG TARGETS WITH STRUCTURAL INFO   ###
   ##################################################
 
-  logger.info('We are now looking at the drug targets and the  ' +
+  logger.info('We are now looking at the drug targets and the ' +
               'structural information available about them.')
   # obtain list of targets from drugbank_repo_map and chembl_repo_map
   # these are all the uniprot values that are targets of our potential
@@ -1679,15 +1689,17 @@ def main():
   ### PART 6 MOLECULE CLUSTERING   ###
   ####################################
 
-
-###test to identify one drug for clustering###
-  #logger.info(uniprot_pdb_w_lig)
-
+  # total chembl drugs to smiles dictionary
   chembl_id_smi_dic = run_or_pickle("6_chembl_id_smi_dic", txt_to_dic, 
                                     CHEMBL_INPUT, "CHEMBL_ID",
                                     "CANONICAL_SMILES")
 
-  logger.debug(chembl_id_smi_dic['CHEMBL960'])
+  #### here filter for only drugs we are interested in!!
+  # filter the dictionary
+
+
+  # here to identify one drug for testing
+  logger.debug(len(chembl_id_smi_dic))
 
   # get filtered_ligs smiles
   cc_smiles = smi_to_dic(CC_SMI, 1, 0)
@@ -1703,12 +1715,20 @@ def main():
   # create file with smiles to feed to openbabel
   dic_to_txt(cc_smi_filt, '6_cc_smi_filt.smi')
 
-
   # convert smiles in sdf with openbabel
 
-  #babel_smi_to_sdf('CC')
+  # ligands converted to sdf
+  # babel_smi_to_sdf('test.smi','test.sdf')
+  
+  babel_smi_to_sdf('6_cc_smi_filt.smi','6_cc_smi_filt.sdf')
+  
+  # possibly test with catcvs input as well before proceeding
+
 
   # run smsd to cluster
+  # look up drugs against the sdf file of chemical components
+  #run_smsd(chembl_id_smi_dic)
+
 
 
 ############################################################################
