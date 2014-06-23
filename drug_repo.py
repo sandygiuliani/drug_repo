@@ -156,9 +156,9 @@ POINTLESS_HET = ['0KA','1CU','2OF','3AT','3GR','3OF','5GP','__A','A5P',
                  '__C','CA', '_CA','CA+','CAC','CD','CD1','CD3','CD5',
                  'CE1','CIT', 
                  'CL','_CL','CMO','CMP','CN','_CN','CO','CO3','CO5',
-                 'CP','_CP',
-                 'CR','CU','_CU', 'CYS', 
-                 'DMS', 'DOD','DOT','DPR','DT','_DT','DTT','EDO','EMA','EOH', 
+                 'CP','_CP','CR','CU','_CU', 'CYS', 
+                 'DMS', 'DOD','DOT','DPR','DT','_DT','DTT',
+                 'DUM','EDO','EMA','EOH', 
                  'ER', 'EU','FAD',
                  'FE','_FE','FE2','FES', 'FMN','FMT','FOR','FS4','__G','G',
                  'GDP','GLN','GLU', 
@@ -178,12 +178,16 @@ POINTLESS_HET = ['0KA','1CU','2OF','3AT','3GR','3OF','5GP','__A','A5P',
                  'PG4', 'PGE','PHE','PO4', 'POP',
                   'PRO', 'PYR','RB','RE','RU','SER', 'SI', 'SN', 
                   'SO3','SO4','SR', 'TA','TB','TBU','THR','TRP', 
-                 'TRS', 'TYR','__U','UNL', 'UNX','URE','VAL', 'XE','_XE',
+                 'TRS', 'TYR','__U','UNL','UNK', 'UNX','URA','URE','V',
+                 'VAL', 'VCA','VAF','XE','_XE',
                  'XYL','YB','YH',
                  'ZN','_ZN','ZN3','ZNO','ZO3', 'ZR']
 
 # regular expression for string containing at least one dash
 CONTAINS_DASH = re.compile('.*-.*')
+
+# chemical component smilkes dictionary
+CC_SMI = "Components-smiles-stereo-oe.smi"
 
 ############################################################################
 
@@ -828,7 +832,7 @@ def expasy_filter(uniprot_list, filter_type):
 ############################################################################
 # list from dictionary's key OR values and flatten it 
 # for the values, flatten list (from list of lists to simple list) 
-# also eliminate duplicates
+# also eliminate duplicates and sort
 
 def flatten_dic(dic, keys_or_val):
   # generate list from values
@@ -842,6 +846,8 @@ def flatten_dic(dic, keys_or_val):
 
   # rm duplicates
   flat_list = list(set(flat_list))
+
+  flat_list.sort()
 
   return flat_list
 ############################################################################
@@ -1241,6 +1247,45 @@ def txt_to_dic(input_file, header1, header2):
 
 
 ############################################################################
+### SMI_TO_DIC FUNCTION
+############################################################################
+# takes smi (comma-sep, without headers) and creates dictionary of header 1 
+# (column number n1) vs header 2 (column number n2)
+def smi_to_dic(input_file, n1, n2):
+  # open for reading
+  lines = file_to_lines(input_file)
+  #logger.debug(lines[18482])
+
+  # empty dic
+  dic = {}
+
+  # populate dictionary
+  for i in range(0,len(lines)):
+    # check line is not empty string
+    split = lines[i].rstrip('\r\n').split("\t")
+    
+    # check the number of items is the same as the number of items in the
+    # first row of the file
+    if len(split) == len(lines[0].split("\t")): 
+    #or len(split) == (len(lines[0].split("\t"))-1):
+
+      if split[n1].rstrip('\r\n') != '' and split[n2].rstrip('\r\n') != '':
+        #logger.debug(split)
+        dic[split[n1]] =  split[n2]
+
+  # lenght total file (nb there are new lines!)      
+  # logger.debug(len(lines))
+  # # lenght dictionary created
+  # logger.debug(len(dic))
+
+  return dic
+
+############################################################################
+
+
+
+
+############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
 # run module and dump in pickle or retreive pickle without running module
@@ -1560,15 +1605,20 @@ def main():
                                     exclude_values_from_dic, 
                                     pdb_lig_pointless_dic, 
                                     CONTAINS_DASH, "nomatch")
+  
+  # ligands we have filtered
+  filtered_ligs = flatten_dic(pdb_lig_filt_dic, "values")
+  #logger.info(len(filtered_ligs))
+
+
   logger.info('We have excluded the pdb entries that only have ' +
               'ions, metals, peptidic ligands, ' + 
               'to obtain ' + str(len(pdb_lig_filt_dic)) +
-              ' pdb entries.')
+              ' pdb entries, mapped to a total of ' +
+              str(len(filtered_ligs)) + ' unique ligands.')
 
   #logger.debug(pdb_lig_filt_dic)
-  filtered_ligs = flatten_dic(pdb_lig_filt_dic, "values")
-  filtered_ligs.sort()
-  #logger.info(filtered_ligs)
+
 
   # make list of allowed pdbs (with useful ligands)
   pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
@@ -1602,6 +1652,15 @@ def main():
                                     "CANONICAL_SMILES")
 
   logger.debug(chembl_id_smi_dic['CHEMBL960'])
+
+  # get filtered_ligs smiles
+  cc_smiles = smi_to_dic(CC_SMI, 1, 0)
+
+  #logger.debug(cc_smiles)
+  # convert smiles in sdf with openbabel
+
+  # run smsd to cluster
+
 
 ############################################################################
 
