@@ -71,7 +71,7 @@ logger.setLevel(logging.DEBUG)
 # create console handler
 ch = logging.StreamHandler()
 # CHANGE THIS TO TUNE LOGGING LEVEL from DEBUG/INFO/WARNING
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
 # create formatter, you can add:
 # '%(levelname)s' for level eg DEBUG, INFO..
 # '%(name)s' for level name, eg __main__ in the log
@@ -203,7 +203,7 @@ def header_count(line, separator, header):
   #set counter to 0
   col_number = 0
   # loop until word matches the header
-  while not line.split(separator)[col_number] == header:
+  while not line.split(separator)[col_number].rstrip('\r\n') == header:
     col_number = col_number + 1
   # return column number
   return col_number
@@ -1210,6 +1210,38 @@ def exclude_values_from_dic(dictionary, filt_list, flag):
 
 
 ############################################################################
+### TXT_TO_DIC FUNCTION
+############################################################################
+# takes txt (comma-sep, with headers) and creates dictionary of header 1 
+# vs header 2
+def txt_to_dic(input_file, header1, header2):
+  # open chembldrugs.txt for reading
+  lines = file_to_lines(input_file)
+  # get the headers
+  headers = lines[0]
+  logger.debug(headers)
+
+  # empty dic
+  dic = {}
+  things  = lines[0].split("\t")
+  logger.debug(things)
+  h1_num = header_count(headers, "\t", header1)
+  logger.debug(h1_num)
+  h2_num = header_count(headers, "\t","CANONICAL_SMILES" )
+  logger.debug(h2_num)
+
+  for i in range(1,len(lines)):
+    dic[lines[i].split("\t")[h1_num]] =  lines[i].split("\t")[h2_num]
+  
+
+  #return dic
+
+############################################################################
+
+
+
+
+############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
 # run module and dump in pickle or retreive pickle without running module
@@ -1440,7 +1472,7 @@ def main():
                                             uniprot_schisto_filt)
 
 
-  #logger.debug(chembl_schisto_filt_map)
+  logger.debug(chembl_schisto_filt_map)
   #logger.debug(drugbank_schisto_filt_map)
 
   ##################################################
@@ -1559,7 +1591,12 @@ def main():
 
 
 ###test to identify one drug for clustering###
-  logger.info(uniprot_pdb_w_lig)
+  #logger.info(uniprot_pdb_w_lig)
+
+  chembl_id_smi_dic = txt_to_dic(CHEMBL_INPUT, "CHEMBL_ID",
+                                       "CANONICAL_SMILES")
+
+  logger.debug(chembl_id_smi_dic)
 
 ############################################################################
 
