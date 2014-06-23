@@ -1608,7 +1608,7 @@ def main():
   
   # ligands we have filtered
   filtered_ligs = flatten_dic(pdb_lig_filt_dic, "values")
-  #logger.info(len(filtered_ligs))
+  logger.info(len(filtered_ligs))
 
 
   logger.info('We have excluded the pdb entries that only have ' +
@@ -1656,7 +1656,14 @@ def main():
   # get filtered_ligs smiles
   cc_smiles = smi_to_dic(CC_SMI, 1, 0)
 
-  #logger.debug(cc_smiles)
+  #logger.debug(len(cc_smiles))
+
+  # ligands we ar intrested in, mapped to their smiles
+  cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
+                              cc_smiles,filtered_ligs)
+
+  logger.debug(len(cc_smi_filt))
+
   # convert smiles in sdf with openbabel
 
   # run smsd to cluster
