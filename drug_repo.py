@@ -1286,6 +1286,42 @@ def smi_to_dic(input_file, n1, n2):
 
 
 ############################################################################
+### DIC_TO_TXT
+############################################################################
+# take dic and write to file as tab-sep file
+def dic_to_txt(dic, file_name):
+
+  #try remove file if it exists already
+  if os.path.isfile(file_name) == True:
+    os.remove(file_name)
+
+
+  with open(file_name, 'a') as myfile:
+
+    for item in dic:
+      line = str(dic[item])+ "\t" + str(item) + "\r\n"
+      # logger.debug(line)
+      myfile.write(line)
+      #myfile.write('\n')
+      # don't forget you will have new line at the end!
+
+############################################################################
+
+
+
+
+
+
+############################################################################
+### BABEL_SMI_TO_SDF
+############################################################################
+# call open babel to convert smiles into sdf
+#def babel_smi_to_sdf():
+
+############################################################################
+
+
+############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
 # run module and dump in pickle or retreive pickle without running module
@@ -1664,7 +1700,13 @@ def main():
 
   logger.debug(len(cc_smi_filt))
 
+  # create file with smiles to feed to openbabel
+  dic_to_txt(cc_smi_filt, '6_cc_smi_filt.smi')
+
+
   # convert smiles in sdf with openbabel
+
+  #babel_smi_to_sdf('CC')
 
   # run smsd to cluster
 
