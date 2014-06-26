@@ -13,11 +13,9 @@ Q. What is schistosomiasis?
 A. A very nasty parasitic disease affecting over 200 million people. Learn more about schistosomiasis on the [World Health Organization website](http://www.who.int/topics/schistosomiasis/en/)  
 Q. How does the tool work?  
 A. By mapping! known drugs -> their targets -> their domain architecture -> parasite targets  
-Q. What is archindex?  
-A. The main script calls archindex, code kindly provided by Dr Laskowski. For more information, please visit the [ArchSchema website](http://www.ebi.ac.uk/thornton-srv/databases/archschema), or read the [main reference for ArchSchema](http://www.ncbi.nlm.nih.gov/pubmed/20299327)  
 
 
-**CONTENTS**
+**CONTENTS**  
 * drug_repo.py - Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.
 * chembl\_drugs.txt - ChEMBL drugs; downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drugstore/)
 * chembl\_drugtargets.txt - ChEMBL drug targets; downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drug/targets/) and manually edited to strip a newline character at lines 383/384.  
@@ -28,7 +26,12 @@ A. The main script calls archindex, code kindly provided by Dr Laskowski. For mo
 * het_pairs.lst - pdb to Het groups mapping file; downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a), accessed 12/06/2014  
 * lig_pairs.lst - pdb to ligand mapping file; downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a), accessed 17/06/2014  
 * Components-smiles-*.smi - chemical components dictionary in smiles format (stereo for those including stereocenters, oa for OpenEye and cactvs for CACTVS-generated); downloaded from [RCSB Ligand Expo Downloads](http://ligand-expo.rcsb.org/ld-download.html), in the SMILES/InChi data files, accessed 20/06/2014  
-* \*.p - any .p file is a pickle (for caching purposes) if there are any around, it means I need to move them across machines, please ignore
+* \*.p - any .p file is a pickle (for caching purposes) if there are any around, it means I need to move them across machines, please ignore  
+
+
+**REQUIREMENTS**  
+* ArchIndex/ArchSchema - kindly provided by Dr Laskowski. For more information, please visit the [ArchSchema website](http://www.ebi.ac.uk/thornton-srv/databases/archschema), or read the [main reference for ArchSchema](http://www.ncbi.nlm.nih.gov/pubmed/20299327)  
+* SMSD (Small Molecule Subgraph Detector). For more information, please visit the [SMSD website](http://www.ebi.ac.uk/thornton-srv/software/SMSD/), or the [GitHub repository](https://github.com/asad/SMSD)  
 
 
 **CHECKLIST**  
@@ -50,11 +53,11 @@ drug_repo.py development:
 **LICENSE**  
 Copyright &copy; 2014 Sandra Giuliani  
 This repository is licensed under the terms of the MIT license. Please see LICENSE.md for more information.  
-The MIT license is approved by the [Open Source Initiative](http://opensource.org/licenses)
+The MIT license is approved by the [Open Source Initiative](http://opensource.org/licenses)  
 
 
 **DISCLAIMER**  
-THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback is welcome but please be kind.  
+THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback is welcome but please be kind.    
 
 
 **CONTACT**  
