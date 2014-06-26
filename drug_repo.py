@@ -1330,6 +1330,8 @@ def babel_smi_to_sdf(input_file, output_file):
    subprocess.call("babel" + " -ismi " + str(input_file) +
                   " -osdf " + str(output_file) + " --gen3D -d", shell=True)
 
+  # nb this module returns None! it just writes to output.sdf
+
 ############################################################################
 
 
@@ -1339,17 +1341,28 @@ def babel_smi_to_sdf(input_file, output_file):
 ### RUN_SMSD
 ############################################################################
 # call SMSD
-# might need to increase Java max heap size
 def run_smsd(query, target):
+  # query is smile string, target id sdf 3d file
   # check if the output exists already
   # if os.path.isfile(output_file) == True:
   #   logger.info('The converted file ' + str(output_file) + 
   #               ' exists already. If you wish to run the conversion again,' +
   #               ' delete it.')
-  
+
+  # increase Java max heap size
+  # subprocess.Popen(["export JVM_ARGS=\"-Xms1024m -Xmx1024m\""], shell=True)
+  # subprocess.Popen(["java -Xmx1024m ..."], shell=True)
+
   # current dir
   initial_dir = os.getcwd()
   logger.debug(initial_dir)
+
+  # check if the target file is in the current directory
+  if os.path.isfile(target) == True:
+    logger.debug('it is here')
+
+  else:
+    logger.debug('no here')
 
   # move to SMSD directory
   os.chdir(SMSD_PATH)
@@ -1360,9 +1373,15 @@ def run_smsd(query, target):
   # can also include cwd=SMSD_PATH together with shell=True in the command
   # for instance:
   # "sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SMI -t \"CCCN\" -O SMI -o test.smi"
-  subprocess.Popen(
-     ["sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SDF -t " +
-     str(target) + " -O SMI -o test.smi"], 
+  # -r remove hydrogens
+  # -m produce mapping output (molDescriptors.out, mcs.out and .mol files)
+  # -b match bond type (bond sensitive, faster run!)
+  # -z match rings (this is needed otherwise very slow)
+  # -x match atom type... (?)
+  # -g for png image
+  # recommended options are -r -z -b
+  subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(query) + "\" -T SDF -t " +
+     str(target) + " -m -r -z -b -g", 
      shell=True)
 
   os.chdir(initial_dir)
@@ -1774,8 +1793,6 @@ def main():
   cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
                               cc_smiles,filtered_ligs)
 
-  logger.debug(len(cc_smi_filt))
-
   # cc: create file with smiles to feed to openbabel
   dic_to_txt(cc_smi_filt, '6_cc_smi_filt.smi')
 
@@ -1783,23 +1800,30 @@ def main():
   # babel_smi_to_sdf('test.smi','test.sdf')
 
   # ligands converted to sdf 3d and no hydrogens
-  babel_smi_to_sdf('test.smi','test_noh.sdf')
+  #babel_smi_to_sdf('test.smi','test_noh.sdf')
 
   
   # convert smiles to sdf
-  #babel_smi_to_sdf('6_cc_smi_filt.smi','6_cc_smi_filt.sdf')
+  babel_smi_to_sdf('6_cc_smi_filt.smi','6_cc_smi_filt.sdf')
   
+  # this number is the same number of entries I should obtained in the 
+  # SMSD output!! check!
+  logger.info('We have mapped ' + str(len(cc_smi_filt)) + 
+              ' small-molecule chemical components to their smiles, ' +
+              'and converted them to 3d sdf.')
+
+
   # possibly test with catcvs input as well before proceeding
 
 
   # run smsd to cluster
   # look up drugs against the sdf file of chemical components
-  drug_smiles = chembl_id_smi_dic['CHEMBL960']
+  #drug_smiles = chembl_id_smi_dic['CHEMBL960']
 
-
+  # JN7 "C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1"
   # run smsd
-  run_smsd(drug_smiles,'6_cc_smi_filt.sdf')
-
+  # run_smsd(drug_smiles,'6_cc_smi_filt.sdf')
+  run_smsd("C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1","test_3d.sdf")
 
 
 ############################################################################
