@@ -1358,43 +1358,48 @@ def run_smsd(query, target):
   logger.debug(initial_dir)
 
   # check if the target file is in the current directory
-  if os.path.isfile(target) == True:
-    logger.debug('it is here')
+  if os.path.isfile(target) == False:
+    logger.debug('uh-oh')
+    logger.error('The file ' + target + ' cannot be found' +
+                 ' in the current directory!')
+    # warning
+    logger.warning('The program is aborted.')
+    # exit python
+    sys.exit()
+    # logger.debug("cp " + target + " " + SMSD_PATH + "/" + target)
 
   else:
-    logger.debug('no here')
-
-  # move to SMSD directory
-  os.chdir(SMSD_PATH)
-  directory = os.getcwd()
-  logger.debug(directory)
-
-  # run process
-  # can also include cwd=SMSD_PATH together with shell=True in the command
-  # for instance:
-  # "sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SMI -t \"CCCN\" -O SMI -o test.smi"
-  # -r remove hydrogens
-  # -m produce mapping output (molDescriptors.out, mcs.out and .mol files)
-  # -b match bond type (bond sensitive, faster run!)
-  # -z match rings (this is needed otherwise very slow)
-  # -x match atom type... (?)
-  # -g for png image
-  # recommended options are -r -z -b
-  subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(query) + "\" -T SDF -t " +
-     str(target) + " -m -r -z -b -g", 
+    logger.debug('alright, the file is here')
+    # copy the file to the SMSD directory
+    subprocess.call("cp " + target + " " + SMSD_PATH + "/" + target, 
      shell=True)
 
-  os.chdir(initial_dir)
-  directory = os.getcwd()
-  logger.debug(directory)
+    # move to SMSD directory
+    os.chdir(SMSD_PATH)
+    directory = os.getcwd()
+    logger.debug(directory)
 
-  # # navigate into smsd
-  # subprocess.call("cd ../SMSD1.5.1/")
-  # # run SMSD
-  # subprocess.call(
-  #   "sh SMSD.sh -Q SMI -q 'CCC' -T SMI -t 'CCN' -O SMI -o hopefully.smi")
-  # #subprocess.call("smsd" + " -ismi " + str(input_file) +
-  #                 # " -osdf " + str(output_file) + " --gen2d", shell=True)
+    # run SMSD
+    # can also include cwd=SMSD_PATH together with shell=True in the command
+    # for instance:
+    # "sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SMI -t \"CCCN\" -O SMI -o test.smi"
+    # -r remove hydrogens
+    # -m produce mapping output (molDescriptors.out, mcs.out and .mol files)
+    # -b match bond type (bond sensitive, faster run!)
+    # -z match rings (this is needed otherwise very slow)
+    # -x match atom type... (?)
+    # -g for png image
+    # recommended options are -r -z -b
+    subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(query) + "\" -T SDF -t " +
+       str(target) + " -m -r -z -b -g", 
+       shell=True)
+
+
+    # move back to working directory!
+    os.chdir(initial_dir)
+    directory = os.getcwd()
+    logger.debug(directory)
+
 
 ############################################################################
 
@@ -1823,7 +1828,8 @@ def main():
   # JN7 "C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1"
   # run smsd
   # run_smsd(drug_smiles,'6_cc_smi_filt.sdf')
-  run_smsd("C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1","test_3d.sdf")
+  run_smsd("C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1",
+          "6_cc_smi_filt.sdf")
 
 
 ############################################################################
