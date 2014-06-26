@@ -189,6 +189,9 @@ CONTAINS_DASH = re.compile('.*-.*')
 # chemical component smiles dictionary
 CC_SMI = "Components-smiles-oe.smi"
 
+# absolute path to SMSD directory (where SMSD.sh is)
+SMSD_PATH = "/home/sandra/SMSD1.5.1"
+
 ############################################################################
 
 
@@ -1310,13 +1313,12 @@ def dic_to_txt(dic, file_name):
 
 
 
-
-
 ############################################################################
 ### BABEL_SMI_TO_SDF
 ############################################################################
 # call open babel to convert smiles into sdf
 # add --gen3d for coordinates + " --gen3d"
+# -d to delete hydrogens
 def babel_smi_to_sdf(input_file, output_file):
   # check if the output exists already
   if os.path.isfile(output_file) == True:
@@ -1326,9 +1328,58 @@ def babel_smi_to_sdf(input_file, output_file):
 
   else:
    subprocess.call("babel" + " -ismi " + str(input_file) +
-                  " -osdf " + str(output_file) + " --gen2d", shell=True)
+                  " -osdf " + str(output_file) + " --gen3D -d", shell=True)
 
 ############################################################################
+
+
+
+
+############################################################################
+### RUN_SMSD
+############################################################################
+# call SMSD
+# might need to increase Java max heap size
+def run_smsd(query, target):
+  # check if the output exists already
+  # if os.path.isfile(output_file) == True:
+  #   logger.info('The converted file ' + str(output_file) + 
+  #               ' exists already. If you wish to run the conversion again,' +
+  #               ' delete it.')
+  
+  # current dir
+  initial_dir = os.getcwd()
+  logger.debug(initial_dir)
+
+  # move to SMSD directory
+  os.chdir(SMSD_PATH)
+  directory = os.getcwd()
+  logger.debug(directory)
+
+  # run process
+  # can also include cwd=SMSD_PATH together with shell=True in the command
+  # for instance:
+  # "sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SMI -t \"CCCN\" -O SMI -o test.smi"
+  subprocess.Popen(
+     ["sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SDF -t " +
+     str(target) + " -O SMI -o test.smi"], 
+     shell=True)
+
+  os.chdir(initial_dir)
+  directory = os.getcwd()
+  logger.debug(directory)
+
+  # # navigate into smsd
+  # subprocess.call("cd ../SMSD1.5.1/")
+  # # run SMSD
+  # subprocess.call(
+  #   "sh SMSD.sh -Q SMI -q 'CCC' -T SMI -t 'CCN' -O SMI -o hopefully.smi")
+  # #subprocess.call("smsd" + " -ismi " + str(input_file) +
+  #                 # " -osdf " + str(output_file) + " --gen2d", shell=True)
+
+############################################################################
+
+
 
 
 ############################################################################
@@ -1693,41 +1744,61 @@ def main():
   chembl_id_smi_dic = run_or_pickle("6_chembl_id_smi_dic", txt_to_dic, 
                                     CHEMBL_INPUT, "CHEMBL_ID",
                                     "CANONICAL_SMILES")
+  
+  logger.debug(len(chembl_id_smi_dic))
+
+  # drugbank? the smiles are not in the input drugbank file
+
+
 
   #### here filter for only drugs we are interested in!!
   # filter the dictionary
+  # drugs that point to targets that have pdb structure bound to small mol
 
 
   # here to identify one drug for testing
-  logger.debug(len(chembl_id_smi_dic))
+  #CHEMBL960 is leflunomide
+  logger.debug(chembl_id_smi_dic['CHEMBL960'])
+
+
+  ############
+  ### get chemical components smiles ###
+  ############
 
   # get filtered_ligs smiles
   cc_smiles = smi_to_dic(CC_SMI, 1, 0)
 
   #logger.debug(len(cc_smiles))
 
-  # ligands we ar intrested in, mapped to their smiles
+  # cc we ar interested in, mapped to their smiles
   cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
                               cc_smiles,filtered_ligs)
 
   logger.debug(len(cc_smi_filt))
 
-  # create file with smiles to feed to openbabel
+  # cc: create file with smiles to feed to openbabel
   dic_to_txt(cc_smi_filt, '6_cc_smi_filt.smi')
-
-  # convert smiles in sdf with openbabel
 
   # ligands converted to sdf
   # babel_smi_to_sdf('test.smi','test.sdf')
+
+  # ligands converted to sdf 3d and no hydrogens
+  babel_smi_to_sdf('test.smi','test_noh.sdf')
+
   
-  babel_smi_to_sdf('6_cc_smi_filt.smi','6_cc_smi_filt.sdf')
+  # convert smiles to sdf
+  #babel_smi_to_sdf('6_cc_smi_filt.smi','6_cc_smi_filt.sdf')
   
   # possibly test with catcvs input as well before proceeding
 
 
   # run smsd to cluster
   # look up drugs against the sdf file of chemical components
-  #run_smsd(chembl_id_smi_dic)
+  drug_smiles = chembl_id_smi_dic['CHEMBL960']
+
+
+  # run smsd
+  run_smsd(drug_smiles,'6_cc_smi_filt.sdf')
 
 
 
