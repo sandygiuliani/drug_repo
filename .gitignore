@@ -1,0 +1,15 @@
+# files for git to ignore #
+###########################
+
+
+# sdf files - often to big
+*.sdf
+
+# pickles
+*.p
+
+# pickles backupfolders
+pickles_*/
+
+# anything starting with 'test'
+test*
