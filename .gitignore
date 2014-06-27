@@ -1,6 +1,8 @@
 # files for git to ignore #
 ###########################
 
+# my log
+log_drug_repo.log
 
 # sdf files - often to big
 *.sdf
