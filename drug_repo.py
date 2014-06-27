@@ -1622,16 +1622,20 @@ def main():
                                   chembl_dic, cath_dic,
                                   uniprot_schisto_cath_dic, pfam_dic, 
                                   uniprot_schisto_pfam_dic)
-  #logger.debug(chembl_repo_dic)
+  # logger.debug(len(chembl_repo_map))
+
+  # list of drugs that are in the map, to be used in part 6
+  chembl_repo_drug_list = chembl_repo_map.keys()
+  # logger.debug(chembl_repo_drug_list)
 
   # generate big map for drugbank drugs
   drugbank_repo_map = run_or_pickle("4_drugbank_repo_map", drugbank_repo, 
                                     drugbank_dic, cath_dic,
                                     uniprot_schisto_cath_dic, pfam_dic, 
                                     uniprot_schisto_pfam_dic)
-  #logger.debug(drugbank_repo_dic)
+  logger.debug(len(drugbank_repo_map))
 
-
+  # filtered ap for reviewed entries!
   # this one should then include the drugbank entries once they are ready
   # obtain filtered mapping dictionary for filtered entries
   chembl_schisto_filt_map = run_or_pickle("4_chembl_schisto_filt_map",
@@ -1659,7 +1663,7 @@ def main():
   # drug repo candidates
   chembl_drug_targ = run_or_pickle("5_chembl_drug_targ", 
                                   list_second_level_dic, chembl_repo_map)
-  #logger.debug(len(chembl_drug_targ))
+  # logger.debug(len(chembl_drug_targ))
   
   drugbank_drug_targ = run_or_pickle("5_drugbank_drug_targ", 
                                   list_second_level_dic, drugbank_repo_map)
@@ -1772,20 +1776,21 @@ def main():
   ### PART 6 MOLECULE CLUSTERING   ###
   ####################################
 
-  # total chembl drugs to smiles dictionary
+  # total chembl drugs to smiles dictionary - 10406 chembl drugs
   chembl_id_smi_dic = run_or_pickle("6_chembl_id_smi_dic", txt_to_dic, 
                                     CHEMBL_INPUT, "CHEMBL_ID",
                                     "CANONICAL_SMILES")
   
   logger.debug(len(chembl_id_smi_dic))
 
-  # drugbank? the smiles are not in the input drugbank file
 
-
-
-  #### here filter for only drugs we are interested in!!
-  # filter the dictionary
-  # drugs that point to targets that have pdb structure bound to small mol
+  # filter dictionary to only drugs that are in chembl_repo_drug_list
+  chembl_id_smi_filt = run_or_pickle("6_chembl_id_smi_filt", 
+                                      filter_dic_from_list, 
+                                      chembl_id_smi_dic,chembl_repo_drug_list)
+  logger.debug(len(chembl_id_smi_filt))
+  
+  #### drugbank? the smiles are not in the input drugbank file
 
 
   # here to identify one drug for testing
