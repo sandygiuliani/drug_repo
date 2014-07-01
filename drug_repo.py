@@ -144,7 +144,16 @@ PDB_HET = "het_pairs.lst"
 # pdb to lig mapping file
 PDB_LIG = "lig_pairs.lst"
 
-# list of xtal het groups (ligands) we are not interested in
+# csv containing list of xtal het groups (ligands) we are not interested in
+# here below one of methods to manually add up eg short het groups
+  # thingo = []
+  # logger.debug(len(cc_smi_filt))
+  # for thing in cc_smi_filt:
+  #   #logger.debug(thing)
+  #   if len(cc_smi_filt[thing]) < 5:
+  #     thingo.append(thing)
+
+  # logger.debug(thingo)
 POINTLESS_HET = "pointless_het.csv"
 
 # regular expression for string containing at least one dash
@@ -1738,6 +1747,7 @@ def main():
                                     POINTLESS_HET)
   logger.debug(len(pointless_het))
 
+
   # filter dictionary pdb to lig, excluding lig that are in the 'pointless'
   # list
   pdb_lig_pointless_dic = run_or_pickle("5_pdb_lig_pointless_dic",
@@ -1819,12 +1829,9 @@ def main():
 
   #logger.debug(len(cc_smiles))
 
-  # cc we ar interested in, mapped to their smiles
+  # dic of cc we ar interested in, mapped to their smiles
   cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
                               cc_smiles,filtered_ligs)
-
-  logger.debug(len(cc_smi_filt))
-
   ###############
   #openbabel conversion
   ###############
@@ -1865,7 +1872,6 @@ def main():
 
   # run smsd with cc_smi_filt
   
-  csv_to_lst('pointless_het.csv')
 
 ############################################################################
 
