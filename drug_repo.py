@@ -145,54 +145,56 @@ PDB_HET = "het_pairs.lst"
 PDB_LIG = "lig_pairs.lst"
 
 # list of xtal het groups (ligands) we are not interested in
-# metals, metal-water complexes, various ligands and 20 aminoacids
-# aminoacids: 'ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE',
-#                'LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL']
-POINTLESS_HET = ['0KA','1CU','202','2CL','2OF','3AT','3BB','3BR','3GR','3OF',
-                  '4MZ','5GP','5MP','__A','A5P',
-                  'ACE','ACN','ACT','ACY','ADP','ADN','AF4','AG',
-                  'AGI', 'ALA','AOV','APC', 'ARG','ARS','ASN',
-                 'ASP', 'ATP','AU','AZI','B','BA','BCT', 'BE','BF2', 
-                 'BI','BMA','BO3',
-                 '__C','CA', '_CA','CA+','CAC','CD','CD1','CD3','CD5',
-                 'CE1','CIT', 
-                 'CL','_CL','CLX','CMO','CMP','CN','_CN','CO', 
-                 'CP2','CO3','CO5',
-                 'CP','_CP','CR','CU','_CU','CUA','CUL','CUO', 
-                 'CYN','CYS', 'C14','DAZ','DCD','DCE','DEI',
-                 'DMS', 'DOD','DOT','DPR','DT','_DT','DTT',
-                 'DUM','DZZ','EDN','EDO','EHN','EMA','EOH', 
-                 'ER', 'ETA','EU','FAD',
-                 'FE','_FE','FE2','FES', 'FMN','FMT','FOR','FS4','__G','G',
-                 'GDP','GLN','GLU', 
-                 'GLY','GOL','GSH','GTP','HC0','HC1','HEM', 'HE2','HE4','HEX',
-                 'HF', 'HG','HIS','HLT','HOE','I','__I','ILE','IMD','IN',
-                 'IPA','IR','_IR','IUM','K','KO4','LA','LEU','LI',
-                 'LYS', 'MAN', 'MEE',
-                 'MES', 'MET', 'MG', '_MG','MH2','MN','MN5','MN6','MO','MO1',
-                 'MO2','MO3','MO4','MO5', 'MO6','MPD','MPR','MSE','MTO',
-                 'MW1','MW3','MYR','__N','N3D','NA', 
-                 'NA2','NA5', 'NA6','NAD','NAG', 'NAO', 'NAP','NAW','ND4',
-                 'NH2','NH3', 'NH4','NHY','NI','NI1','NI2','NI3','NO','_NO',
-                 'NO3','__O','O','OC1','OC2','OC3','OC4','OC5',
-                 'OC6','OC7','OCL',
-                 'OCM','OCN','OCO','OC8','OF1','OF3','OGA','OH','_OH','OMO',
-                 'ORO','OS',
-                 'OXY','PB','PCA','PCL','PC4', 'PD','_PD','PEG','PEG','PEO',
-                 'PEU','PLM', 'PLP',
-                 'PG4', 'PGE','PGR','PHE','PHS','PO2','PO4', 'POP','PR','_PR',
-                  'PRO', 'PS5','PT','_PT','PUT','PYR','RB','RE','RU',
-                  'SER','SEY', 'SI', 'SN', 'SO2',
-                  'SO3','SO4','SR','S3H','S4H','SUL', 'TA','TB','TBU',
-                  'TEA','THR','TMO','TRP', 
-                 'TRS', 'TYR','__U','ULI','UNL','UNK', 'UNX','URA',
-                 'URE','V',
-                 'VAL', 'VCA','VAF','VXA','W','__W','XE','_XE','XL3',
-                 'XYL','YB','YH','YPT',
-                 'ZN','_ZN','ZN3','ZNO','ZO3', 'ZR']
+POINTLESS_HET = "pointless_het.csv"
+
+# POINTLESS_HET = ['0KA','1CU','202','2CL','2OF','3AT','3BB','3BR','3GR','3OF',
+#                   '4MZ','5GP','5MP','__A','A5P',
+#                   'ACE','ACN','ACT','ACY','ADP','ADN','AF4','AG',
+#                   'AGI', 'ALA','AOV','APC', 'ARG','ARS','ASN',
+#                  'ASP', 'ATP','AU','AZI','B','BA','BCT', 'BE','BF2', 
+#                  'BI','BMA','BO3',
+#                  '__C','CA', '_CA','CA+','CAC','CD','CD1','CD3','CD5',
+#                  'CE1','CIT', 
+#                  'CL','_CL','CLX','CMO','CMP','CN','_CN','CO', 
+#                  'CP2','CO3','CO5',
+#                  'CP','_CP','CR','CU','_CU','CUA','CUL','CUO', 
+#                  'CYN','CYS', 'C14','DAZ','DCD','DCE','DEI',
+#                  'DMS', 'DOD','DOT','DPR','DT','_DT','DTT',
+#                  'DUM','DZZ','EDN','EDO','EHN','EMA','EOH', 
+#                  'ER', 'ETA','EU','FAD',
+#                  'FE','_FE','FE2','FES', 'FMN','FMT','FOR','FS4','__G','G',
+#                  'GDP','GLN','GLU', 
+#                  'GLY','GOL','GSH','GTP','HC0','HC1','HEM', 'HE2','HE4','HEX',
+#                  'HF', 'HG','HIS','HLT','HOE','I','__I','ILE','IMD','IN',
+#                  'IPA','IR','_IR','IUM','K','KO4','LA','LEU','LI',
+#                  'LYS', 'MAN', 'MEE',
+#                  'MES', 'MET', 'MG', '_MG','MH2','MN','MN5','MN6','MO','MO1',
+#                  'MO2','MO3','MO4','MO5', 'MO6','MPD','MPR','MSE','MTO',
+#                  'MW1','MW3','MYR','__N','N3D','NA', 
+#                  'NA2','NA5', 'NA6','NAD','NAG', 'NAO', 'NAP','NAW','ND4',
+#                  'NH2','NH3', 'NH4','NHY','NI','NI1','NI2','NI3','NO','_NO',
+#                  'NO3','__O','O','OC1','OC2','OC3','OC4','OC5',
+#                  'OC6','OC7','OCL',
+#                  'OCM','OCN','OCO','OC8','OF1','OF3','OGA','OH','_OH','OMO',
+#                  'ORO','OS',
+#                  'OXY','PB','PCA','PCL','PC4', 'PD','_PD','PEG','PEG','PEO',
+#                  'PEU','PLM', 'PLP',
+#                  'PG4', 'PGE','PGR','PHE','PHS','PO2','PO4', 'POP','PR','_PR',
+#                   'PRO', 'PS5','PT','_PT','PUT','PYR','RB','RE','RU',
+#                   'SER','SEY', 'SI', 'SN', 'SO2',
+#                   'SO3','SO4','SR','S3H','S4H','SUL', 'TA','TB','TBU',
+#                   'TEA','THR','TMO','TRP', 
+#                  'TRS', 'TYR','__U','ULI','UNL','UNK', 'UNX','URA',
+#                  'URE','V',
+#                  'VAL', 'VCA','VAF','VXA','W','__W','XE','_XE','XL3',
+#                  'XYL','YB','YH','YPT',
+#                  'ZN','_ZN','ZN3','ZNO','ZO3', 'ZR']
 
 # regular expression for string containing at least one dash
 CONTAINS_DASH = re.compile('.*-.*')
+
+# regular expression for string containing at least one '#'
+CONTAINS_COMMENT = re.compile('#.*')
 
 # chemical component smiles dictionary
 CC_SMI = "Components-smiles-oe.smi"
@@ -1111,6 +1113,54 @@ def csv_to_dic(csv_file):
 
 
 ############################################################################
+### CSV_TO_LST
+############################################################################
+# take csv file and return single list of the last line
+# it does not properly skip the comment lines! it works but better be fixed!!
+
+def csv_to_lst(csv_file):
+
+# NB ideally you need to add wrapper to properly skip the comment lines!!
+# see below
+  # # open and read file
+  # lines = file_to_lines(csv_file)
+  # # count comment lines
+  # comment_count = 0
+  # # loop over each line
+  # for line in lines:
+  #   logger.debug(line)
+  #   # skip comment lines
+  #   if CONTAINS_COMMENT.match(line):
+  #     comment_count = comment_count + 1
+  # logger.debug(comment_count)
+
+
+  with open(csv_file) as f:
+
+    #,quoting=csv.QUOTE_MINIMAL
+    # get rows with csv reader
+    # the quotechar is for ignoring the single quotes I have in the list
+    # otherwise you end up with double quotes in the list
+    rows = csv.reader(f, delimiter=',', quotechar='\'', skipinitialspace=True)
+    for row in rows:
+      # overwrites until it reaches last row
+      csv_list = row
+      #logger.debug(row)
+    
+    # order list and rm duplicates
+    csv_list = list(set(csv_list))
+    csv_list.sort()
+
+  # logger.debug(csv_list)
+  # return the list
+  return csv_list
+
+############################################################################
+
+
+
+
+############################################################################
 ### FILTER_DIC_FROM_LIST
 ############################################################################
 # take dictionary and return filtered dictionary with only entries that are
@@ -1726,12 +1776,17 @@ def main():
   #                                   POINTLESS_HET, "exclude")
   # logger.debug(len(pdb_het_filt_dic))
 
+
+  pointless_het = run_or_pickle("5_pointless_het", csv_to_lst,
+                                    POINTLESS_HET)
+  logger.debug(len(pointless_het))
+
   # filter dictionary pdb to lig, excluding lig that are in the 'pointless'
   # list
   pdb_lig_pointless_dic = run_or_pickle("5_pdb_lig_pointless_dic",
                                     exclude_values_from_dic, pdb_lig_dic, 
-                                    POINTLESS_HET, "exclude")
-  # logger.debug(len(pdb_lig_pointless_dic))
+                                    pointless_het, "exclude")
+  logger.debug(len(pdb_lig_pointless_dic))
   
   # second filter, to eliminate those with dash
   pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
@@ -1793,7 +1848,7 @@ def main():
   #### drugbank? the smiles are not in the input drugbank file
 
 
-  # here to identify one drug for testing
+  # identify one drug for testing
   #CHEMBL960 is leflunomide
   logger.debug(chembl_id_smi_dic['CHEMBL960'])
 
@@ -1811,6 +1866,11 @@ def main():
   cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
                               cc_smiles,filtered_ligs)
 
+  logger.debug(len(cc_smi_filt))
+
+  ###############
+  #openbabel conversion
+  ###############
   # cc: create file with smiles to feed to openbabel
   dic_to_txt(cc_smi_filt, '6_cc_smi_filt.smi')
 
@@ -1829,6 +1889,7 @@ def main():
   logger.info('We have mapped ' + str(len(cc_smi_filt)) + 
               ' small-molecule chemical components to their smiles, ' +
               'and converted them to 3d sdf.')
+  ###############
 
 
   # possibly test with catcvs input as well before proceeding
@@ -1839,11 +1900,15 @@ def main():
   #drug_smiles = chembl_id_smi_dic['CHEMBL960']
 
   # JN7 "C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1"
+
   # run smsd
   # run_smsd(drug_smiles,'6_cc_smi_filt.sdf')
-  run_smsd("C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1",
-          "6_cc_smi_filt.sdf")
+  # run_smsd("C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1",
+  #         "6_cc_smi_filt.sdf")
 
+  # run smsd with cc_smi_filt
+  
+  csv_to_lst('pointless_het.csv')
 
 ############################################################################
 
