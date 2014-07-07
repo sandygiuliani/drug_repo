@@ -1146,6 +1146,7 @@ def filter_dic_from_list(dictionary,filt_list):
 ### LIST_SECOND_LEVEL_DIC
 ############################################################################
 # take dictionary of dictionaries and return unique list of the second level
+# also for values of a simple dic
 
 def list_second_level_dic(dictionary):
   second_list = []
@@ -1789,7 +1790,12 @@ def main():
               ' drug targets that have at least one pdb structure ' +
               'in complex with a small molecule associated to them.')
 
-  #logger.debug(uniprot_pdb_w_lig)
+  # get the pdb list from the dic above
+  pdb_w_lig = run_or_pickle("5_pdb_w_lig", list_second_level_dic,
+                                uniprot_pdb_w_lig)
+
+
+  logger.info(len(pdb_w_lig))
 
 
   ####################################
@@ -1826,7 +1832,7 @@ def main():
   # get filtered_ligs smiles
   cc_smiles = smi_to_dic(CC_SMI, 1, 0)
 
-  #logger.debug(len(cc_smiles))
+  logger.info(len(cc_smiles))
 
   # dic of cc we ar interested in, mapped to their smiles
   cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
