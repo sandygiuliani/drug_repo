@@ -71,7 +71,7 @@ logger.setLevel(logging.DEBUG)
 # create console handler
 ch = logging.StreamHandler()
 # CHANGE THIS TO TUNE LOGGING LEVEL from DEBUG/INFO/WARNING
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 # create formatter, you can add:
 # '%(levelname)s' for level eg DEBUG, INFO..
 # '%(name)s' for level name, eg __main__ in the log
@@ -152,8 +152,8 @@ PDB_LIG = "lig_pairs.lst"
   #   #logger.debug(thing)
   #   if len(cc_smi_filt[thing]) < 5:
   #     thingo.append(thing)
-
   # logger.debug(thingo)
+
 POINTLESS_HET = "pointless_het.csv"
 
 # regular expression for string containing at least one dash
@@ -484,9 +484,6 @@ def process_drugbank(input_file):
     else:
       # populate dictionary with the new entry
       drugbank_dic[line[col_uniprot]] = drug_split
-
-  logger.info('The DrugBank drugs could be mapped to ' +
-              str(len(drugbank_dic)) + ' unique UniProt IDs.')
 
   # confirm we are dealing with duplicates
   #logger.debug(len(list_check))
@@ -1082,12 +1079,11 @@ def csv_to_dic(csv_file):
 ### CSV_TO_LST
 ############################################################################
 # take csv file and return single list of the last line
-# it does not properly skip the comment lines! it works but better be fixed!!
+# it does not properly skip the comment lines! 
+# it works but better ADD WRAPPER TO PROPERLY SKIP THE COMMENT LINE!
 
 def csv_to_lst(csv_file):
 
-# NB ideally you need to add wrapper to properly skip the comment lines!!
-# see below
   # # open and read file
   # lines = file_to_lines(csv_file)
   # # count comment lines
@@ -1745,7 +1741,9 @@ def main():
 
   pointless_het = run_or_pickle("5_pointless_het", csv_to_lst,
                                     POINTLESS_HET)
-  logger.debug(len(pointless_het))
+  logger.info("We have a list of ligands we wish to ignore " +
+              "(ions, metals, peptidic ligands, etc..)" +
+              ", for a total of " + str(len(pointless_het)) + " ligands.")
 
 
   # filter dictionary pdb to lig, excluding lig that are in the 'pointless'
@@ -1753,7 +1751,7 @@ def main():
   pdb_lig_pointless_dic = run_or_pickle("5_pdb_lig_pointless_dic",
                                     exclude_values_from_dic, pdb_lig_dic, 
                                     pointless_het, "exclude")
-  logger.debug(len(pdb_lig_pointless_dic))
+  #logger.debug(len(pdb_lig_pointless_dic))
   
   # second filter, to eliminate those with dash
   pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
@@ -1761,13 +1759,13 @@ def main():
                                     pdb_lig_pointless_dic, 
                                     CONTAINS_DASH, "nomatch")
   
-  # ligands we have filtered
+  # list of 'acceptable' ligands we have
   filtered_ligs = flatten_dic(pdb_lig_filt_dic, "values")
-  logger.info(len(filtered_ligs))
+  #logger.debug(filtered_ligs)
 
 
   logger.info('We have excluded the pdb entries that only have ' +
-              'ions, metals, peptidic ligands, ' + 
+              'ligands from such list, ' + 
               'to obtain ' + str(len(pdb_lig_filt_dic)) +
               ' pdb entries, mapped to a total of ' +
               str(len(filtered_ligs)) + ' unique ligands.')
@@ -1775,14 +1773,14 @@ def main():
   #logger.debug(pdb_lig_filt_dic)
 
 
-  # make list of allowed pdbs (with useful ligands)
+  # make list of 'acceptable' pdbs (with useful ligands)
   pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
                                 pdb_lig_filt_dic, "keys")
   # the length here is obviously the same as the length of dic!
   #logger.debug(len(pdb_w_lig_list))
 
-  # take dic of drug target uniprot to pdb and keep only ones with the pdb
-  # we want (ligands)
+  # take dic of drug target uniprot to pdb and keep only ones that 
+  # are in in the 'acceptable' pdb list
   uniprot_pdb_w_lig = run_or_pickle("5_uniprot_pdb_w_lig", 
                                     exclude_values_from_dic, uniprot_filt,
                                     pdb_w_lig_list, "include")
@@ -1791,7 +1789,7 @@ def main():
               ' drug targets that have at least one pdb structure ' +
               'in complex with a small molecule associated to them.')
 
-  # logger.debug(uniprot_pdb_w_lig)
+  #logger.debug(uniprot_pdb_w_lig)
 
 
   ####################################
@@ -1803,14 +1801,15 @@ def main():
                                     CHEMBL_INPUT, "CHEMBL_ID",
                                     "CANONICAL_SMILES")
   
-  logger.debug(len(chembl_id_smi_dic))
+  #logger.debug(len(chembl_id_smi_dic))
 
 
   # filter dictionary to only drugs that are in chembl_repo_drug_list
+  # these are all chembl drugs (783) that are in the map
   chembl_id_smi_filt = run_or_pickle("6_chembl_id_smi_filt", 
                                       filter_dic_from_list, 
                                       chembl_id_smi_dic,chembl_repo_drug_list)
-  logger.debug(len(chembl_id_smi_filt))
+  #logger.debug(len(chembl_id_smi_filt))
   
   #### drugbank? the smiles are not in the input drugbank file
 
@@ -1832,28 +1831,32 @@ def main():
   # dic of cc we ar interested in, mapped to their smiles
   cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
                               cc_smiles,filtered_ligs)
-  ###############
-  #openbabel conversion
-  ###############
-  # cc: create file with smiles to feed to openbabel
-  dic_to_txt(cc_smi_filt, '6_cc_smi_filt.smi')
+  
+  logger.info(len(cc_smi_filt))
+  
 
-  # ligands converted to sdf
-  # babel_smi_to_sdf('test.smi','test.sdf')
+  #####################
+  #openbabel conversion - not necessary for now
+  #####################
+  # # cc: create file with smiles to feed to openbabel
+  # dic_to_txt(cc_smi_filt, '6_cc_smi_filt.smi')
 
-  # ligands converted to sdf 3d and no hydrogens
-  #babel_smi_to_sdf('test.smi','test_noh.sdf')
+  # # ligands converted to sdf
+  # # babel_smi_to_sdf('test.smi','test.sdf')
+
+  # # ligands converted to sdf 3d and no hydrogens
+  # #babel_smi_to_sdf('test.smi','test_noh.sdf')
 
   
-  # convert smiles to sdf
-  babel_smi_to_sdf('6_cc_smi_filt.smi','6_cc_smi_filt.sdf')
+  # # convert smiles to sdf
+  # babel_smi_to_sdf('6_cc_smi_filt.smi','6_cc_smi_filt.sdf')
   
-  # this number is the same number of entries I should obtained in the 
-  # SMSD output!! check!
-  logger.info('We have mapped ' + str(len(cc_smi_filt)) + 
-              ' small-molecule chemical components to their smiles, ' +
-              'and converted them to 3d sdf.')
-  ###############
+  # # this number is the same number of entries I should obtained in the 
+  # # SMSD output!! check!
+  # logger.info('We have mapped ' + str(len(cc_smi_filt)) + 
+  #             ' small-molecule chemical components to their smiles, ' +
+  #             'and converted them to 3d sdf.')
+  #######################
 
 
   # possibly test with catcvs input as well before proceeding
