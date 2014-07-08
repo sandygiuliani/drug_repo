@@ -686,7 +686,7 @@ def arch_to_uniprot(arch_list,architecture):
   #logger.info('Using ' + str(architecture) +
   #            ' domain architectures we have found ' +
    #           str(len(uniprot_list)) +
-   #           ' UniProt IDs of schistosoma proteins (taxonomic identifiers ' +
+   #           ' UniProt IDs of schistosoma proteins (taxonomic ids ' +
    #            str(TAXA) + ').')
 
 
@@ -1364,11 +1364,6 @@ def babel_smi_to_sdf(input_file, output_file):
 # call SMSD
 def run_smsd(query, target):
   # query is smile string, target id sdf 3d file
-  # check if the output exists already
-  # if os.path.isfile(output_file) == True:
-  #   logger.info('The converted file ' + str(output_file) + 
-  #               ' exists already. If you wish to run the conversion again,' +
-  #               ' delete it.')
 
   # increase Java max heap size
   # subprocess.Popen(["export JVM_ARGS=\"-Xms1024m -Xmx1024m\""], shell=True)
@@ -1799,6 +1794,7 @@ def main():
 
   # finally obtain the list of cc we need! - the ones that are in the pdbs
   # this is the list of cc we need to try and match to the drugs cc!!
+  # will be around 8435 in the list
   cc_list = run_or_pickle("6_cc_list", list_second_level_dic,
                           pdb_cc_dic)
   logger.info(len(cc_list))
