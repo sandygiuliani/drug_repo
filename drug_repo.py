@@ -1665,8 +1665,63 @@ def main():
   logger.debug(chembl_schisto_filt_map)
   #logger.debug(drugbank_schisto_filt_map)
 
+
   ##################################################
-  ### PART 5 DRUG TARGETS WITH STRUCTURAL INFO   ###
+  ### PART 5 PDB TO HET GROUPS                  ###
+  ##################################################
+
+  # make dictionary of pdb to ligands
+  pdb_lig_dic = run_or_pickle("5_pdb_lig_dic", lst_dic, PDB_LIG)
+
+  logger.info('We made a dictionary of '+ str(len(pdb_lig_dic)) + 
+            ' pdb entries mapped to their ligand identifiers.')
+
+  # make list of ccs to ignore
+  pointless_het = run_or_pickle("5_pointless_het", csv_to_lst,
+                                    POINTLESS_HET)
+  logger.info("We have a list of ligands we wish to ignore " +
+              "(ions, metals, peptidic ligands, etc..)" +
+              ", for a total of " + str(len(pointless_het)) + " ligands.")
+
+
+  # filter dictionary pdb to lig, excluding lig that are in the 'pointless'
+  # list
+  pdb_lig_pointless_dic = run_or_pickle("5_pdb_lig_pointless_dic",
+                                    exclude_values_from_dic, pdb_lig_dic, 
+                                    pointless_het, "exclude")
+  #logger.debug(len(pdb_lig_pointless_dic))
+  
+  # second filter, to eliminate those with dash
+  # this is filtered dic of all useful pdbs (with useful ligands!)
+  pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
+                                    exclude_values_from_dic, 
+                                    pdb_lig_pointless_dic, 
+                                    CONTAINS_DASH, "nomatch")
+  # logger.info(len(pdb_lig_filt_dic))
+  
+  # list of 'acceptable' pdbs (with useful ligands) from dic
+  pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
+                                pdb_lig_filt_dic, "keys")
+  # the length here is obviously the same as the length of dic!
+  #logger.debug(len(pdb_w_lig_list))
+
+  # list of 'acceptable' ligands from dic
+  filtered_ligs = run_or_pickle("5_filtered_ligs", flatten_dic,
+                                pdb_lig_filt_dic, "values")
+  #logger.debug(filtered_ligs)
+
+
+  logger.info('We have excluded the pdb entries that only have ' +
+              'ligands from such list, ' + 
+              'to obtain ' + str(len(pdb_lig_filt_dic)) +
+              ' pdb entries, mapped to a total of ' +
+              str(len(filtered_ligs)) + ' unique ligands.')
+
+  #logger.debug(pdb_lig_filt_dic)
+
+
+  ##################################################
+  ### PART 6 DRUG TARGETS WITH STRUCTURAL INFO   ###
   ##################################################
 
   logger.info('We are now looking at the drug targets and the ' +
@@ -1674,30 +1729,30 @@ def main():
   # obtain list of targets from drugbank_repo_map and chembl_repo_map
   # these are all the uniprot values that are targets of our potential
   # drug repo candidates
-  chembl_drug_targ = run_or_pickle("5_chembl_drug_targ", 
+  chembl_drug_targ = run_or_pickle("6_chembl_drug_targ", 
                                   list_second_level_dic, chembl_repo_map)
   # logger.debug(len(chembl_drug_targ))
   
-  drugbank_drug_targ = run_or_pickle("5_drugbank_drug_targ", 
+  drugbank_drug_targ = run_or_pickle("6_drugbank_drug_targ", 
                                   list_second_level_dic, drugbank_repo_map)
 
 
   # logger.debug(len(drugbank_drug_targ))
 
-  tot_drug_targ = run_or_pickle("5_tot_drug_targ", merge_lists, 
+  tot_drug_targ = run_or_pickle("6_tot_drug_targ", merge_lists, 
                                 chembl_drug_targ, drugbank_drug_targ)
 
   logger.info('Overall, we have ' + str(len(tot_drug_targ)) + 
               ' drug targets that could be mapped to some schisto target.')
 
   # make dictionary uniprot to pdb
-  uniprot_pdb_dic = run_or_pickle("5_uniprot_pdb_dic", csv_to_dic, 
+  uniprot_pdb_dic = run_or_pickle("6_uniprot_pdb_dic", csv_to_dic, 
                                   UNIPROT_PDB)
 
   #logger.debug(uniprot_pdb_dic)
 
   # this is dictionary of drug targets that have at least one pdb structure
-  uniprot_filt = run_or_pickle("5_uniprot_filt", filter_dic_from_list, 
+  uniprot_filt = run_or_pickle("6_uniprot_filt", filter_dic_from_list, 
                               uniprot_pdb_dic, tot_drug_targ)
 
   #logger.debug(uniprot_filt)
@@ -1716,73 +1771,10 @@ def main():
   #                                 uniprot_list, "pdb")
   ###
 
-  # make dictionary of pdb to ligands
-  pdb_lig_dic = run_or_pickle("5_pdb_lig_dic", lst_dic, PDB_LIG)
-
-  logger.info('We made a dictionary of '+ str(len(pdb_lig_dic)) + 
-            ' pdb entries mapped to their ligand identifiers.')
-
-  # pdb_het_dic = {'1w27': ['MDO', 'DTT'], '4pww': ['PO4', 'ACY'], '3wng': 
-  # ['PRO', 'LYS', 'ILE', 'ASP', 'ASN', 'DPR', 'SO4', 'CL', 'CD'], 
-  # '2fg4': ['CD']}
-  # logger.debug(len(pdb_het_dic))
-  #values = flatten_values(pdb_het_dic)
-
-  #values = sorted(values)
-
-  #logger.debug(values[100:1000])
-
-  # filter dictionary pdb to het, excluding het values that are in the 
-  #'pointless' list
-  # pdb_het_filt_dic = run_or_pickle("5_pdb_het_filt_dic",
-  #                                   exclude_values_from_dic, pdb_het_dic, 
-  #                                   POINTLESS_HET, "exclude")
-  # logger.debug(len(pdb_het_filt_dic))
-
-
-  pointless_het = run_or_pickle("5_pointless_het", csv_to_lst,
-                                    POINTLESS_HET)
-  logger.info("We have a list of ligands we wish to ignore " +
-              "(ions, metals, peptidic ligands, etc..)" +
-              ", for a total of " + str(len(pointless_het)) + " ligands.")
-
-
-  # filter dictionary pdb to lig, excluding lig that are in the 'pointless'
-  # list
-  pdb_lig_pointless_dic = run_or_pickle("5_pdb_lig_pointless_dic",
-                                    exclude_values_from_dic, pdb_lig_dic, 
-                                    pointless_het, "exclude")
-  #logger.debug(len(pdb_lig_pointless_dic))
-  
-  # second filter, to eliminate those with dash
-  pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
-                                    exclude_values_from_dic, 
-                                    pdb_lig_pointless_dic, 
-                                    CONTAINS_DASH, "nomatch")
-  
-  # list of 'acceptable' ligands we have
-  filtered_ligs = flatten_dic(pdb_lig_filt_dic, "values")
-  #logger.debug(filtered_ligs)
-
-
-  logger.info('We have excluded the pdb entries that only have ' +
-              'ligands from such list, ' + 
-              'to obtain ' + str(len(pdb_lig_filt_dic)) +
-              ' pdb entries, mapped to a total of ' +
-              str(len(filtered_ligs)) + ' unique ligands.')
-
-  #logger.debug(pdb_lig_filt_dic)
-
-
-  # make list of 'acceptable' pdbs (with useful ligands)
-  pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
-                                pdb_lig_filt_dic, "keys")
-  # the length here is obviously the same as the length of dic!
-  #logger.debug(len(pdb_w_lig_list))
 
   # take dic of drug target uniprot to pdb and keep only ones that 
   # are in in the 'acceptable' pdb list
-  uniprot_pdb_w_lig = run_or_pickle("5_uniprot_pdb_w_lig", 
+  uniprot_pdb_w_lig = run_or_pickle("6_uniprot_pdb_w_lig", 
                                     exclude_values_from_dic, uniprot_filt,
                                     pdb_w_lig_list, "include")
 
@@ -1791,19 +1783,30 @@ def main():
               'in complex with a small molecule associated to them.')
 
   # get the pdb list from the dic above
-  pdb_w_lig = run_or_pickle("5_pdb_w_lig", list_second_level_dic,
+  pdb_w_lig = run_or_pickle("6_pdb_w_lig", list_second_level_dic,
                                 uniprot_pdb_w_lig)
 
+  # logger.info(len(pdb_w_lig))
 
-  logger.info(len(pdb_w_lig))
+
+  # now filter the pdb_lig_filt_dic, to obtain the pdbs we want
+  # { PDBID: [list of CC]}
+  # this will be the dic we refer to later!
+  pdb_lig_drugs = run_or_pickle("6_pdb_lig_drugs", filter_dic_from_list, 
+                                pdb_lig_filt_dic, pdb_w_lig)
+
+  #logger.info(pdb_lig_drugs)
+
+  # finally obtain the list of cc we need! - the ones that are in the pdbs
+  # this is the list of cc we need to try and match to the drugs cc!!
 
 
   ####################################
-  ### PART 6 MOLECULE CLUSTERING   ###
+  ### PART 7 MOLECULE CLUSTERING   ###
   ####################################
 
   # total chembl drugs to smiles dictionary - 10406 chembl drugs
-  chembl_id_smi_dic = run_or_pickle("6_chembl_id_smi_dic", txt_to_dic, 
+  chembl_id_smi_dic = run_or_pickle("7_chembl_id_smi_dic", txt_to_dic, 
                                     CHEMBL_INPUT, "CHEMBL_ID",
                                     "CANONICAL_SMILES")
   
@@ -1812,7 +1815,7 @@ def main():
 
   # filter dictionary to only drugs that are in chembl_repo_drug_list
   # these are all chembl drugs (783) that are in the map
-  chembl_id_smi_filt = run_or_pickle("6_chembl_id_smi_filt", 
+  chembl_id_smi_filt = run_or_pickle("7_chembl_id_smi_filt", 
                                       filter_dic_from_list, 
                                       chembl_id_smi_dic,chembl_repo_drug_list)
   #logger.debug(len(chembl_id_smi_filt))
@@ -1835,7 +1838,7 @@ def main():
   logger.info(len(cc_smiles))
 
   # dic of cc we ar interested in, mapped to their smiles
-  cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
+  cc_smi_filt = run_or_pickle("7_cc_smi_filt", filter_dic_from_list, 
                               cc_smiles,filtered_ligs)
   
   logger.info(len(cc_smi_filt))
