@@ -1792,13 +1792,16 @@ def main():
   # now filter the pdb_lig_filt_dic, to obtain the pdbs we want
   # { PDBID: [list of CC]}
   # this will be the dic we refer to later!
-  pdb_lig_drugs = run_or_pickle("6_pdb_lig_drugs", filter_dic_from_list, 
+  pdb_cc_dic = run_or_pickle("6_pdb_cc_dic", filter_dic_from_list, 
                                 pdb_lig_filt_dic, pdb_w_lig)
 
   #logger.info(pdb_lig_drugs)
 
   # finally obtain the list of cc we need! - the ones that are in the pdbs
   # this is the list of cc we need to try and match to the drugs cc!!
+  cc_list = run_or_pickle("6_cc_list", list_second_level_dic,
+                          pdb_cc_dic)
+  logger.info(len(cc_list))
 
 
   ####################################
