@@ -166,6 +166,8 @@ CONTAINS_COMMENT = re.compile('#.*')
 CC_SMI = "Components-smiles-oe.smi"
 
 # absolute path to SMSD directory (where SMSD.sh is)
+# 1.5.1 - first version I have used (from sourceforge)
+# 1.6 - version sent by Asad that should handle multiple sdf and keep ids
 SMSD_PATH = "/home/sandra/SMSD1.5.1"
 
 ############################################################################
@@ -1362,59 +1364,101 @@ def babel_smi_to_sdf(input_file, output_file):
 ### RUN_SMSD
 ############################################################################
 # call SMSD
-def run_smsd(query, target):
+def run_smsd(query, target, flag):
   # query is smile string, target id sdf 3d file
 
   # increase Java max heap size
   # subprocess.Popen(["export JVM_ARGS=\"-Xms1024m -Xmx1024m\""], shell=True)
   # subprocess.Popen(["java -Xmx1024m ..."], shell=True)
 
-  # current dir
+  # current directory
   initial_dir = os.getcwd()
-  logger.debug(initial_dir)
+  #logger.debug(initial_dir)
 
-  # check if the target file is in the current directory
-  if os.path.isfile(target) == False:
-    logger.debug('uh-oh')
-    logger.error('The file ' + target + ' cannot be found' +
-                 ' in the current directory!')
-    # warning
-    logger.warning('The program is aborted.')
-    # exit python
-    sys.exit()
-    # logger.debug("cp " + target + " " + SMSD_PATH + "/" + target)
-
-  else:
-    logger.debug('alright, the file is here')
-    # copy the file to the SMSD directory
-    subprocess.call("cp " + target + " " + SMSD_PATH + "/" + target, 
-     shell=True)
-
-    # move to SMSD directory
+  ###
+  # pairwise comparison on smile strings
+  ###
+  if flag == 'pair':
+    # navigate to SMSD dir
     os.chdir(SMSD_PATH)
-    directory = os.getcwd()
-    logger.debug(directory)
+    #logger.info('this is pairwise')
+    for drug in query:
+      drug_smi = query[drug]
+      logger.info(drug)
+      # list of cc that match each drug - with similarity above threshold
+      match_cc_list = []
+      for cc in target:
+        cc_smi = target[cc]
+        logger.info(cc)
 
-    # run SMSD
-    # can also include cwd=SMSD_PATH together with shell=True in the command
-    # for instance:
-    # "sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SMI -t \"CCCN\" -O SMI -o test.smi"
-    # -r remove hydrogens
-    # -m produce mapping output (molDescriptors.out, mcs.out and .mol files)
-    # -b match bond type (bond sensitive, faster run!)
-    # -z match rings (this is needed otherwise very slow)
-    # -x match atom type... (?)
-    # -g for png image
-    # recommended options are -r -z -b
-    subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(query) + "\" -T SDF -t " +
-       str(target) + " -m -r -z -b -g", 
+        subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + \
+                      "\" -T SMI -t \"" + str(cc_smi) + "\" -m -r -z -b -g", 
+                      shell=True)
+
+        # get list from lines in molDescriptors output
+        mol_des = file_to_lines("molDescriptors.out")
+        #logger.info(mol_des)
+        # make string out of list
+        mol_str = ''.join(mol_des)
+        logger.info(mol_str)
+        # tanimoto similarity string or other string
+        str_match = 'Tanimoto (Sim.)= '
+        # find the string
+        str_numb = mol_str.find(str_match)
+        sim_index = (str_numb + len(str_match))
+        # get similarity number and convert to float
+        similarity = float(mol_str[sim_index:(sim_index+3)])
+        logger.info(similarity)
+  
+
+  ###
+  # batch processing on sdf
+  ###
+  elif flag == 'batch':
+    logger.info('this is batch')
+    # check if the target file is in the current directory
+    if os.path.isfile(target) == False:
+      logger.debug('uh-oh')
+      logger.error('The file ' + target + ' cannot be found' +
+                   ' in the current directory!')
+      # warning
+      logger.warning('The program is aborted.')
+      # exit python
+      sys.exit()
+      # logger.debug("cp " + target + " " + SMSD_PATH + "/" + target)
+
+    else:
+      logger.debug('alright, the file is here')
+      # copy the file to the SMSD directory
+      subprocess.call("cp " + target + " " + SMSD_PATH + "/" + target, 
        shell=True)
 
+      # move to SMSD directory
+      os.chdir(SMSD_PATH)
+      directory = os.getcwd()
+      logger.debug(directory)
 
-    # move back to working directory!
-    os.chdir(initial_dir)
-    directory = os.getcwd()
-    logger.debug(directory)
+      # run SMSD
+      # can also include cwd=SMSD_PATH together with shell=True in the command
+      # for instance:
+      # sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SMI -t \"CCCN\" -O SMI -o test.smi
+      # -r remove hydrogens
+      # -m produce mapping output (molDescriptors.out, mcs.out and .mol files)
+      # -b match bond type (bond sensitive, faster run!)
+      # -z match rings (this is needed otherwise very slow)
+      # -x match atom type... (?)
+      # -g for png image
+      # recommended options are -r -z -b
+      subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(query) + 
+                      "\" -T SDF -t " + str(target) + " -m -r -z -b -g", 
+                      shell=True)
+
+
+  # move back to working directory!
+  
+  os.chdir(initial_dir)
+  directory = os.getcwd()
+  logger.debug(directory)
 
 
 ############################################################################
@@ -1898,6 +1942,11 @@ def main():
 
   # possibly test with catcvs input as well before proceeding
 
+
+  # run smsd to cluster
+  # look up drugs against the sdf file of chemical components
+  #drug_smiles = chembl_id_smi_dic['CHEMBL960']
+
   # JN7 "C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1"
 
   # run smsd
@@ -1905,8 +1954,23 @@ def main():
   # run_smsd("C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1",
   #         "6_cc_smi_filt.sdf")
 
-  # run smsd with cc_smi_filt
   
+
+  chembl_id_smi_filt = {'CHEMBL12': 'CN1C(=O)CN=C(c2ccccc2)c3cc(Cl)ccc13', 
+  'CHEMBL13': 'COCCc1ccc(OCC(O)CNC(C)C)cc1', 
+  'CHEMBL11': 'CN(C)CCCN1c2ccccc2CCc3ccccc13'}
+
+  logger.info(chembl_id_smi_filt)
+
+
+  # overwrite cc
+  cc_smi_filt = {'0M3': 'Cc1ccc(cc1)S(=O)(=O)NC2CC(CNC2)C(=O)NCC(c3ccccc3)c4ccccc4', 
+  'WXV': 'CNC(=O)c1c2ccc3cnc(nc3c2n(n1)C)NC4CCN(CC4)S(=O)(=O)C', 
+  'NDZ': 'C1C2C(C(C(CO2)O)O)OC1(CC(C(=O)O)N)C(=O)O'}
+  logger.info(cc_smi_filt)
+  
+
+  run_smsd(chembl_id_smi_filt,cc_smi_filt,"pair")
 
   logger.info('------------------- END OF PART 7 -------------------')
 
