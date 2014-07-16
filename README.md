@@ -29,6 +29,7 @@ A. By mapping! known drugs -> their targets -> their domain architecture -> para
 * lig_pairs.lst - pdb to ligand mapping file; downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a), accessed 17/06/2014  
 * Components-smiles-*.smi - chemical components dictionary in smiles format (stereo for those including stereocenters, oa for OpenEye and cactvs for CACTVS-generated); downloaded from [RCSB Ligand Expo Downloads](http://ligand-expo.rcsb.org/ld-download.html), in the SMILES/InChi data files, accessed 20/06/2014   
 * pointless_het.csv - contains list of 'pointless' het ligands, including aminoacids, nucleotides, metals and crystallographic solvets/aids  
+* all.sdf - DrugBank drugs in sdf format; downloaded from [DrugBank](http://www.drugbank.ca/downloads#structures), accessed 16/07/2014  
   
 
 
