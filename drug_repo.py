@@ -1360,7 +1360,7 @@ def babel_smi_to_sdf(input_file, output_file):
 
   else:
    subprocess.call("babel" + " -ismi " + str(input_file) +
-                  " -osdf " + str(output_file) + " --gen3D -d", shell=True)
+                  " -osdf " + str(output_file) + " -d --gen2d", shell=True)
 
   # nb this module returns None! it just writes to output.sdf
 
@@ -1397,6 +1397,53 @@ def sdf_to_dic(sdf_file, key, value):
   #logger.info(len(dic_from_sdf))
 
   return dic_from_sdf
+
+############################################################################
+
+
+
+
+############################################################################
+###  MERGE_DIC
+############################################################################
+def merge_dic(dic1,dic2,dic3):
+
+  dic_merge = {}
+  # each drug
+  for item in dic1:
+    #list for pdbs
+    list2 = []
+    # list for cc
+    list3 = []
+
+    # each uniprot
+    for value in dic1[item]:
+      if value in dic2:
+        # append pdb values to list
+        list2.extend(dic2[value])
+        #logger.info(value)
+        #logger.info(dic2[value])
+
+    #logger.info(list2)
+    # check list is not empty
+    if list2:
+      #for each pdb in this list
+      for thing in list2:
+        # check the pdb is in the dic3
+        if thing in dic3:
+          # append to list 3
+          list3.extend(dic3[thing])
+
+
+    # before moving to next drug, populate dic
+    if list3:
+      dic_merge[item] = list3
+  logger.info(dic_merge)
+  logger.info(len(dic_merge))
+
+
+  return dic_merge
+
 
 ############################################################################
 
@@ -1488,9 +1535,11 @@ def run_smsd(query, target, flag, threshold):
   ###
   elif flag == 'batch':
     logger.info('this is batch')
+    # dictionary drugs: list of cc that match
+    drug_cc_dic = {}
     # check if the target file is in the current directory
     if os.path.isfile(target) == False:
-      logger.debug('uh-oh')
+      logger.info('uh-oh')
       logger.error('The file ' + target + ' cannot be found' +
                    ' in the current directory!')
       # warning
@@ -1500,7 +1549,7 @@ def run_smsd(query, target, flag, threshold):
       # logger.debug("cp " + target + " " + SMSD_PATH + "/" + target)
 
     else:
-      logger.debug('alright, the file is here')
+      logger.info('alright, the file is here')
       # copy the file to the SMSD directory
       subprocess.call("cp " + target + " " + SMSD_PATH + "/" + target, 
        shell=True)
@@ -1510,11 +1559,24 @@ def run_smsd(query, target, flag, threshold):
       directory = os.getcwd()
       logger.debug(directory)
 
+      for drug in query:
+        # list of cc that match each drug - with similarity above threshold
+        match_cc_list = []
+        drug_smi = query[drug]
+        logger.info(drug)
 
-      subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(query) + 
+        subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + 
                       "\" -T SDF -t " + str(target) + " -m -r -z -b", 
                       shell=True)
 
+        # get the ones above threshold
+
+        # add to dic
+
+        # check the list is not empty
+        if match_cc_list:
+          # add list to dictionary
+          drug_cc_dic[drug] = match_cc_list
 
   # move back to working directory!
   os.chdir(initial_dir)
@@ -1523,8 +1585,6 @@ def run_smsd(query, target, flag, threshold):
 
   # return the dictionary
   return drug_cc_dic
-
-
 
 ############################################################################
 
@@ -1610,7 +1670,7 @@ def main():
   # generate chembl dictionary
   chembl_dic = run_or_pickle("1_chembl_dic", process_chembl, CHEMBL_INPUT)
 
-  #logger.info(len(chembl_dic))
+  logger.info(chembl_dic)
   # get list of uniprot ids from chembl_dic
   chembl_uniprot_list = run_or_pickle("1_chembl_uniprot_list",
                                       flatten_dic, chembl_dic, "values")
@@ -1796,7 +1856,7 @@ def main():
                                             uniprot_schisto_filt)
 
 
-  logger.debug(chembl_schisto_filt_map)
+  #logger.debug(chembl_schisto_filt_map)
   #logger.debug(drugbank_schisto_filt_map)
   logger.info('------------------- END OF PART 4 -------------------')
 
@@ -1834,13 +1894,13 @@ def main():
                                     exclude_values_from_dic, 
                                     pdb_lig_pointless_dic, 
                                     CONTAINS_DASH, "nomatch")
-  # logger.info(len(pdb_lig_filt_dic))
+  #logger.info(pdb_lig_filt_dic)
   
   # list of 'acceptable' pdbs (with useful ligands) from dic
   pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
                                 pdb_lig_filt_dic, "keys")
   # the length here is obviously the same as the length of dic!
-  #logger.debug(len(pdb_w_lig_list))
+  #logger.info(pdb_w_lig_list)
 
   # list of 'acceptable' ligands from dic
   filtered_ligs = run_or_pickle("5_filtered_ligs", flatten_dic,
@@ -1871,7 +1931,7 @@ def main():
   # drug repo candidates
   chembl_drug_targ = run_or_pickle("6_chembl_drug_targ", 
                                   list_second_level_dic, chembl_repo_map)
-  # logger.debug(len(chembl_drug_targ))
+  #logger.info(chembl_drug_targ)
   
   drugbank_drug_targ = run_or_pickle("6_drugbank_drug_targ", 
                                   list_second_level_dic, drugbank_repo_map)
@@ -2070,8 +2130,8 @@ def main():
   # # OVERWRITE CHEMBL
   # chembl_id_smi_filt = {'CHEMBL1115': 'CN(C)C(=O)Oc1ccc[n+](C)c1', 'CHEMBL965': 'C[N+](C)(C)CCOC(=O)N', 'CHEMBL964': 'CCN(CC)C(=S)SSC(=S)N(CC)CC'}
   #logger.info(chembl_id_smi_filt)
-  chembl_id_smi_filt = {'CHEMBL1082407': 'CNC(=O)c1ccc(cc1F)N2C(=S)N(C(=O)C2(C)C)c3ccc(C#N)c(c3)C(F)(F)F', 'CHEMBL461101': 'CC1=NN(C(=O)/C/1=N\\Nc2cccc(c2O)c3cccc(c3)C(=O)O)c4ccc(C)c(C)c4', 'CHEMBL914': 'CC(C)(C(=O)O)c1ccc(cc1)C(O)CCCN2CCC(CC2)C(O)(c3ccccc3)c4ccccc4', 'CHEMBL1571': 'C[C@]12CC[C@H]3[C@@H](CCC4=CC(=O)C=C[C@]34C)[C@@H]1CCC(=O)O2', 'CHEMBL1279': 'CN[C@@H]1CCc2[nH]c3ccc(cc3c2C1)C(=O)N', 'CHEMBL1278': 'CNS(=O)(=O)CCc1ccc2[nH]cc(C3CCN(C)CC3)c2c1', 'CHEMBL376359': 'CN1C(=O)C=C(N2CCC[C@@H](N)C2)N(Cc3ccccc3C#N)C1=O', 'CHEMBL911': 'CN(C)C(=O)Cc1c(nc2ccc(C)cn12)c3ccc(C)cc3', 'CHEMBL1577': 'CN1C(CCl)Nc2cc(Cl)c(cc2S1(=O)=O)S(=O)(=O)N', 'CHEMBL1272': 'CCOc1cc(CC(=O)N[C@@H](CC(C)C)c2ccccc2N3CCCCC3)ccc1C(=O)O'}
-  logger.info(len(chembl_id_smi_filt))
+  chembl_id_smi_opt = {'CHEMBL1082407': 'CNC(=O)c1ccc(cc1F)N2C(=S)N(C(=O)C2(C)C)c3ccc(C#N)c(c3)C(F)(F)F', 'CHEMBL461101': 'CC1=NN(C(=O)/C/1=N\\Nc2cccc(c2O)c3cccc(c3)C(=O)O)c4ccc(C)c(C)c4', 'CHEMBL914': 'CC(C)(C(=O)O)c1ccc(cc1)C(O)CCCN2CCC(CC2)C(O)(c3ccccc3)c4ccccc4', 'CHEMBL1571': 'C[C@]12CC[C@H]3[C@@H](CCC4=CC(=O)C=C[C@]34C)[C@@H]1CCC(=O)O2', 'CHEMBL1279': 'CN[C@@H]1CCc2[nH]c3ccc(cc3c2C1)C(=O)N', 'CHEMBL1278': 'CNS(=O)(=O)CCc1ccc2[nH]cc(C3CCN(C)CC3)c2c1', 'CHEMBL376359': 'CN1C(=O)C=C(N2CCC[C@@H](N)C2)N(Cc3ccccc3C#N)C1=O', 'CHEMBL911': 'CN(C)C(=O)Cc1c(nc2ccc(C)cn12)c3ccc(C)cc3', 'CHEMBL1577': 'CN1C(CCl)Nc2cc(Cl)c(cc2S1(=O)=O)S(=O)(=O)N', 'CHEMBL1272': 'CCOc1cc(CC(=O)N[C@@H](CC(C)C)c2ccccc2N3CCCCC3)ccc1C(=O)O'}
+  logger.info(len(chembl_id_smi_opt))
 
 
   # OVERWRITE DRUGBANK
@@ -2094,11 +2154,22 @@ def main():
 
 
 
+
+
+  # obtain drug to cc dictionary, merging three dics
+  chembl_to_cc = merge_dic(chembl_dic,uniprot_filt, pdb_cc_dic)
+  #logger.info(chembl_to_cc)
+  #logger.info(pdb_cc_dic)
+
+  # fiulter to 291
+  # run smsd with drug to cc dic
+
+
   # TEST
   logger.info('Start test')
   now = datetime.now()
   test = run_or_pickle("test", run_smsd,
-                      drugbank_id_smi_filt, cc_smi_filt,"pair", 0.2)
+                      chembl_id_smi_opt, "test.sdf","batch", 0.2)
   then = datetime.now()
   logger.info(test)
   tdelta = then - now
@@ -2110,19 +2181,19 @@ def main():
   # # CHEMBL CLUSTERING
   # # tanimoto 0.2
   # chembl_cc_02 = run_or_pickle("7_chembl_cc_02", run_smsd,
-  #                               chembl_id_smi_filt,cc_smi_filt,"pair", 0.2)
+  #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.2)
   # # tanimoto 0.7
   # chembl_cc_07 = run_or_pickle("7_chembl_cc_07", run_smsd,
-  #                               chembl_id_smi_filt,cc_smi_filt,"pair", 0.7)
+  #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.7)
   # # tanimoto 0.8
   # chembl_cc_08 = run_or_pickle("7_chembl_cc_08", run_smsd,
-  #                               chembl_id_smi_filt,cc_smi_filt,"pair", 0.8)
+  #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.8)
   # # tanimoto 0.9
   # chembl_cc_09 = run_or_pickle("7_chembl_cc_09", run_smsd,
-  #                               chembl_id_smi_filt,cc_smi_filt,"pair", 0.9)
+  #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.9)
   # # tanimoto 1.0
   # chembl_cc_1 = run_or_pickle("7_chembl_cc_1", run_smsd,
-  #                               chembl_id_smi_filt,cc_smi_filt,"pair", 1.0)
+  #                               chembl_id_smi_opt,cc_smi_filt,"pair", 1.0)
   # #logger.info(chembl_cc_02)
 
 
@@ -2150,6 +2221,7 @@ def main():
 
   logger.info('------------------- END OF PART 7 -------------------')
 
+  logger.info('------------------- END OF SCRIPT -------------------')
 
 ############################################################################
 
