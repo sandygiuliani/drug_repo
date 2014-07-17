@@ -1989,7 +1989,7 @@ def main():
                                       drugbank_repo_drug_list)
   
   # logger.info(len(drugbank_repo_drug_list))
-  logger.info(drugbank_id_smi_filt)
+  #logger.info(drugbank_id_smi_filt)
   # WHY ONLY 1398 MAPPED TO SMILES? TOTAL IS 6657 ?? CHECK!!!
 
   logger.info('We have mapped ' + str(len(drugbank_id_smi_filt)) +
@@ -2026,70 +2026,83 @@ def main():
   # possibly test with catcvs input as well before proceeding
 
 
-  # run smsd to cluster
-  # look up drugs against the sdf file of chemical components
-  #drug_smiles = chembl_id_smi_dic['CHEMBL960']
-
-  # JN7 "C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1"
-
-  # run smsd
-  # run_smsd(drug_smiles,'6_cc_smi_filt.sdf')
-  # run_smsd("C=COC(=O)N1CCc2c(sc(c2C(=O)OC3CCCC3)NC(=O)Cc4cccs4)C1",
-  #         "6_cc_smi_filt.sdf")
-
+  # convert dic into smile file (module return none, it just writes to file)
+  dic_to_txt(cc_smi_filt, 'cc_smi_filt.smi')
+  
+  # convert to sdf (actually doing it in separate shell, not here)
+  # same command (with gen3d and hydrogen removed)
+  #babel_smi_to_sdf('cc_smi_filt.smi','cc_smi_filt.sdf')
   # logger.info(chembl_id_smi_filt)
 
-  # chembl_id_smi_filt = {'CHEMBL12': 'CN1C(=O)CN=C(c2ccccc2)c3cc(Cl)ccc13', 
-  # 'CHEMBL13': 'COCCc1ccc(OCC(O)CNC(C)C)cc1', 
-  # 'CHEMBL11': 'CN(C)CCCN1c2ccccc2CCc3ccccc13'}
 
   # # OVERWRITE CHEMBL
   # chembl_id_smi_filt = {'CHEMBL1115': 'CN(C)C(=O)Oc1ccc[n+](C)c1', 'CHEMBL965': 'C[N+](C)(C)CCOC(=O)N', 'CHEMBL964': 'CCN(CC)C(=S)SSC(=S)N(CC)CC'}
-  # #logger.info(cc_smi_filt)
+  chembl_id_smi_filt = {'CHEMBL1272': 'CCOc1cc(CC(=O)N[C@@H](CC(C)C)c2ccccc2N3CCCCC3)ccc1C(=O)O'}
+  logger.info(len(chembl_id_smi_filt))
 
+
+  # OVERWRITE DRUGBANK
   # drugbank_id_smi_filt = {'DB08513': 'CC1=CC(NC2=NC(NC3=CC=C(CC(O)=O)C=C3)=NC=C2C(N)=O)=CC=C1', 'DB04931': 'CCCC[C@H](NC(=O)[C@H](CO)NC(=O)[C@H](CC1=CC=C(O)C=C1)NC(=O)[C@H](CO)NC(C)=O)C(=O)N[C@@H](CCC(O)=O)C(=O)N[C@@H](CC1=CN=CN1)C(=O)N[C@H](CC1=CC=CC=C1)C(=O)N[C@@H](CCCNC(N)=N)C(=O)N[C@@H](CC1=CNC2=CC=CC=C12)C(=O)NCC(=O)N[C@@H](CCCCN)C(=O)N1CCC[C@H]1C(=O)N[C@@H](C(C)C)C(N)=O'}
-
+  logger.info(len(drugbank_id_smi_filt))
+  drugbank_id_smi_filt = {'DB02169': 'C[C@@H](C[C@H](O)[C@@H]1O[C@@H]2CC[C@]3(CC[C@H](O3)\\C=C\\[C@@H](C)[C@H]3CC(C)=C[C@]4(O[C@@H](C[C@@](C)(O)C(O)=O)CC[C@@H]4O)O3)O[C@@H]2[C@@H](O)C1=C)[C@@H]1O[C@]2(CCCCO2)CC[C@H]1C'}
+  logger.info(len(drugbank_id_smi_filt))
 
   # # OVERWRITE CC
-  # cc_smi_filt = {'11K': 'c1cc(ccc1CC(=O)Nc2cc([nH]n2)C3CC3)OCCN4CCCC4', '11U': 'c1cc(ccc1CNC(=O)C2CCCN2C(=O)CNC3CCCCC3)C(=N)N', '11P': 'c1cncc2c1CCC2C(O)(P(=O)(O)O)P(=O)(O)O', '11S': 'c1cc2c(cc[nH]2)cc1Cl', '11R': 'CN(C)c1cccc(c1)OCCCCCCCCCCCC2=CCN3C4=C5C(=CC=CN5[Ru]367(N8CCCCC8C9N6CCCC9)N1CCCCC1C1N7CCC=C1)C=CC24', '4ID': 'Cc1ccc(c(c1)C)S(=O)(=O)C2=CN=C(NC2=O)SCC(=O)Nc3ccccc3C(F)(F)F', '4IG': 'CCc1c(c(nc(n1)N)N)c2ccc3c(c2)N(C(=O)C(O3)c4cc(cc(c4)F)F)CCCOC', '11X': 'c1ccc(cc1)NCc2cccnc2', '2OH': 'CC(C)(c1ccc(cc1)O)c2ccc(cc2)O', '2OJ': 'CC(C)N1CCC(CC1)C(=O)Nc2c(cccc2OCc3cc(on3)c4ccc(s4)Cl)OCCCOC5C(C(C(C(O5)COC(=O)C)OC(=O)C)OC(=O)C)OC(=O)C', 'N7P': 'CC(=O)N1CCCC1C(=O)O', 'N7F': 'c1ccc(cc1)Cn2c3c(c(c2N4CCCC(C4)N)C#N)N=CN(C3=O)Cc5ccnc6c5cccc6', 'WI2': 'COc1cccc(c1)c2cnc(c(n2)N3CCC(CC3)C(=O)O)N', '2OP': 'CC(C(=O)O)O', 'N7O': 'CP(=O)(C(c1csc2c1cc(cc2)Cl)C(=O)NC=Cc3ccc(c(c3)F)F)O', 'ZZZ': 'C1C(NC2=C(N1)N=C(NC2=O)N)C=O', 'ZZY': 'c1ccc(c(c1)[N+](=O)[O-])S(=O)(=O)n2ccc3c2cc(cn3)C(=O)N', 'ZZT': 'Cc1ccc(c(c1)N)OC', 'ZZL': 'c1cc(c(c(c1)F)C2=NCc3cnc(nc3-c4c2cc(cc4)Cl)Nc5ccc(cc5)C(=O)O)F', 'ZZK': 'c1cc(c2c(c1)OCO2)c3cc(c(nc3)N)c4ccc(cc4)C(=O)N', 'ZZH': 'c1ccc(cc1)Cc2ccc(cc2)OC(Cc3ccccc3)C(=O)O', 'ZZG': 'Cc1cc(c(nc1C)c2ccccn2)Oc3ccnc(c3)Nc4cc(c(c(c4)OC)OC)OC', 'ZZF': 'Cc1ccc(c(n1)C)Oc2ccnc(c2)Nc3ccc(cc3)S(=O)(=O)N', 'ZZE': 'CCc1c(c(n(n1)CCO)CC)Oc2cc(cc(c2)C#N)C#N', 'ZZD': 'c1ccc(cc1)C(c2ccccc2)(c3ccccc3)SCC(C(=O)O)N', 'ZZA': 'c1ccc(cc1)n2cc(cn2)C(=O)O', 'ZZ7': 'CC1(C(NC(S1)C(C(=O)O)NC(=O)C(c2ccccc2)N)C(=O)O)C', 'ZZ6': 'CCNC(=O)c1cc2c(nc(nc2s1)N)c3ccc(cc3Cl)Cl', 'ZZ5': 'CCOc1ccc(cc1)c2c(c(nc3c2c(c(s3)C(=O)N)N)N)C#N', 'ZZ4': 'c1ccc(cc1)N=Nc2cnc(nc2c3ccc(cc3Cl)Cl)N', 'ZZ3': 'Cc1nc(nc(n1)SC)N', 'ZZ2': 'Cc1cc(nc(n1)N)OCCOC', 'ZZ0': 'c1cc(c(nc1)Nc2ccc(cc2)Cl)C(=O)O', 'N76': 'c1cc(cc(c1)S(=O)(=O)N)Nc2nc3c(c(n2)OCC4CCCCC4)nc[nH]3'}
+  #logger.info(cc_smi_filt)
+  cc_smi_filt = {'03B': 'Cc1c(c(c(n1C)c2ccc(cc2)Cl)c3cccc(c3)N4CCN(CC4)c5ccc(cc5)NS(=O)(=O)c6ccc(c(c6)[N+](=O)[O-])NC(CCN(C)C)CSc7ccccc7)C(=O)O', '03C': 'Cc1ccccc1n2c(c(cn2)C(=O)c3cccc(c3)C4CCN(CC4)S(=O)(=O)C)N','T1A': 'CC[As+](CC)(CC)CC','4MB': 'CS(=O)(=O)Nc1ccc(cc1)C(=O)O', 'RNA': 'Cc1ccc(cc1)S(=O)(=O)NC2=NC(=O)C(=Cc3ccc(o3)C)S2', 'UGJ': 'c1ccc(c(c1)c2c(c(nc3c2c(c(s3)C#N)N)N)C#N)Cl', 'UZ9': 'CC(CCC(=O)NCCCCC(C(=O)O)N)C1CCC2C1(CCC3C2CCC4C3(CCC(=O)C4)C)C', 'AIQ': 'c1cnc([nH]1)SCc2cc(cc3c2N=C(NC3=O)N)N', 'XMC': 'c1cc(cc2c1cc(cc2)Cl)S(=O)(=O)N3CC(N(C(=O)C3)CC4CCN(CC4)c5ccncc5)C(=O)N6CCOCC6', '0M2': 'CC(CN1CC2=C(C1)c3ccccc3Nc4c2cccc4)O'}
+  logger.info(len(cc_smi_filt))
+  #cc_smi_filt = {'11K': 'c1cc(ccc1CC(=O)Nc2cc([nH]n2)C3CC3)OCCN4CCCC4', '11U': 'c1cc(ccc1CNC(=O)C2CCCN2C(=O)CNC3CCCCC3)C(=N)N', '11P': 'c1cncc2c1CCC2C(O)(P(=O)(O)O)P(=O)(O)O', '11S': 'c1cc2c(cc[nH]2)cc1Cl', '11R': 'CN(C)c1cccc(c1)OCCCCCCCCCCCC2=CCN3C4=C5C(=CC=CN5[Ru]367(N8CCCCC8C9N6CCCC9)N1CCCCC1C1N7CCC=C1)C=CC24', '4ID': 'Cc1ccc(c(c1)C)S(=O)(=O)C2=CN=C(NC2=O)SCC(=O)Nc3ccccc3C(F)(F)F', '4IG': 'CCc1c(c(nc(n1)N)N)c2ccc3c(c2)N(C(=O)C(O3)c4cc(cc(c4)F)F)CCCOC', '11X': 'c1ccc(cc1)NCc2cccnc2', '2OH': 'CC(C)(c1ccc(cc1)O)c2ccc(cc2)O', '2OJ': 'CC(C)N1CCC(CC1)C(=O)Nc2c(cccc2OCc3cc(on3)c4ccc(s4)Cl)OCCCOC5C(C(C(C(O5)COC(=O)C)OC(=O)C)OC(=O)C)OC(=O)C', 'N7P': 'CC(=O)N1CCCC1C(=O)O', 'N7F': 'c1ccc(cc1)Cn2c3c(c(c2N4CCCC(C4)N)C#N)N=CN(C3=O)Cc5ccnc6c5cccc6', 'WI2': 'COc1cccc(c1)c2cnc(c(n2)N3CCC(CC3)C(=O)O)N', '2OP': 'CC(C(=O)O)O', 'N7O': 'CP(=O)(C(c1csc2c1cc(cc2)Cl)C(=O)NC=Cc3ccc(c(c3)F)F)O', 'ZZZ': 'C1C(NC2=C(N1)N=C(NC2=O)N)C=O', 'ZZY': 'c1ccc(c(c1)[N+](=O)[O-])S(=O)(=O)n2ccc3c2cc(cn3)C(=O)N', 'ZZT': 'Cc1ccc(c(c1)N)OC', 'ZZL': 'c1cc(c(c(c1)F)C2=NCc3cnc(nc3-c4c2cc(cc4)Cl)Nc5ccc(cc5)C(=O)O)F', 'ZZK': 'c1cc(c2c(c1)OCO2)c3cc(c(nc3)N)c4ccc(cc4)C(=O)N', 'ZZH': 'c1ccc(cc1)Cc2ccc(cc2)OC(Cc3ccccc3)C(=O)O', 'ZZG': 'Cc1cc(c(nc1C)c2ccccn2)Oc3ccnc(c3)Nc4cc(c(c(c4)OC)OC)OC', 'ZZF': 'Cc1ccc(c(n1)C)Oc2ccnc(c2)Nc3ccc(cc3)S(=O)(=O)N', 'ZZE': 'CCc1c(c(n(n1)CCO)CC)Oc2cc(cc(c2)C#N)C#N', 'ZZD': 'c1ccc(cc1)C(c2ccccc2)(c3ccccc3)SCC(C(=O)O)N', 'ZZA': 'c1ccc(cc1)n2cc(cn2)C(=O)O', 'ZZ7': 'CC1(C(NC(S1)C(C(=O)O)NC(=O)C(c2ccccc2)N)C(=O)O)C', 'ZZ6': 'CCNC(=O)c1cc2c(nc(nc2s1)N)c3ccc(cc3Cl)Cl', 'ZZ5': 'CCOc1ccc(cc1)c2c(c(nc3c2c(c(s3)C(=O)N)N)N)C#N', 'ZZ4': 'c1ccc(cc1)N=Nc2cnc(nc2c3ccc(cc3Cl)Cl)N', 'ZZ3': 'Cc1nc(nc(n1)SC)N', 'ZZ2': 'Cc1cc(nc(n1)N)OCCOC', 'ZZ0': 'c1cc(c(nc1)Nc2ccc(cc2)Cl)C(=O)O', 'N76': 'c1cc(cc(c1)S(=O)(=O)N)Nc2nc3c(c(n2)OCC4CCCCC4)nc[nH]3'}
   
+  # # cc: create file with smiles to feed to openbabel
+  dic_to_txt(cc_smi_filt, 'test.smi')
 
-  # CHEMBL CLUSTERING
-  # tanimoto 0.2
-  chembl_cc_02 = run_or_pickle("7_chembl_cc_02", run_smsd,
-                                chembl_id_smi_filt,cc_smi_filt,"pair", 0.2)
-  # tanimoto 0.7
-  chembl_cc_07 = run_or_pickle("7_chembl_cc_07", run_smsd,
-                                chembl_id_smi_filt,cc_smi_filt,"pair", 0.7)
-  # tanimoto 0.8
-  chembl_cc_08 = run_or_pickle("7_chembl_cc_08", run_smsd,
-                                chembl_id_smi_filt,cc_smi_filt,"pair", 0.8)
-  # tanimoto 0.9
-  chembl_cc_09 = run_or_pickle("7_chembl_cc_09", run_smsd,
-                                chembl_id_smi_filt,cc_smi_filt,"pair", 0.9)
-  # tanimoto 1.0
-  chembl_cc_1 = run_or_pickle("7_chembl_cc_1", run_smsd,
-                                chembl_id_smi_filt,cc_smi_filt,"pair", 1.0)
-  #logger.info(chembl_cc_02)
+  # # ligands converted to sdf
+  babel_smi_to_sdf('test.smi','test.sdf')
 
 
+  # TEST
+  # logger.info('Test')
+  # test = run_or_pickle("test", run_smsd,
+  #                     chembl_id_smi_filt,cc_smi_filt,"pair", 0.2)
+  # logger.info('End test')
 
-  #DRUGBANK CLUSTERING
-  # tanimoto 0.2
-  drugbank_cc_02 = run_or_pickle("7_drugbank_cc_02", run_smsd,
-                                drugbank_id_smi_filt,cc_smi_filt,"pair", 0.2)
-  # tanimoto 0.7
-  drugbank_cc_07 = run_or_pickle("7_drugbank_cc_07", run_smsd,
-                                drugbank_id_smi_filt,cc_smi_filt,"pair", 0.7)
-  # tanimoto 0.8
-  drugbank_cc_08 = run_or_pickle("7_drugbank_cc_08", run_smsd,
-                                drugbank_id_smi_filt,cc_smi_filt,"pair", 0.8)
-  # tanimoto 0.9
-  drugbank_cc_09 = run_or_pickle("7_drugbank_cc_09", run_smsd,
-                                drugbank_id_smi_filt,cc_smi_filt,"pair", 0.9)
-  # tanimoto 1.0
-  drugbank_cc_1 = run_or_pickle("7_drugbank_cc_1", run_smsd,
-                                drugbank_id_smi_filt,cc_smi_filt,"pair", 1.0)
+
+  # # CHEMBL CLUSTERING
+  # # tanimoto 0.2
+  # chembl_cc_02 = run_or_pickle("7_chembl_cc_02", run_smsd,
+  #                               chembl_id_smi_filt,cc_smi_filt,"pair", 0.2)
+  # # tanimoto 0.7
+  # chembl_cc_07 = run_or_pickle("7_chembl_cc_07", run_smsd,
+  #                               chembl_id_smi_filt,cc_smi_filt,"pair", 0.7)
+  # # tanimoto 0.8
+  # chembl_cc_08 = run_or_pickle("7_chembl_cc_08", run_smsd,
+  #                               chembl_id_smi_filt,cc_smi_filt,"pair", 0.8)
+  # # tanimoto 0.9
+  # chembl_cc_09 = run_or_pickle("7_chembl_cc_09", run_smsd,
+  #                               chembl_id_smi_filt,cc_smi_filt,"pair", 0.9)
+  # # tanimoto 1.0
+  # chembl_cc_1 = run_or_pickle("7_chembl_cc_1", run_smsd,
+  #                               chembl_id_smi_filt,cc_smi_filt,"pair", 1.0)
+  # #logger.info(chembl_cc_02)
+
+
+
+  # #DRUGBANK CLUSTERING
+  # # tanimoto 0.2
+  # drugbank_cc_02 = run_or_pickle("7_drugbank_cc_02", run_smsd,
+  #                               drugbank_id_smi_filt,cc_smi_filt,"pair", 0.2)
+  # # tanimoto 0.7
+  # drugbank_cc_07 = run_or_pickle("7_drugbank_cc_07", run_smsd,
+  #                               drugbank_id_smi_filt,cc_smi_filt,"pair", 0.7)
+  # # tanimoto 0.8
+  # drugbank_cc_08 = run_or_pickle("7_drugbank_cc_08", run_smsd,
+  #                               drugbank_id_smi_filt,cc_smi_filt,"pair", 0.8)
+  # # tanimoto 0.9
+  # drugbank_cc_09 = run_or_pickle("7_drugbank_cc_09", run_smsd,
+  #                               drugbank_id_smi_filt,cc_smi_filt,"pair", 0.9)
+  # # tanimoto 1.0
+  # drugbank_cc_1 = run_or_pickle("7_drugbank_cc_1", run_smsd,
+  #                               drugbank_id_smi_filt,cc_smi_filt,"pair", 1.0)
 
 
 
