@@ -1427,6 +1427,8 @@ def merge_dic(dic1,dic2,dic3):
     #logger.info(list2)
     # check list is not empty
     if list2:
+      #rm duplicates
+      list2 = list(set(list2))
       #for each pdb in this list
       for thing in list2:
         # check the pdb is in the dic3
@@ -1437,14 +1439,14 @@ def merge_dic(dic1,dic2,dic3):
 
     # before moving to next drug, populate dic
     if list3:
+      # rm duplicates
+      list3 = list(set(list3))
       dic_merge[item] = list3
-  logger.info(dic_merge)
+  #logger.info(dic_merge)
   logger.info(len(dic_merge))
 
 
   return dic_merge
-
-
 ############################################################################
 
 
@@ -1454,7 +1456,7 @@ def merge_dic(dic1,dic2,dic3):
 ### RUN_SMSD
 ############################################################################
 # call SMSD
-def run_smsd(query, target, flag, threshold):
+def run_smsd(query, target, flag, threshold, dic_map=None):
   # flag = 'pair' for pairwise comparison, query and target are dictionaries
   # ids: smiles
 
@@ -1474,8 +1476,6 @@ def run_smsd(query, target, flag, threshold):
   # -g for png image
   # recommended options are -r -z -b
 
-  # query is smile string, target id sdf 3d file
-
   # increase Java max heap size
   # subprocess.Popen(["export JVM_ARGS=\"-Xms1024m -Xmx1024m\""], shell=True)
   # subprocess.Popen(["java -Xmx1024m ..."], shell=True)
@@ -1484,10 +1484,97 @@ def run_smsd(query, target, flag, threshold):
   initial_dir = os.getcwd()
   #logger.debug(initial_dir)
 
+  if flag == 'pair_2dic':
+    # navigate to SMSD dir
+    os.chdir(SMSD_PATH)
+
+    output = open('smsd_run_pair_2dic.txt', 'w')
+
+    # dictionary drugs: list of cc that match
+    drug_cc_dic = {}
+
+    drug1 = {}
+    drug09 = {}
+    drug08 = {}
+    drug07 = {}
+
+    #loop over drug in the map
+    for drug in dic_map:
+      #logger.info(query)
+      # get the drug smiles
+      drug_smi = query[drug]
+      # list of cc that match each drug
+      match_cc_list = []
+      sim1 = []
+      sim09 = []
+      sim08 = []
+      sim07 = []
+      # each cc we have in the list
+      for cc in dic_map[drug]:
+        # get the smiles
+        cc_smi = target[cc]
+        subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + \
+                      "\" -T SMI -t \"" + str(cc_smi) + "\" -r -m -z -b", 
+                      shell=True)
+        # get list from lines in molDescriptors output
+        mol_des = file_to_lines("molDescriptors.out")
+        #logger.info(mol_des)
+        # make string out of list
+        mol_str = ''.join(mol_des)
+        # logger.info(mol_str)
+        # tanimoto similarity string or other string
+        str_match = 'Tanimoto (Sim.)= '
+        # find the string
+        str_numb = mol_str.find(str_match)
+        sim_index = (str_numb + len(str_match))
+        # get similarity number and convert to float
+        similarity = float(mol_str[sim_index:(sim_index+3)])
+
+        if similarity >= float(threshold):
+          # append to list
+          match_cc_list.append(cc)
+
+        if similarity >= 1.0:
+          sim1.append(cc)
+
+        if similarity >= 0.9:
+          sim09.append(cc)
+
+        if similarity >= 0.8:
+          sim08.append(cc)
+
+        if similarity >= 0.7:
+          sim07.append(cc)
+
+      # check the list is not empty
+      if match_cc_list:
+        # add list to dictionary
+        drug_cc_dic[drug] = match_cc_list
+
+      if sim1:
+        drug1[drug] = sim1
+      if sim09:
+        drug09[drug] = sim09
+      if sim08:
+        drug08[drug] = sim08
+      if sim07:
+        drug07[drug] = sim07  
+      
+    # write to output
+    output.write("# similarity 1.0\n")
+    output.write(str(drug1)+ "\n")
+    output.write("# similarity > 0.9\n")
+    output.write(str(drug09)+ "\n")
+    output.write("# similarity > 0.8\n")
+    output.write(str(drug08)+ "\n")
+    output.write("# similarity > 0.7\n")
+    output.write(str(drug07)+ "\n")
+
+
   ###
   # pairwise comparison on smile strings
   ###
-  if flag == 'pair':
+  elif flag == 'pair':
     # navigate to SMSD dir
     os.chdir(SMSD_PATH)
     #logger.info('this is pairwise')
@@ -1496,7 +1583,7 @@ def run_smsd(query, target, flag, threshold):
 
     for drug in query:
       drug_smi = query[drug]
-      logger.info(drug)
+      #logger.info(drug)
       # list of cc that match each drug - with similarity above threshold
       match_cc_list = []
       for cc in target:
@@ -1577,6 +1664,7 @@ def run_smsd(query, target, flag, threshold):
         if match_cc_list:
           # add list to dictionary
           drug_cc_dic[drug] = match_cc_list
+
 
   # move back to working directory!
   os.chdir(initial_dir)
@@ -2130,20 +2218,20 @@ def main():
   # # OVERWRITE CHEMBL
   # chembl_id_smi_filt = {'CHEMBL1115': 'CN(C)C(=O)Oc1ccc[n+](C)c1', 'CHEMBL965': 'C[N+](C)(C)CCOC(=O)N', 'CHEMBL964': 'CCN(CC)C(=S)SSC(=S)N(CC)CC'}
   #logger.info(chembl_id_smi_filt)
-  chembl_id_smi_opt = {'CHEMBL1082407': 'CNC(=O)c1ccc(cc1F)N2C(=S)N(C(=O)C2(C)C)c3ccc(C#N)c(c3)C(F)(F)F', 'CHEMBL461101': 'CC1=NN(C(=O)/C/1=N\\Nc2cccc(c2O)c3cccc(c3)C(=O)O)c4ccc(C)c(C)c4', 'CHEMBL914': 'CC(C)(C(=O)O)c1ccc(cc1)C(O)CCCN2CCC(CC2)C(O)(c3ccccc3)c4ccccc4', 'CHEMBL1571': 'C[C@]12CC[C@H]3[C@@H](CCC4=CC(=O)C=C[C@]34C)[C@@H]1CCC(=O)O2', 'CHEMBL1279': 'CN[C@@H]1CCc2[nH]c3ccc(cc3c2C1)C(=O)N', 'CHEMBL1278': 'CNS(=O)(=O)CCc1ccc2[nH]cc(C3CCN(C)CC3)c2c1', 'CHEMBL376359': 'CN1C(=O)C=C(N2CCC[C@@H](N)C2)N(Cc3ccccc3C#N)C1=O', 'CHEMBL911': 'CN(C)C(=O)Cc1c(nc2ccc(C)cn12)c3ccc(C)cc3', 'CHEMBL1577': 'CN1C(CCl)Nc2cc(Cl)c(cc2S1(=O)=O)S(=O)(=O)N', 'CHEMBL1272': 'CCOc1cc(CC(=O)N[C@@H](CC(C)C)c2ccccc2N3CCCCC3)ccc1C(=O)O'}
-  logger.info(len(chembl_id_smi_opt))
+  #chembl_id_smi_opt = {'CHEMBL1082407': 'CNC(=O)c1ccc(cc1F)N2C(=S)N(C(=O)C2(C)C)c3ccc(C#N)c(c3)C(F)(F)F', 'CHEMBL461101': 'CC1=NN(C(=O)/C/1=N\\Nc2cccc(c2O)c3cccc(c3)C(=O)O)c4ccc(C)c(C)c4', 'CHEMBL914': 'CC(C)(C(=O)O)c1ccc(cc1)C(O)CCCN2CCC(CC2)C(O)(c3ccccc3)c4ccccc4', 'CHEMBL1571': 'C[C@]12CC[C@H]3[C@@H](CCC4=CC(=O)C=C[C@]34C)[C@@H]1CCC(=O)O2', 'CHEMBL1279': 'CN[C@@H]1CCc2[nH]c3ccc(cc3c2C1)C(=O)N', 'CHEMBL1278': 'CNS(=O)(=O)CCc1ccc2[nH]cc(C3CCN(C)CC3)c2c1', 'CHEMBL376359': 'CN1C(=O)C=C(N2CCC[C@@H](N)C2)N(Cc3ccccc3C#N)C1=O', 'CHEMBL911': 'CN(C)C(=O)Cc1c(nc2ccc(C)cn12)c3ccc(C)cc3', 'CHEMBL1577': 'CN1C(CCl)Nc2cc(Cl)c(cc2S1(=O)=O)S(=O)(=O)N', 'CHEMBL1272': 'CCOc1cc(CC(=O)N[C@@H](CC(C)C)c2ccccc2N3CCCCC3)ccc1C(=O)O'}
+  #logger.info(len(chembl_id_smi_opt))
 
 
   # OVERWRITE DRUGBANK
   # drugbank_id_smi_filt = {'DB08513': 'CC1=CC(NC2=NC(NC3=CC=C(CC(O)=O)C=C3)=NC=C2C(N)=O)=CC=C1', 'DB04931': 'CCCC[C@H](NC(=O)[C@H](CO)NC(=O)[C@H](CC1=CC=C(O)C=C1)NC(=O)[C@H](CO)NC(C)=O)C(=O)N[C@@H](CCC(O)=O)C(=O)N[C@@H](CC1=CN=CN1)C(=O)N[C@H](CC1=CC=CC=C1)C(=O)N[C@@H](CCCNC(N)=N)C(=O)N[C@@H](CC1=CNC2=CC=CC=C12)C(=O)NCC(=O)N[C@@H](CCCCN)C(=O)N1CCC[C@H]1C(=O)N[C@@H](C(C)C)C(N)=O'}
   #logger.info(len(drugbank_id_smi_filt))
   drugbank_id_smi_filt = {'DB02169': 'C[C@@H](C[C@H](O)[C@@H]1O[C@@H]2CC[C@]3(CC[C@H](O3)\\C=C\\[C@@H](C)[C@H]3CC(C)=C[C@]4(O[C@@H](C[C@@](C)(O)C(O)=O)CC[C@@H]4O)O3)O[C@@H]2[C@@H](O)C1=C)[C@@H]1O[C@]2(CCCCO2)CC[C@H]1C'}
-  logger.info(len(drugbank_id_smi_filt))
+  #logger.info(len(drugbank_id_smi_filt))
 
   # # OVERWRITE CC
   #logger.info(cc_smi_filt)
-  cc_smi_filt = {'03B': 'Cc1c(c(c(n1C)c2ccc(cc2)Cl)c3cccc(c3)N4CCN(CC4)c5ccc(cc5)NS(=O)(=O)c6ccc(c(c6)[N+](=O)[O-])NC(CCN(C)C)CSc7ccccc7)C(=O)O', '03C': 'Cc1ccccc1n2c(c(cn2)C(=O)c3cccc(c3)C4CCN(CC4)S(=O)(=O)C)N','T1A': 'CC[As+](CC)(CC)CC','4MB': 'CS(=O)(=O)Nc1ccc(cc1)C(=O)O', 'RNA': 'Cc1ccc(cc1)S(=O)(=O)NC2=NC(=O)C(=Cc3ccc(o3)C)S2', 'UGJ': 'c1ccc(c(c1)c2c(c(nc3c2c(c(s3)C#N)N)N)C#N)Cl', 'UZ9': 'CC(CCC(=O)NCCCCC(C(=O)O)N)C1CCC2C1(CCC3C2CCC4C3(CCC(=O)C4)C)C', 'AIQ': 'c1cnc([nH]1)SCc2cc(cc3c2N=C(NC3=O)N)N', 'XMC': 'c1cc(cc2c1cc(cc2)Cl)S(=O)(=O)N3CC(N(C(=O)C3)CC4CCN(CC4)c5ccncc5)C(=O)N6CCOCC6', '0M2': 'CC(CN1CC2=C(C1)c3ccccc3Nc4c2cccc4)O'}
-  logger.info(len(cc_smi_filt))
+  #cc_smi_filt = {'03B': 'Cc1c(c(c(n1C)c2ccc(cc2)Cl)c3cccc(c3)N4CCN(CC4)c5ccc(cc5)NS(=O)(=O)c6ccc(c(c6)[N+](=O)[O-])NC(CCN(C)C)CSc7ccccc7)C(=O)O', '03C': 'Cc1ccccc1n2c(c(cn2)C(=O)c3cccc(c3)C4CCN(CC4)S(=O)(=O)C)N','T1A': 'CC[As+](CC)(CC)CC','4MB': 'CS(=O)(=O)Nc1ccc(cc1)C(=O)O', 'RNA': 'Cc1ccc(cc1)S(=O)(=O)NC2=NC(=O)C(=Cc3ccc(o3)C)S2', 'UGJ': 'c1ccc(c(c1)c2c(c(nc3c2c(c(s3)C#N)N)N)C#N)Cl', 'UZ9': 'CC(CCC(=O)NCCCCC(C(=O)O)N)C1CCC2C1(CCC3C2CCC4C3(CCC(=O)C4)C)C', 'AIQ': 'c1cnc([nH]1)SCc2cc(cc3c2N=C(NC3=O)N)N', 'XMC': 'c1cc(cc2c1cc(cc2)Cl)S(=O)(=O)N3CC(N(C(=O)C3)CC4CCN(CC4)c5ccncc5)C(=O)N6CCOCC6', '0M2': 'CC(CN1CC2=C(C1)c3ccccc3Nc4c2cccc4)O'}
+  #logger.info(len(cc_smi_filt))
   #cc_smi_filt = {'11K': 'c1cc(ccc1CC(=O)Nc2cc([nH]n2)C3CC3)OCCN4CCCC4', '11U': 'c1cc(ccc1CNC(=O)C2CCCN2C(=O)CNC3CCCCC3)C(=N)N', '11P': 'c1cncc2c1CCC2C(O)(P(=O)(O)O)P(=O)(O)O', '11S': 'c1cc2c(cc[nH]2)cc1Cl', '11R': 'CN(C)c1cccc(c1)OCCCCCCCCCCCC2=CCN3C4=C5C(=CC=CN5[Ru]367(N8CCCCC8C9N6CCCC9)N1CCCCC1C1N7CCC=C1)C=CC24', '4ID': 'Cc1ccc(c(c1)C)S(=O)(=O)C2=CN=C(NC2=O)SCC(=O)Nc3ccccc3C(F)(F)F', '4IG': 'CCc1c(c(nc(n1)N)N)c2ccc3c(c2)N(C(=O)C(O3)c4cc(cc(c4)F)F)CCCOC', '11X': 'c1ccc(cc1)NCc2cccnc2', '2OH': 'CC(C)(c1ccc(cc1)O)c2ccc(cc2)O', '2OJ': 'CC(C)N1CCC(CC1)C(=O)Nc2c(cccc2OCc3cc(on3)c4ccc(s4)Cl)OCCCOC5C(C(C(C(O5)COC(=O)C)OC(=O)C)OC(=O)C)OC(=O)C', 'N7P': 'CC(=O)N1CCCC1C(=O)O', 'N7F': 'c1ccc(cc1)Cn2c3c(c(c2N4CCCC(C4)N)C#N)N=CN(C3=O)Cc5ccnc6c5cccc6', 'WI2': 'COc1cccc(c1)c2cnc(c(n2)N3CCC(CC3)C(=O)O)N', '2OP': 'CC(C(=O)O)O', 'N7O': 'CP(=O)(C(c1csc2c1cc(cc2)Cl)C(=O)NC=Cc3ccc(c(c3)F)F)O', 'ZZZ': 'C1C(NC2=C(N1)N=C(NC2=O)N)C=O', 'ZZY': 'c1ccc(c(c1)[N+](=O)[O-])S(=O)(=O)n2ccc3c2cc(cn3)C(=O)N', 'ZZT': 'Cc1ccc(c(c1)N)OC', 'ZZL': 'c1cc(c(c(c1)F)C2=NCc3cnc(nc3-c4c2cc(cc4)Cl)Nc5ccc(cc5)C(=O)O)F', 'ZZK': 'c1cc(c2c(c1)OCO2)c3cc(c(nc3)N)c4ccc(cc4)C(=O)N', 'ZZH': 'c1ccc(cc1)Cc2ccc(cc2)OC(Cc3ccccc3)C(=O)O', 'ZZG': 'Cc1cc(c(nc1C)c2ccccn2)Oc3ccnc(c3)Nc4cc(c(c(c4)OC)OC)OC', 'ZZF': 'Cc1ccc(c(n1)C)Oc2ccnc(c2)Nc3ccc(cc3)S(=O)(=O)N', 'ZZE': 'CCc1c(c(n(n1)CCO)CC)Oc2cc(cc(c2)C#N)C#N', 'ZZD': 'c1ccc(cc1)C(c2ccccc2)(c3ccccc3)SCC(C(=O)O)N', 'ZZA': 'c1ccc(cc1)n2cc(cn2)C(=O)O', 'ZZ7': 'CC1(C(NC(S1)C(C(=O)O)NC(=O)C(c2ccccc2)N)C(=O)O)C', 'ZZ6': 'CCNC(=O)c1cc2c(nc(nc2s1)N)c3ccc(cc3Cl)Cl', 'ZZ5': 'CCOc1ccc(cc1)c2c(c(nc3c2c(c(s3)C(=O)N)N)N)C#N', 'ZZ4': 'c1ccc(cc1)N=Nc2cnc(nc2c3ccc(cc3Cl)Cl)N', 'ZZ3': 'Cc1nc(nc(n1)SC)N', 'ZZ2': 'Cc1cc(nc(n1)N)OCCOC', 'ZZ0': 'c1cc(c(nc1)Nc2ccc(cc2)Cl)C(=O)O', 'N76': 'c1cc(cc(c1)S(=O)(=O)N)Nc2nc3c(c(n2)OCC4CCCCC4)nc[nH]3'}
   
   # # cc: create file with smiles to feed to openbabel
@@ -2161,24 +2249,36 @@ def main():
   #logger.info(chembl_to_cc)
   #logger.info(pdb_cc_dic)
 
-  # fiulter to 291
+  #OVERWRITE CHEMBL_TO_CC FOR TESTING
+  #chembl_to_cc = {'CHEMBL997': ['SUF', '210', '1MV'],'CHEMBL877': ['AMH', '0GJ']}
+
   # run smsd with drug to cc dic
 
 
   # TEST
-  logger.info('Start test')
-  now = datetime.now()
-  test = run_or_pickle("test", run_smsd,
-                      chembl_id_smi_opt, "test.sdf","batch", 0.2)
-  then = datetime.now()
-  logger.info(test)
-  tdelta = then - now
-  logger.info('End test')
-  logger.info(tdelta)
+  # logger.info('Start test')
+  # now = datetime.now()
+  # test = run_or_pickle("test", run_smsd, chembl_id_smi_opt,
+  #                      cc_smi_filt,"pair_2dic", 1.0, chembl_to_cc)
+  # then = datetime.now()
+  # logger.info(test)
+  # tdelta = then - now
+  # logger.info('End test')
+  # logger.info(tdelta)
 
 
 
   # # CHEMBL CLUSTERING
+  # rn clustering with 0.9 or other threshold
+  # thresholds for similarity at 1, 0.9, 0.8, 0.7 are also written to output
+  now = datetime.now()
+  chebl_cluster = run_or_pickle("7_chembl_cluster", run_smsd, 
+                                chembl_id_smi_opt, cc_smi_filt,
+                                "pair_2dic", 0.9, chembl_to_cc)
+  then = datetime.now()
+  tdelta = then - now
+  logger.info(tdelta)
+
   # # tanimoto 0.2
   # chembl_cc_02 = run_or_pickle("7_chembl_cc_02", run_smsd,
   #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.2)
