@@ -2140,9 +2140,9 @@ def main():
 
 
   ####################################
-  ### PART 7 MOLECULE CLUSTERING   ###
+  ### PART 7 CHEMBL CLUSTERING   ###
   ####################################
-  logger.info('PART 7 - We wish to take the drugs ' +
+  logger.info('PART 7 - We wish to take the ChEMBL drugs ' +
               'from the mapping and cluster them against ' +
               'the chemical components extracted from the pdb structures.')
 
@@ -2150,7 +2150,6 @@ def main():
   chembl_id_smi_dic = run_or_pickle("7_chembl_id_smi_dic", txt_to_dic, 
                                     CHEMBL_INPUT, "CHEMBL_ID",
                                     "CANONICAL_SMILES")
-  
   #logger.debug(len(chembl_id_smi_dic))
 
 
@@ -2183,26 +2182,7 @@ def main():
               'a small molecule, to obtain ' + str(len(chembl_id_smi_opt)) +
               ' ChEMBL drugs mapped to their smiles.')
 
-  # drugbank drugs to smiles dictionary (total 6799 drugs mnapped to smiles)
-  drugbank_id_smi_dic = run_or_pickle('7_drugbank_id_smi_dic', 
-                                      sdf_to_dic, DRUGBANK_SDF, 
-                                      'DATABASE_ID', 'SMILES')
-  # logger.info(drugbank_id_smi_dic)
-
-  # filter dictionary to only drugs that in the drugbank_repo_drug_list
-  drugbank_id_smi_filt = run_or_pickle("7_drugbank_id_smi_filt", 
-                                      filter_dic_from_list, 
-                                      drugbank_id_smi_dic,
-                                      drugbank_repo_drug_list)
   
-  # logger.info(len(drugbank_repo_drug_list))
-  #logger.info(drugbank_id_smi_filt)
-  # WHY ONLY 1398 MAPPED TO SMILES? TOTAL IS 6657 ?? CHECK!!!
-
-  logger.info('We have mapped ' + str(len(drugbank_id_smi_filt)) +
-              ' DrugBank drugs to their smiles.')
-  
-
   #####################
   #openbabel conversion - not necessary for now
   #####################
@@ -2223,6 +2203,11 @@ def main():
   # logger.info('We have mapped ' + str(len(cc_smi_filt)) + 
   #             ' small-molecule chemical components to their smiles, ' +
   #             'and converted them to 3d sdf.')
+
+  # or do conversion in separate shell
+  # same command (with gen3d and hydrogen removed)
+  #babel_smi_to_sdf('cc_smi_filt.smi','cc_smi_filt.sdf')
+  # logger.info(chembl_id_smi_filt)
   #######################
 
 
@@ -2232,17 +2217,12 @@ def main():
   # convert dic into smile file (module return none, it just writes to file)
   dic_to_txt(cc_smi_filt, 'cc_smi_filt.smi')
   
-  # convert to sdf (actually doing it in separate shell, not here)
-  # same command (with gen3d and hydrogen removed)
-  #babel_smi_to_sdf('cc_smi_filt.smi','cc_smi_filt.sdf')
-  # logger.info(chembl_id_smi_filt)
-
 
   # # OVERWRITE CHEMBL
-  # chembl_id_smi_filt = {'CHEMBL1115': 'CN(C)C(=O)Oc1ccc[n+](C)c1', 'CHEMBL965': 'C[N+](C)(C)CCOC(=O)N', 'CHEMBL964': 'CCN(CC)C(=S)SSC(=S)N(CC)CC'}
+  # chembl_id_smi_filt = {'CHEMBL1115': 'CN(C)C(=O)Oc1ccc[n+](C)c1', 
+  #'CHEMBL965': 'C[N+](C)(C)CCOC(=O)N', 
+  #'CHEMBL964': 'CCN(CC)C(=S)SSC(=S)N(CC)CC'}
   #logger.info(chembl_id_smi_filt)
-  #chembl_id_smi_opt = {'CHEMBL1082407': 'CNC(=O)c1ccc(cc1F)N2C(=S)N(C(=O)C2(C)C)c3ccc(C#N)c(c3)C(F)(F)F', 'CHEMBL461101': 'CC1=NN(C(=O)/C/1=N\\Nc2cccc(c2O)c3cccc(c3)C(=O)O)c4ccc(C)c(C)c4', 'CHEMBL914': 'CC(C)(C(=O)O)c1ccc(cc1)C(O)CCCN2CCC(CC2)C(O)(c3ccccc3)c4ccccc4', 'CHEMBL1571': 'C[C@]12CC[C@H]3[C@@H](CCC4=CC(=O)C=C[C@]34C)[C@@H]1CCC(=O)O2', 'CHEMBL1279': 'CN[C@@H]1CCc2[nH]c3ccc(cc3c2C1)C(=O)N', 'CHEMBL1278': 'CNS(=O)(=O)CCc1ccc2[nH]cc(C3CCN(C)CC3)c2c1', 'CHEMBL376359': 'CN1C(=O)C=C(N2CCC[C@@H](N)C2)N(Cc3ccccc3C#N)C1=O', 'CHEMBL911': 'CN(C)C(=O)Cc1c(nc2ccc(C)cn12)c3ccc(C)cc3', 'CHEMBL1577': 'CN1C(CCl)Nc2cc(Cl)c(cc2S1(=O)=O)S(=O)(=O)N', 'CHEMBL1272': 'CCOc1cc(CC(=O)N[C@@H](CC(C)C)c2ccccc2N3CCCCC3)ccc1C(=O)O'}
-  #logger.info(len(chembl_id_smi_opt))
 
 
   # OVERWRITE DRUGBANK
@@ -2262,9 +2242,6 @@ def main():
 
   # # ligands converted to sdf
   #babel_smi_to_sdf('test.smi','test.sdf')
-
-
-
 
 
   # obtain drug to cc dictionary, merging three dics
@@ -2289,7 +2266,6 @@ def main():
   # tdelta = then - now
   # logger.info('End test')
   # logger.info(tdelta)
-
 
 
   # # CHEMBL CLUSTERING (takes an hour approx)
@@ -2322,29 +2298,36 @@ def main():
   # #logger.info(chembl_cc_02)
 
 
-
-  # #DRUGBANK CLUSTERING
-  # # tanimoto 0.2
-  # drugbank_cc_02 = run_or_pickle("7_drugbank_cc_02", run_smsd,
-  #                               drugbank_id_smi_filt,cc_smi_filt,"pair", 0.2)
-  # # tanimoto 0.7
-  # drugbank_cc_07 = run_or_pickle("7_drugbank_cc_07", run_smsd,
-  #                               drugbank_id_smi_filt,cc_smi_filt,"pair", 0.7)
-  # # tanimoto 0.8
-  # drugbank_cc_08 = run_or_pickle("7_drugbank_cc_08", run_smsd,
-  #                               drugbank_id_smi_filt,cc_smi_filt,"pair", 0.8)
-  # # tanimoto 0.9
-  # drugbank_cc_09 = run_or_pickle("7_drugbank_cc_09", run_smsd,
-  #                               drugbank_id_smi_filt,cc_smi_filt,"pair", 0.9)
-  # # tanimoto 1.0
-  # drugbank_cc_1 = run_or_pickle("7_drugbank_cc_1", run_smsd,
-  #                               drugbank_id_smi_filt,cc_smi_filt,"pair", 1.0)
-
-
-
-  #logger.info(drugbank_cc_02)
-
   logger.info('------------------- END OF PART 7 -------------------')
+  
+  ####################################
+  ### PART 8 DRUGBANK CLUSTERING   ###
+  ####################################
+  logger.info('PART 7 - In the same way, we wish to take ' +
+            'the DrugBank drugs from the mapping and cluster them against ' +
+              'the chemical components extracted from the pdb structures.')
+
+  # drugbank drugs to smiles dictionary (total 6799 drugs mapped to smiles)
+  drugbank_id_smi_dic = run_or_pickle('7_drugbank_id_smi_dic', 
+                                      sdf_to_dic, DRUGBANK_SDF, 
+                                      'DATABASE_ID', 'SMILES')
+  # logger.info(drugbank_id_smi_dic)
+
+  # filter dictionary to only drugs that in the drugbank_repo_drug_list
+  drugbank_id_smi_filt = run_or_pickle("7_drugbank_id_smi_filt", 
+                                      filter_dic_from_list, 
+                                      drugbank_id_smi_dic,
+                                      drugbank_repo_drug_list)
+  
+  # logger.info(len(drugbank_repo_drug_list))
+  #logger.info(drugbank_id_smi_filt)
+  # WHY ONLY 1398 MAPPED TO SMILES? TOTAL IS 6657 ?? CHECK!!!
+
+  logger.info('We have mapped ' + str(len(drugbank_id_smi_filt)) +
+              ' DrugBank drugs to their smiles.')
+
+
+  logger.info('------------------- END OF PART 8 -------------------')
 
   logger.info('------------------- END OF SCRIPT -------------------')
 
