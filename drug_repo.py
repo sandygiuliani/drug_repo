@@ -834,6 +834,9 @@ def flatten_dic(dic, keys_or_val):
   # rm duplicates
   flat_list = list(set(flat_list))
 
+  #rm white spaces
+  flat_list = [x.strip(' ') for x in flat_list]
+
   flat_list.sort()
 
   return flat_list
@@ -1443,6 +1446,7 @@ def merge_dic(dic1,dic2,dic3):
     if list3:
       # rm duplicates
       list3 = list(set(list3))
+      item = item.strip(' ')
       dic_merge[item] = list3
   #logger.info(dic_merge)
   logger.info(len(dic_merge))
@@ -1503,58 +1507,65 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
     #loop over drug in the map
     for drug in dic_map:
       logger.info(drug)
-      # get the drug smiles
-      drug_smi = query[drug]
       # list of cc that match each drug
       match_cc_list = []
       sim1 = []
       sim09 = []
       sim08 = []
       sim07 = []
-      # each cc we have in the list
-      for cc in dic_map[drug]:
-        #logger.info(cc)
-        # check if cc is in the dic
-        if cc in target:
-          # get the smiles
-          cc_smi = target[cc]
-          subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + \
-                        "\" -T SMI -t \"" + str(cc_smi) + "\" -r -m -z -b", 
-                        shell=True)
-          # get list from lines in molDescriptors output
-          mol_des = file_to_lines("molDescriptors.out")
-          #logger.info(mol_des)
-          # make string out of list
-          mol_str = ''.join(mol_des)
-          # logger.info(mol_str)
-          # tanimoto similarity string or other string
-          str_match = 'Tanimoto (Sim.)= '
-          # find the string
-          str_numb = mol_str.find(str_match)
-          sim_index = (str_numb + len(str_match))
-          # get similarity number and convert to float
-          similarity = float(mol_str[sim_index:(sim_index+3)])
+     
+      # check drug is in dic
+      if drug in query:
+        # get the drug smiles
+        drug_smi = query[drug]
 
-          if similarity >= float(threshold):
-            # append to list
-            match_cc_list.append(cc)
+        
+        # each cc we have in the list
+        for cc in dic_map[drug]:
+          #logger.info(cc)
+          # check if cc is in the dic
+          if cc in target:
+            # get the smiles
+            cc_smi = target[cc]
+            subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + \
+                          "\" -T SMI -t \"" + str(cc_smi) + "\" -r -m -z -b", 
+                          shell=True)
+            # get list from lines in molDescriptors output
+            mol_des = file_to_lines("molDescriptors.out")
+            #logger.info(mol_des)
+            # make string out of list
+            mol_str = ''.join(mol_des)
+            # logger.info(mol_str)
+            # tanimoto similarity string or other string
+            str_match = 'Tanimoto (Sim.)= '
+            # find the string
+            str_numb = mol_str.find(str_match)
+            sim_index = (str_numb + len(str_match))
+            # get similarity number and convert to float
+            similarity = float(mol_str[sim_index:(sim_index+3)])
 
-          if similarity >= 1.0:
-            sim1.append(cc)
+            if similarity >= float(threshold):
+              # append to list
+              match_cc_list.append(cc)
 
-          if similarity >= 0.9:
-            sim09.append(cc)
+            if similarity >= 1.0:
+              sim1.append(cc)
 
-          if similarity >= 0.8:
-            sim08.append(cc)
+            if similarity >= 0.9:
+              sim09.append(cc)
 
-          if similarity >= 0.7:
-            sim07.append(cc)
+            if similarity >= 0.8:
+              sim08.append(cc)
+
+            if similarity >= 0.7:
+              sim07.append(cc)
+
 
       # check the list is not empty
       if match_cc_list:
         # add list to dictionary
         drug_cc_dic[drug] = match_cc_list
+        logger.info(drug_cc_dic)
 
       if sim1:
         drug1[drug] = sim1
@@ -1942,8 +1953,9 @@ def main():
               str(TAXA) + ' targets.')
 
   # list of drugs that are in the map, to be used in part 6
-  chembl_repo_drug_list = chembl_repo_map.keys()
-  # logger.debug(chembl_repo_drug_list)
+  #chembl_repo_drug_list = chembl_repo_map.keys()
+  chembl_repo_drug_list = flatten_dic(chembl_repo_map, 'keys')
+  #logger.info(chembl_repo_drug_list)
 
   # generate big map for drugbank drugs
   drugbank_repo_map = run_or_pickle("4_drugbank_repo_map", drugbank_repo, 
@@ -1956,9 +1968,11 @@ def main():
               str(TAXA) + ' targets.')
 
   # list of drugs that are in the map, to be used in part 6
-  drugbank_repo_drug_list = drugbank_repo_map.keys()
-  logger.debug(drugbank_repo_drug_list)
-  drugbank_repo_drug_list = list_second_level_dic(drugbank_repo_map)
+  # below old one, had white spaces!
+  #drugbank_repo_drug_list = drugbank_repo_map.keys()
+  #logger.debug(drugbank_repo_drug_list)
+  # new list, no white spaces!
+  drugbank_repo_drug_list = flatten_dic(drugbank_repo_map, 'keys')
   logger.debug(drugbank_repo_drug_list)
 
   # filtered ap for reviewed entries!
@@ -2313,22 +2327,22 @@ def main():
               'the chemical components extracted from the pdb structures.')
 
   # drugbank drugs to smiles dictionary (total 6799 drugs mapped to smiles)
-  drugbank_id_smi_dic = run_or_pickle('7_drugbank_id_smi_dic', 
+  drugbank_id_smi_dic = run_or_pickle('8_drugbank_id_smi_dic', 
                                       sdf_to_dic, DRUGBANK_SDF, 
                                       'DATABASE_ID', 'SMILES')
   # logger.info(drugbank_id_smi_dic)
   
 
   # filter dictionary to only drugs that in the drugbank_repo_drug_list
-  drugbank_id_smi_filt = run_or_pickle("7_drugbank_id_smi_filt", 
+  drugbank_id_smi_filt = run_or_pickle("8_drugbank_id_smi_filt", 
                                       filter_dic_from_list, 
                                       drugbank_id_smi_dic,
                                       drugbank_repo_drug_list)
   
-  #logger.info(len(drugbank_repo_drug_list))
-  logger.info(drugbank_repo_drug_list)
-  # WHY ONLY 1398 MAPPED TO SMILES? TOTAL IS 6657 ?? CHECK!!!
-  #DB04260': ['D1V', 'DIH', 'A2F', '7DG', 'IMH', 'GUN', '22A', 'AZG', 'AC2', '3DG', 'IM5', '229', '2FD', 'MSG', 'GMP', '2DI', 'NOS'], 'DB00909': ['4MD', 'E1E', 'AZM', 'E1F']
+  #logger.info(len(drugbank_id_smi_filt))
+  #logger.info(drugbank_repo_drug_list)
+
+ 
   logger.info('We have mapped ' + str(len(drugbank_id_smi_filt)) +
               ' DrugBank drugs to their smiles.')
 
@@ -2336,12 +2350,16 @@ def main():
   drugbank_to_cc = merge_dic(drugbank_dic,uniprot_filt, pdb_cc_dic)
   #logger.info(drugbank_to_cc)
   
+  # OVERWRITE DRUGBANK FOR TESTING
+  # drugbank_to_cc = {'DB04260': ['D1V', 'DIH', 'A2F', '7DG', 'IMH', 'GUN', '22A', 'AZG', 'AC2', '3DG', 'IM5', '229', '2FD', 'MSG', 'GMP', '2DI', 'NOS'], 'DB00909': ['4MD', 'E1E', 'AZM', 'E1F']}
+  #drugbank_to_cc = {' DB07204': ['796', '3SB', '1SB', 'A03', 'IPH', 'S69', '4SB', '2SB', 'SKE', 'YTP', 'XFE', 'L9L', 'L9M', 'L9N', 'VX6', 'BUD', 'IQB'], ' DB07207': ['0GE', 'BEN', '7NH', 'PY3', '0GJ', '380', '6NH', 'PI0', '2KF', 'BGC', 'FUC', 'FUL', 'CR9', '1OK', 'N1H', '905', '5PI', '1OJ', '346', '2KE', 'ASO', '24X', '3BP', 'GLC', '771', 'P5B', '567', 'PBZ', '03R', '1NL', 'GIL', '1NJ', '1NK', '1T7', 'PSM', '3CB', 'C1B', '0Z6', '0G7', '413', '1GG', '1GE', '359']}
 
-  # drugbank_cluster = run_or_pickle("7_drugbank_cluster", run_smsd, 
-  #                               drugbank_id_smi_filt, cc_smi_filt,
-  #                               "pair_2dic", 0.9, drugbank_to_cc)
+
+  drugbank_cluster = run_or_pickle("8_drugbank_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", 0.9, drugbank_to_cc)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '7_drugbank_cluster.txt')
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_drugbank_cluster.txt')
 
 
   logger.info('------------------- END OF PART 8 -------------------')
