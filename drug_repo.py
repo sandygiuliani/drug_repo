@@ -1511,7 +1511,7 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
       sim07 = []
       # each cc we have in the list
       for cc in dic_map[drug]:
-        logger.info(cc)
+        #logger.info(cc)
         # check if cc is in the dic
         if cc in target:
           # get the smiles
@@ -1676,6 +1676,29 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
 
   # return the dictionary
   return drug_cc_dic
+
+############################################################################
+
+
+
+
+############################################################################
+### MV_FILE
+############################################################################
+#takes file, makes copy and moves it to current directory
+# checks if file is already there and does not move it
+def mv_file(origin, filename, new_name):
+
+  # if the file is not there already
+  if os.path.isfile(filename) == False:
+    current_dir = os.getcwd()
+
+    os.chdir(origin)
+    subprocess.call("cp " + filename + " " + current_dir + "/" + new_name, 
+         shell=True)
+
+    os.chdir(current_dir)
+
 
 ############################################################################
 
@@ -2140,8 +2163,9 @@ def main():
   logger.info('We have mapped the ' + str(len(chembl_id_smi_filt)) +
               ' ChEMBL drugs to their smiles.')
 
-  # filter chembl_dic to onlu the 783 drugs, using chembl_repo_drug_list
-  chembl_dic_mapped_drugs = filter_dic_from_list(chembl_dic, chembl_repo_drug_list)
+  # filter chembl_dic to only the 783 drugs, using chembl_repo_drug_list
+  chembl_dic_mapped_drugs = filter_dic_from_list(chembl_dic, 
+                            chembl_repo_drug_list)
   #logger.info(len(chembl_dic_mapped_drugs))
   # filter out the uniprots, using uniprot_w_lig_list
   chembl_dic_uni_drugs = exclude_values_from_dic(chembl_dic_mapped_drugs, 
@@ -2177,10 +2201,6 @@ def main():
 
   logger.info('We have mapped ' + str(len(drugbank_id_smi_filt)) +
               ' DrugBank drugs to their smiles.')
-
-  # identify one drug for testing
-  #CHEMBL960 is leflunomide
-  #logger.debug(chembl_id_smi_dic['CHEMBL960'])
   
 
   #####################
@@ -2251,14 +2271,13 @@ def main():
   chembl_to_cc = merge_dic(chembl_dic,uniprot_filt, pdb_cc_dic)
   #logger.info(chembl_to_cc)
   #logger.info(pdb_cc_dic)
-  logger.info(chembl_to_cc['CHEMBL19'])
+  #logger.info(chembl_to_cc['CHEMBL19'])
 
   #OVERWRITE CHEMBL_TO_CC FOR TESTING
-  #chembl_to_cc = {'CHEMBL870': ['SUF', '210', '1MV', 'NI9', 'RIS', '3N4', '3N5', '3N2', '3N3', '3N1', 'GO1', 'GO0', 'UNR', 'UNV', 'M0N', 'BFH', 'ZOL', 'BFQ', 'YL2', 'AHD', 'IPE', 'MS0', 'IPR', '4GA', 'RSX', '11P', 'YS4']}
-  #chembl_to_cc = {'CHEMBL870': ['SUF', '210', '1MV', 'NI9', 'RIS'],'CHEMBL19':['CEL', 'RYJ', 'ETS', '667', 'B30', 'BOS', 'OYS', 'BCN', 'OYQ', 'BOW', '2MZ', 'MIZ', '498', 'RYX', 'RYY', 'RYV', 'SRX', 'ZYX', 'Q4I', 'VZ4', '26E', 'EG2', 'TH7', 'SAB', 'BME', 'TH0', '0F3', 'SXS', 'SPM', 'A09', '4TR', 'IOF', 'IOE', 'WZA', 'IOC', 'PIU', 'IOA', 'SBR', 'TPD', 'BFG', 'I7B', 'BFE', 'ZEC', '2SD', 'FF3', '670', 'HAE', 'J45', '0NM', 'AYX', '0FZ', 'WZB', 'WZC', 'SBW', 'I7C', 'F2B', '1GD', 'FBU', 'PO1', 'EG3', 'BO1', 'EG1', 'B22', 'OY0', '1GO', 'O59', 'PHB', 'MZM', 'AG5', 'AG4', 'MZH', 'FFB', 'EVH', 'EVI', 'EVJ', '1MZ', 'BON', 'LC1', 'D8W', 'BR', 'EVD', 'EVE', 'EVF', '9FK', 'BEZ', '2VQ', 'E59', 'MG5', 'FUN', '1EZ', 'BEV', 'BEW', 'JDR', 'AL5', 'FLB', 'DHI', 'LSA', 'TUO', 'IT2', 'FSB', 'MNS', 'BL1', 'BL0', 'SBS', 'O48', 'MFS', 'E36', 'AMS', 'B19', 'PTS', 'TRI', '3BS', 'M28', 'M29', 'J90', 'M25', '3CC', 'E49', 'V21', '5UM', '5UN', 'AMJ', 'B09', 'P9B', 'SG6', 'TRU', 'DA4', 'WWV', 'FL1', 'HSM', 'INV', 'INW', 'INQ', '1CN', 'INL', 'INM', 'DT9', 'BE9', 'HTS', 'KCS', 'BE0', 'DT7', 'BE7', 'MPX', '2C7', 'FB2', 'BZU', 'SUA', 'TU0', 'COX', 'GLC', 'SMS', 'E38', 'B17', 'CTF', 'B15', 'AL8', 'AL9', 'AL6', 'AL7', 'AL4', 'IT5', 'AL2', 'AL3', 'RDT', 'AL1', 'O60', 'BEX', '84A', 'D2S', 'IE2', 'PMX', 'MB1', '0VY', '9TH', 'JKE', 'S6I', 'BSB', 'HSW', '5DS', 'AUC', 'E27', '4TZ', 'D9Z', '1SD', 'J71', 'J74', 'J75', 'GTQ', 'JS7', 'D9H', 'TE1', 'TE2', 'EVG', 'FBS', '1CR', 'CO2', 'FBW', 'FBV', 'BZ1', 'FBT', '0CR', 'ID4', 'ALE', 'SG5', 'F6B', 'E2I', 'SBB', '25X', 'MAJ', 'SU0', 'ARZ', 'MMC', 'AZM', '0VW', '0VV', 'TOR', '0VX', '0VZ', '1SA', 'J43', 'RCS', 'E90', 'RCO', 'AAS', 'NR2', 'DPN', 'WWZ', 'HQE', 'RYZ', 'GRE', 'MBO', '067', '25Y', 'E65', 'E50', 'RZ7', '03T', 'RZ5', 'D7A', 'P58', 'RZ1', 'RZ0', 'POF', 'FB1', 'I7A', 'VZ5', 'RZ8', 'STB', 'SG1', 'MTS', 'SG2', 'E02', 'SG4', 'SG7', 'FMS', 'KLT', 'SCN', 'S24', 'CNN', 'DWH', 'HGB', 'DA9', 'PPF', 'C1H', 'BHO', 'MS5', 'MS4', '1QV', 'EZL', 'D02', 'SDA', 'OSP', 'NKX', 'X0Q', 'E1E', 'DAW', 'R21', 'E1F']}
-
-  # run smsd with drug to cc dic
-
+  #chembl_to_cc = {'CHEMBL870': ['SUF', '210', '1MV', 'NI9', 'RIS', '3N4', 
+  #'3N5', '3N2', '3N3', '3N1', 'GO1', 'GO0', 'UNR', 'UNV', 'M0N', 'BFH', 
+  #'ZOL', 'BFQ', 'YL2', 'AHD', 'IPE', 'MS0', 'IPR', '4GA', 'RSX', 
+  #'11P', 'YS4']}
 
   # TEST
   # logger.info('Start test')
@@ -2273,17 +2292,17 @@ def main():
 
 
 
-  # # CHEMBL CLUSTERING
+  # # CHEMBL CLUSTERING (takes an hour approx)
   # rn clustering with 0.9 or other threshold
-  # thresholds for similarity at 1, 0.9, 0.8, 0.7 are also written to output
-  now = datetime.now()
+  # thresholds for similarity at 1, 0.9, 0.8, 0.7 are also written to output:
+
   chembl_cluster = run_or_pickle("7_chembl_cluster", run_smsd, 
                                 chembl_id_smi_opt, cc_smi_filt,
                                 "pair_2dic", 0.9, chembl_to_cc)
   logger.info(chembl_cluster)
-  then = datetime.now()
-  tdelta = then - now
-  logger.info(tdelta)
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
+
+
 
   # # tanimoto 0.2
   # chembl_cc_02 = run_or_pickle("7_chembl_cc_02", run_smsd,
