@@ -1165,7 +1165,7 @@ def list_second_level_dic(dictionary):
   for item in dictionary:
     for sec in dictionary[item]:
       # strip white spaces
-      sec.trim()
+      sec.strip()
       second_list.append(sec)
 
   second_list = list(set(second_list))
@@ -1957,6 +1957,9 @@ def main():
 
   # list of drugs that are in the map, to be used in part 6
   drugbank_repo_drug_list = drugbank_repo_map.keys()
+  logger.debug(drugbank_repo_drug_list)
+  drugbank_repo_drug_list = list_second_level_dic(drugbank_repo_map)
+  logger.debug(drugbank_repo_drug_list)
 
   # filtered ap for reviewed entries!
   # this one should then include the drugbank entries once they are ready
