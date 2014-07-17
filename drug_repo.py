@@ -62,6 +62,9 @@ from urllib2 import urlopen, HTTPError
 # linecache for jumping to specific lines
 import linecache
 
+# datetime
+from datetime import datetime
+
 # set up log
 import logging
 # set up log file to write to, it will be overwritten every time ('w' mode)
@@ -1411,6 +1414,19 @@ def run_smsd(query, target, flag, threshold):
   # flag = 'batch' for batch comparison, query is dictionary,
   # target is sdf file
 
+
+    # run SMSD
+  # can also include cwd=SMSD_PATH together with shell=True in the command
+  # for instance:
+  # sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SMI -t \"CCCN\" -O SMI -o test.smi
+  # -r remove hydrogens
+  # -m produce mapping output (molDescriptors.out, mcs.out and .mol files)
+  # -b match bond type (bond sensitive, faster run!)
+  # -z match rings (this is needed otherwise very slow)
+  # -x match atom type... (?)
+  # -g for png image
+  # recommended options are -r -z -b
+
   # query is smile string, target id sdf 3d file
 
   # increase Java max heap size
@@ -1441,7 +1457,7 @@ def run_smsd(query, target, flag, threshold):
         # logger.info(cc)
 
         subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + \
-                      "\" -T SMI -t \"" + str(cc_smi) + "\" -m -r -z -b", 
+                      "\" -T SMI -t \"" + str(cc_smi) + "\" -r -m -z -b", 
                       shell=True)
 
         # get list from lines in molDescriptors output
@@ -1494,17 +1510,7 @@ def run_smsd(query, target, flag, threshold):
       directory = os.getcwd()
       logger.debug(directory)
 
-      # run SMSD
-      # can also include cwd=SMSD_PATH together with shell=True in the command
-      # for instance:
-      # sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SMI -t \"CCCN\" -O SMI -o test.smi
-      # -r remove hydrogens
-      # -m produce mapping output (molDescriptors.out, mcs.out and .mol files)
-      # -b match bond type (bond sensitive, faster run!)
-      # -z match rings (this is needed otherwise very slow)
-      # -x match atom type... (?)
-      # -g for png image
-      # recommended options are -r -z -b
+
       subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(query) + 
                       "\" -T SDF -t " + str(target) + " -m -r -z -b", 
                       shell=True)
@@ -1604,6 +1610,7 @@ def main():
   # generate chembl dictionary
   chembl_dic = run_or_pickle("1_chembl_dic", process_chembl, CHEMBL_INPUT)
 
+  #logger.info(len(chembl_dic))
   # get list of uniprot ids from chembl_dic
   chembl_uniprot_list = run_or_pickle("1_chembl_uniprot_list",
                                       flatten_dic, chembl_dic, "values")
@@ -1616,7 +1623,7 @@ def main():
   drugbank_dic = run_or_pickle("1_drugbank_dic", process_drugbank, 
                               DRUGBANK_INPUT)
 
-  #logger.debug(drugbank_dic)
+  #logger.info(len(drugbank_dic))
 
   # get list of uniprot ids from drugbank
   drugbank_uniprot_list = run_or_pickle("1_drugbank_uniprot_list",
@@ -1880,14 +1887,13 @@ def main():
   # make dictionary uniprot to pdb
   uniprot_pdb_dic = run_or_pickle("6_uniprot_pdb_dic", csv_to_dic, 
                                   UNIPROT_PDB)
-
   #logger.debug(uniprot_pdb_dic)
 
   # this is dictionary of drug targets that have at least one pdb structure
   uniprot_filt = run_or_pickle("6_uniprot_filt", filter_dic_from_list, 
                               uniprot_pdb_dic, tot_drug_targ)
 
-  #logger.debug(uniprot_filt)
+  #logger.info(uniprot_filt)
 
   logger.info('Of those targets, ' + str(len(uniprot_filt)) + 
               ' have at least one pdb structure associated to them.')
@@ -1909,7 +1915,15 @@ def main():
   uniprot_pdb_w_lig = run_or_pickle("6_uniprot_pdb_w_lig", 
                                     exclude_values_from_dic, uniprot_filt,
                                     pdb_w_lig_list, "include")
-  
+  #logger.info(uniprot_pdb_w_lig)
+
+  ###
+  # get list of uniprot from dic above
+  uniprot_w_lig_list = uniprot_pdb_w_lig.keys()
+  logger.info(len(uniprot_w_lig_list))
+
+  ###
+
   # get the pdb list from the dic above
   pdb_w_lig = run_or_pickle("6_pdb_w_lig", list_second_level_dic,
                                 uniprot_pdb_w_lig)
@@ -1975,7 +1989,25 @@ def main():
   logger.info('We have mapped the ' + str(len(chembl_id_smi_filt)) +
               ' ChEMBL drugs to their smiles.')
 
+  # filter chembl_dic to onlu the 783 drugs, using chembl_repo_drug_list
+  chembl_dic_mapped_drugs = filter_dic_from_list(chembl_dic, chembl_repo_drug_list)
+  #logger.info(len(chembl_dic_mapped_drugs))
+  # filter out the uniprots, using uniprot_w_lig_list
+  chembl_dic_uni_drugs = exclude_values_from_dic(chembl_dic_mapped_drugs, 
+                        uniprot_w_lig_list, "include")
+  #logger.info(len(chembl_dic_uni_drugs))
+  chembl_uni_drugs_list = chembl_dic_uni_drugs.keys()
+  #logger.info(len(chembl_uni_drugs_list))
+  # filter chembl_id_smi_filt to what obtained above
+  chembl_id_smi_opt = filter_dic_from_list(chembl_id_smi_filt, 
+                      chembl_uni_drugs_list) 
+  #logger.info(len(chembl_id_smi_opt))
   
+  logger.info('We have filtered out the ChEMBL drugs that ' +
+              'do not point to a crystal structure in complex with ' +
+              'a small molecule, to obtain ' + str(len(chembl_id_smi_opt)) +
+              ' ChEMBL drugs mapped to their smiles.')
+
   # drugbank drugs to smiles dictionary (total 6799 drugs mnapped to smiles)
   drugbank_id_smi_dic = run_or_pickle('7_drugbank_id_smi_dic', 
                                       sdf_to_dic, DRUGBANK_SDF, 
@@ -2037,13 +2069,14 @@ def main():
 
   # # OVERWRITE CHEMBL
   # chembl_id_smi_filt = {'CHEMBL1115': 'CN(C)C(=O)Oc1ccc[n+](C)c1', 'CHEMBL965': 'C[N+](C)(C)CCOC(=O)N', 'CHEMBL964': 'CCN(CC)C(=S)SSC(=S)N(CC)CC'}
-  chembl_id_smi_filt = {'CHEMBL1272': 'CCOc1cc(CC(=O)N[C@@H](CC(C)C)c2ccccc2N3CCCCC3)ccc1C(=O)O'}
+  #logger.info(chembl_id_smi_filt)
+  chembl_id_smi_filt = {'CHEMBL1082407': 'CNC(=O)c1ccc(cc1F)N2C(=S)N(C(=O)C2(C)C)c3ccc(C#N)c(c3)C(F)(F)F', 'CHEMBL461101': 'CC1=NN(C(=O)/C/1=N\\Nc2cccc(c2O)c3cccc(c3)C(=O)O)c4ccc(C)c(C)c4', 'CHEMBL914': 'CC(C)(C(=O)O)c1ccc(cc1)C(O)CCCN2CCC(CC2)C(O)(c3ccccc3)c4ccccc4', 'CHEMBL1571': 'C[C@]12CC[C@H]3[C@@H](CCC4=CC(=O)C=C[C@]34C)[C@@H]1CCC(=O)O2', 'CHEMBL1279': 'CN[C@@H]1CCc2[nH]c3ccc(cc3c2C1)C(=O)N', 'CHEMBL1278': 'CNS(=O)(=O)CCc1ccc2[nH]cc(C3CCN(C)CC3)c2c1', 'CHEMBL376359': 'CN1C(=O)C=C(N2CCC[C@@H](N)C2)N(Cc3ccccc3C#N)C1=O', 'CHEMBL911': 'CN(C)C(=O)Cc1c(nc2ccc(C)cn12)c3ccc(C)cc3', 'CHEMBL1577': 'CN1C(CCl)Nc2cc(Cl)c(cc2S1(=O)=O)S(=O)(=O)N', 'CHEMBL1272': 'CCOc1cc(CC(=O)N[C@@H](CC(C)C)c2ccccc2N3CCCCC3)ccc1C(=O)O'}
   logger.info(len(chembl_id_smi_filt))
 
 
   # OVERWRITE DRUGBANK
   # drugbank_id_smi_filt = {'DB08513': 'CC1=CC(NC2=NC(NC3=CC=C(CC(O)=O)C=C3)=NC=C2C(N)=O)=CC=C1', 'DB04931': 'CCCC[C@H](NC(=O)[C@H](CO)NC(=O)[C@H](CC1=CC=C(O)C=C1)NC(=O)[C@H](CO)NC(C)=O)C(=O)N[C@@H](CCC(O)=O)C(=O)N[C@@H](CC1=CN=CN1)C(=O)N[C@H](CC1=CC=CC=C1)C(=O)N[C@@H](CCCNC(N)=N)C(=O)N[C@@H](CC1=CNC2=CC=CC=C12)C(=O)NCC(=O)N[C@@H](CCCCN)C(=O)N1CCC[C@H]1C(=O)N[C@@H](C(C)C)C(N)=O'}
-  logger.info(len(drugbank_id_smi_filt))
+  #logger.info(len(drugbank_id_smi_filt))
   drugbank_id_smi_filt = {'DB02169': 'C[C@@H](C[C@H](O)[C@@H]1O[C@@H]2CC[C@]3(CC[C@H](O3)\\C=C\\[C@@H](C)[C@H]3CC(C)=C[C@]4(O[C@@H](C[C@@](C)(O)C(O)=O)CC[C@@H]4O)O3)O[C@@H]2[C@@H](O)C1=C)[C@@H]1O[C@]2(CCCCO2)CC[C@H]1C'}
   logger.info(len(drugbank_id_smi_filt))
 
@@ -2060,11 +2093,18 @@ def main():
   babel_smi_to_sdf('test.smi','test.sdf')
 
 
+
   # TEST
-  # logger.info('Test')
-  # test = run_or_pickle("test", run_smsd,
-  #                     chembl_id_smi_filt,cc_smi_filt,"pair", 0.2)
-  # logger.info('End test')
+  logger.info('Start test')
+  now = datetime.now()
+  test = run_or_pickle("test", run_smsd,
+                      drugbank_id_smi_filt, cc_smi_filt,"pair", 0.2)
+  then = datetime.now()
+  logger.info(test)
+  tdelta = then - now
+  logger.info('End test')
+  logger.info(tdelta)
+
 
 
   # # CHEMBL CLUSTERING
