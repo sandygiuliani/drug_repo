@@ -1164,6 +1164,8 @@ def list_second_level_dic(dictionary):
 
   for item in dictionary:
     for sec in dictionary[item]:
+      # strip white spaces
+      sec.trim()
       second_list.append(sec)
 
   second_list = list(set(second_list))
@@ -2151,7 +2153,7 @@ def main():
                                     CHEMBL_INPUT, "CHEMBL_ID",
                                     "CANONICAL_SMILES")
   #logger.debug(len(chembl_id_smi_dic))
-
+  
 
   # filter dictionary to only drugs that are in chembl_repo_drug_list
   # these are all chembl drugs (783) that are in the map
@@ -2312,6 +2314,7 @@ def main():
                                       sdf_to_dic, DRUGBANK_SDF, 
                                       'DATABASE_ID', 'SMILES')
   # logger.info(drugbank_id_smi_dic)
+  
 
   # filter dictionary to only drugs that in the drugbank_repo_drug_list
   drugbank_id_smi_filt = run_or_pickle("7_drugbank_id_smi_filt", 
@@ -2319,12 +2322,23 @@ def main():
                                       drugbank_id_smi_dic,
                                       drugbank_repo_drug_list)
   
-  # logger.info(len(drugbank_repo_drug_list))
-  #logger.info(drugbank_id_smi_filt)
+  #logger.info(len(drugbank_repo_drug_list))
+  logger.info(drugbank_repo_drug_list)
   # WHY ONLY 1398 MAPPED TO SMILES? TOTAL IS 6657 ?? CHECK!!!
-
+  #DB04260': ['D1V', 'DIH', 'A2F', '7DG', 'IMH', 'GUN', '22A', 'AZG', 'AC2', '3DG', 'IM5', '229', '2FD', 'MSG', 'GMP', '2DI', 'NOS'], 'DB00909': ['4MD', 'E1E', 'AZM', 'E1F']
   logger.info('We have mapped ' + str(len(drugbank_id_smi_filt)) +
               ' DrugBank drugs to their smiles.')
+
+  # obtain drug to cc dictionary, merging three dics
+  drugbank_to_cc = merge_dic(drugbank_dic,uniprot_filt, pdb_cc_dic)
+  #logger.info(drugbank_to_cc)
+  
+
+  # drugbank_cluster = run_or_pickle("7_drugbank_cluster", run_smsd, 
+  #                               drugbank_id_smi_filt, cc_smi_filt,
+  #                               "pair_2dic", 0.9, drugbank_to_cc)
+  
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '7_drugbank_cluster.txt')
 
 
   logger.info('------------------- END OF PART 8 -------------------')
