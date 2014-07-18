@@ -1533,32 +1533,39 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
             # get list from lines in molDescriptors output
             mol_des = file_to_lines("molDescriptors.out")
             #logger.info(mol_des)
+      
+
             # make string out of list
             mol_str = ''.join(mol_des)
             # logger.info(mol_str)
-            # tanimoto similarity string or other string
-            str_match = 'Tanimoto (Sim.)= '
-            # find the string
-            str_numb = mol_str.find(str_match)
-            sim_index = (str_numb + len(str_match))
-            # get similarity number and convert to float
-            similarity = float(mol_str[sim_index:(sim_index+3)])
+            # sanity check string not empty
+            if mol_str != '':
 
-            if similarity >= float(threshold):
-              # append to list
-              match_cc_list.append(cc)
+              # tanimoto similarity string or other string
+              str_match = 'Tanimoto (Sim.)= '
+              # find the string
+              str_numb = mol_str.find(str_match)
+              sim_index = (str_numb + len(str_match))
 
-            if similarity >= 1.0:
-              sim1.append(cc)
+              sim_string = mol_str[sim_index:(sim_index+3)]
+              # get similarity number and convert to float
+              similarity = float(sim_string)
 
-            if similarity >= 0.9:
-              sim09.append(cc)
+              if similarity >= float(threshold):
+                # append to list
+                match_cc_list.append(cc)
 
-            if similarity >= 0.8:
-              sim08.append(cc)
+              if similarity >= 1.0:
+                sim1.append(cc)
 
-            if similarity >= 0.7:
-              sim07.append(cc)
+              if similarity >= 0.9:
+                sim09.append(cc)
+
+              if similarity >= 0.8:
+                sim08.append(cc)
+
+              if similarity >= 0.7:
+                sim07.append(cc)
 
 
       # check the list is not empty
@@ -2181,6 +2188,7 @@ def main():
   logger.info('We have mapped the ' + str(len(chembl_id_smi_filt)) +
               ' ChEMBL drugs to their smiles.')
 
+
   # filter chembl_dic to only the 783 drugs, using chembl_repo_drug_list
   chembl_dic_mapped_drugs = filter_dic_from_list(chembl_dic, 
                             chembl_repo_drug_list)
@@ -2196,12 +2204,20 @@ def main():
                       chembl_uni_drugs_list) 
   #logger.info(len(chembl_id_smi_opt))
   
+
+  # obtain drug to cc dictionary, merging three dics
+  chembl_to_cc = merge_dic(chembl_dic,uniprot_filt, pdb_cc_dic)
+  logger.info(len(chembl_to_cc))
+  #logger.info(pdb_cc_dic)
+
+
   logger.info('We have filtered out the ChEMBL drugs that ' +
               'do not point to a crystal structure in complex with ' +
               'a small molecule, to obtain ' + str(len(chembl_id_smi_opt)) +
               ' ChEMBL drugs mapped to their smiles.')
 
-  
+
+
   #####################
   #openbabel conversion - not necessary for now
   #####################
@@ -2234,7 +2250,7 @@ def main():
 
 
   # convert dic into smile file (module return none, it just writes to file)
-  dic_to_txt(cc_smi_filt, 'cc_smi_filt.smi')
+  #dic_to_txt(cc_smi_filt, 'cc_smi_filt.smi')
   
 
   # # OVERWRITE CHEMBL
@@ -2243,12 +2259,6 @@ def main():
   #'CHEMBL964': 'CCN(CC)C(=S)SSC(=S)N(CC)CC'}
   #logger.info(chembl_id_smi_filt)
 
-
-  # OVERWRITE DRUGBANK
-  # drugbank_id_smi_filt = {'DB08513': 'CC1=CC(NC2=NC(NC3=CC=C(CC(O)=O)C=C3)=NC=C2C(N)=O)=CC=C1', 'DB04931': 'CCCC[C@H](NC(=O)[C@H](CO)NC(=O)[C@H](CC1=CC=C(O)C=C1)NC(=O)[C@H](CO)NC(C)=O)C(=O)N[C@@H](CCC(O)=O)C(=O)N[C@@H](CC1=CN=CN1)C(=O)N[C@H](CC1=CC=CC=C1)C(=O)N[C@@H](CCCNC(N)=N)C(=O)N[C@@H](CC1=CNC2=CC=CC=C12)C(=O)NCC(=O)N[C@@H](CCCCN)C(=O)N1CCC[C@H]1C(=O)N[C@@H](C(C)C)C(N)=O'}
-  #logger.info(len(drugbank_id_smi_filt))
-  drugbank_id_smi_filt = {'DB02169': 'C[C@@H](C[C@H](O)[C@@H]1O[C@@H]2CC[C@]3(CC[C@H](O3)\\C=C\\[C@@H](C)[C@H]3CC(C)=C[C@]4(O[C@@H](C[C@@](C)(O)C(O)=O)CC[C@@H]4O)O3)O[C@@H]2[C@@H](O)C1=C)[C@@H]1O[C@]2(CCCCO2)CC[C@H]1C'}
-  #logger.info(len(drugbank_id_smi_filt))
 
   # # OVERWRITE CC
   #logger.info(cc_smi_filt)
@@ -2263,11 +2273,6 @@ def main():
   #babel_smi_to_sdf('test.smi','test.sdf')
 
 
-  # obtain drug to cc dictionary, merging three dics
-  chembl_to_cc = merge_dic(chembl_dic,uniprot_filt, pdb_cc_dic)
-  #logger.info(chembl_to_cc)
-  #logger.info(pdb_cc_dic)
-  #logger.info(chembl_to_cc['CHEMBL19'])
 
   #OVERWRITE CHEMBL_TO_CC FOR TESTING
   #chembl_to_cc = {'CHEMBL870': ['SUF', '210', '1MV', 'NI9', 'RIS', '3N4', 
@@ -2299,15 +2304,6 @@ def main():
 
   logger.info(len(chembl_cluster))
 
-  # # tanimoto 0.2
-  # chembl_cc_02 = run_or_pickle("7_chembl_cc_02", run_smsd,
-  #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.2)
-  # # tanimoto 0.7
-  # chembl_cc_07 = run_or_pickle("7_chembl_cc_07", run_smsd,
-  #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.7)
-  # # tanimoto 0.8
-  # chembl_cc_08 = run_or_pickle("7_chembl_cc_08", run_smsd,
-  #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.8)
   # # tanimoto 0.9
   # chembl_cc_09 = run_or_pickle("7_chembl_cc_09", run_smsd,
   #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.9)
@@ -2348,7 +2344,7 @@ def main():
 
   # obtain drug to cc dictionary, merging three dics
   drugbank_to_cc = merge_dic(drugbank_dic,uniprot_filt, pdb_cc_dic)
-  #logger.info(drugbank_to_cc)
+  logger.info(len(drugbank_to_cc))
   
   # OVERWRITE DRUGBANK FOR TESTING
   # drugbank_to_cc = {'DB04260': ['D1V', 'DIH', 'A2F', '7DG', 'IMH', 'GUN', '22A', 'AZG', 'AC2', '3DG', 'IM5', '229', '2FD', 'MSG', 'GMP', '2DI', 'NOS'], 'DB00909': ['4MD', 'E1E', 'AZM', 'E1F']}
