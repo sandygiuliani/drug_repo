@@ -34,6 +34,9 @@ import subprocess
 # import itertools for flatten out lists
 import itertools
 
+# izip_longest to split dictionaries into chunks (part 8)
+from itertools import izip_longest
+
 # import other modules
 import sys, re, string, fnmatch, shutil
 
@@ -1468,7 +1471,6 @@ def merge_dic(dic1,dic2,dic3):
 def run_smsd(query, target, flag, threshold, dic_map=None):
   # flag = 'pair' for pairwise comparison, query and target are dictionaries
   # ids: smiles
-
   # flag = 'batch' for batch comparison, query is dictionary,
   # target is sdf file
 
@@ -1601,108 +1603,111 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
     output.write(str(drug08)+ "\n")
     output.write("# similarity > 0.7\n")
     output.write(str(drug07)+ "\n")
+  
+  # close the file
+  output.close()
 
 
-  ###
-  # pairwise comparison on smile strings
-  ###
-  elif flag == 'pair':
-    # navigate to SMSD dir
-    os.chdir(SMSD_PATH)
-    #logger.info('this is pairwise')
-    # dictionary drugs: list of cc that match
-    drug_cc_dic = {}
+  # ###
+  # # pairwise comparison on smile strings
+  # ###
+  # elif flag == 'pair':
+  #   # navigate to SMSD dir
+  #   os.chdir(SMSD_PATH)
+  #   #logger.info('this is pairwise')
+  #   # dictionary drugs: list of cc that match
+  #   drug_cc_dic = {}
 
-    for drug in query:
-      drug_smi = query[drug]
-      #logger.info(drug)
-      # list of cc that match each drug - with similarity above threshold
-      match_cc_list = []
-      for cc in target:
-        cc_smi = target[cc]
-        # logger.info(cc)
+  #   for drug in query:
+  #     drug_smi = query[drug]
+  #     #logger.info(drug)
+  #     # list of cc that match each drug - with similarity above threshold
+  #     match_cc_list = []
+  #     for cc in target:
+  #       cc_smi = target[cc]
+  #       # logger.info(cc)
 
-        subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + \
-                      "\" -T SMI -t \"" + str(cc_smi) + "\" -r -m -z -b", 
-                      shell=True)
+  #       subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + \
+  #                     "\" -T SMI -t \"" + str(cc_smi) + "\" -r -m -z -b", 
+  #                     shell=True)
 
-        # get list from lines in molDescriptors output
-        mol_des = file_to_lines("molDescriptors.out")
-        #logger.info(mol_des)
-        # make string out of list
-        mol_str = ''.join(mol_des)
-        # logger.info(mol_str)
-        # tanimoto similarity string or other string
-        str_match = 'Tanimoto (Sim.)= '
-        # find the string
-        str_numb = mol_str.find(str_match)
-        sim_index = (str_numb + len(str_match))
-        # get similarity number and convert to float
-        similarity = float(mol_str[sim_index:(sim_index+3)])
+  #       # get list from lines in molDescriptors output
+  #       mol_des = file_to_lines("molDescriptors.out")
+  #       #logger.info(mol_des)
+  #       # make string out of list
+  #       mol_str = ''.join(mol_des)
+  #       # logger.info(mol_str)
+  #       # tanimoto similarity string or other string
+  #       str_match = 'Tanimoto (Sim.)= '
+  #       # find the string
+  #       str_numb = mol_str.find(str_match)
+  #       sim_index = (str_numb + len(str_match))
+  #       # get similarity number and convert to float
+  #       similarity = float(mol_str[sim_index:(sim_index+3)])
 
-        if similarity >= float(threshold):
-          match_cc_list.append(cc)
+  #       if similarity >= float(threshold):
+  #         match_cc_list.append(cc)
 
-      # check the list is not empty
-      if match_cc_list:
-        # add list to dictionary
-        drug_cc_dic[drug] = match_cc_list
+  #     # check the list is not empty
+  #     if match_cc_list:
+  #       # add list to dictionary
+  #       drug_cc_dic[drug] = match_cc_list
     
 
-  ###
-  # batch processing on sdf
-  ###
-  elif flag == 'batch':
-    logger.info('this is batch')
-    # dictionary drugs: list of cc that match
-    drug_cc_dic = {}
-    # check if the target file is in the current directory
-    if os.path.isfile(target) == False:
-      logger.info('uh-oh')
-      logger.error('The file ' + target + ' cannot be found' +
-                   ' in the current directory!')
-      # warning
-      logger.warning('The program is aborted.')
-      # exit python
-      sys.exit()
-      # logger.debug("cp " + target + " " + SMSD_PATH + "/" + target)
+  # ###
+  # # batch processing on sdf
+  # ###
+  # elif flag == 'batch':
+  #   logger.info('this is batch')
+  #   # dictionary drugs: list of cc that match
+  #   drug_cc_dic = {}
+  #   # check if the target file is in the current directory
+  #   if os.path.isfile(target) == False:
+  #     logger.info('uh-oh')
+  #     logger.error('The file ' + target + ' cannot be found' +
+  #                  ' in the current directory!')
+  #     # warning
+  #     logger.warning('The program is aborted.')
+  #     # exit python
+  #     sys.exit()
+  #     # logger.debug("cp " + target + " " + SMSD_PATH + "/" + target)
 
-    else:
-      logger.info('alright, the file is here')
-      # copy the file to the SMSD directory
-      subprocess.call("cp " + target + " " + SMSD_PATH + "/" + target, 
-       shell=True)
+  #   else:
+  #     logger.info('alright, the file is here')
+  #     # copy the file to the SMSD directory
+  #     subprocess.call("cp " + target + " " + SMSD_PATH + "/" + target, 
+  #      shell=True)
 
-      # move to SMSD directory
-      os.chdir(SMSD_PATH)
-      directory = os.getcwd()
-      logger.debug(directory)
+  #     # move to SMSD directory
+  #     os.chdir(SMSD_PATH)
+  #     directory = os.getcwd()
+  #     logger.debug(directory)
 
-      for drug in query:
-        # list of cc that match each drug - with similarity above threshold
-        match_cc_list = []
-        drug_smi = query[drug]
-        logger.info(drug)
+  #     for drug in query:
+  #       # list of cc that match each drug - with similarity above threshold
+  #       match_cc_list = []
+  #       drug_smi = query[drug]
+  #       logger.info(drug)
 
-        subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + 
-                      "\" -T SDF -t " + str(target) + " -m -r -z -b", 
-                      shell=True)
+  #       subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + 
+  #                     "\" -T SDF -t " + str(target) + " -m -r -z -b", 
+  #                     shell=True)
 
-        # get the ones above threshold
+  #       # get the ones above threshold
 
-        # add to dic
+  #       # add to dic
 
-        # check the list is not empty
-        if match_cc_list:
-          # add list to dictionary
-          drug_cc_dic[drug] = match_cc_list
+  #       # check the list is not empty
+  #       if match_cc_list:
+  #         # add list to dictionary
+  #         drug_cc_dic[drug] = match_cc_list
 
 
   # move back to working directory!
   os.chdir(initial_dir)
   directory = os.getcwd()
   logger.debug(directory)
-
+  
   # return the dictionary
   return drug_cc_dic
 
@@ -2358,21 +2363,67 @@ def main():
               str(len(drugbank_to_cc)) +
               ' DrugBank drugs that will be clustered.')
 
-  # divide drugbank_to_cc into chunks!
 
-
+  # splitting drugbank_to_cc into 5 chunks
+  items1,items2,items3, items4, items5 = \
+                        zip(*izip_longest(*[iter(drugbank_to_cc.items())]*5))
+  d1 = dict(item for item in items1 if item is not None)
+  d2 = dict(item for item in items2 if item is not None)
+  d3 = dict(item for item in items3 if item is not None)
+  d4 = dict(item for item in items4 if item is not None)
+  d5 = dict(item for item in items5 if item is not None)
+  
+  logger.info('We have split the drugbank entries into chunks of ' +
+              str(len(d1)) + ', ' + str(len(d2)) + ', ' +
+              str(len(d3)) + ', ' + str(len(d4)) + ' and ' + 
+              str(len(d5)) + ', for easier processing.')
 
 
   # OVERWRITE DRUGBANK FOR TESTING
   # drugbank_to_cc = {'DB04260': ['D1V', 'DIH', 'A2F', '7DG', 'IMH', 'GUN', '22A', 'AZG', 'AC2', '3DG', 'IM5', '229', '2FD', 'MSG', 'GMP', '2DI', 'NOS'], 'DB00909': ['4MD', 'E1E', 'AZM', 'E1F']}
   #drugbank_to_cc = {' DB07204': ['796', '3SB', '1SB', 'A03', 'IPH', 'S69', '4SB', '2SB', 'SKE', 'YTP', 'XFE', 'L9L', 'L9M', 'L9N', 'VX6', 'BUD', 'IQB'], ' DB07207': ['0GE', 'BEN', '7NH', 'PY3', '0GJ', '380', '6NH', 'PI0', '2KF', 'BGC', 'FUC', 'FUL', 'CR9', '1OK', 'N1H', '905', '5PI', '1OJ', '346', '2KE', 'ASO', '24X', '3BP', 'GLC', '771', 'P5B', '567', 'PBZ', '03R', '1NL', 'GIL', '1NJ', '1NK', '1T7', 'PSM', '3CB', 'C1B', '0Z6', '0G7', '413', '1GG', '1GE', '359']}
 
-
-  # drugbank_cluster = run_or_pickle("8_drugbank_cluster", run_smsd, 
-  #                               drugbank_id_smi_filt, cc_smi_filt,
-  #                               "pair_2dic", SIM_THRESHOLD, drugbank_to_cc)
+  # 1st
+  logger.info('We are processing the first chunk.')
+  drugbank_cluster = run_or_pickle("8_d1_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", SIM_THRESHOLD, d1)
   
-  # mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_drugbank_cluster.txt')
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_d1_cluster.txt')
+
+  #2nd
+  logger.info('We are processing the second chunk.')
+  drugbank_cluster = run_or_pickle("8_d2_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", SIM_THRESHOLD, d2)
+  
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_d2_cluster.txt')
+
+  #3rd
+  logger.info('We are processing the third chunk.')
+  drugbank_cluster = run_or_pickle("8_d3_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", SIM_THRESHOLD, d3)
+  
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_d3_cluster.txt')
+
+  #4th
+  logger.info('We are processing the fourth chunk.')
+  drugbank_cluster = run_or_pickle("8_d4_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", SIM_THRESHOLD, d4)
+  
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_d4_cluster.txt')
+
+  #5th
+  logger.info('We are processing the fifth chunk.')
+  drugbank_cluster = run_or_pickle("8_d5_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", SIM_THRESHOLD, d5)
+  
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_d5_cluster.txt')
+
+
 
 
   logger.info('------------------- END OF PART 8 -------------------')
