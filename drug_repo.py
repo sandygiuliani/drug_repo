@@ -181,6 +181,8 @@ SMSD_PATH = "/home/sandra/SMSD1.6"
 
 # similarity threshold for clustering
 SIM_THRESHOLD = 0.9
+# check if float
+#logger.info(isinstance(SIM_THRESHOLD, float))
 
 ############################################################################
 
@@ -1451,9 +1453,7 @@ def merge_dic(dic1,dic2,dic3):
       list3 = list(set(list3))
       item = item.strip(' ')
       dic_merge[item] = list3
-  #logger.info(dic_merge)
-  logger.info(len(dic_merge))
-
+  #logger.info(len(dic_merge))
 
   return dic_merge
 ############################################################################
@@ -1530,45 +1530,51 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
           if cc in target:
             # get the smiles
             cc_smi = target[cc]
-            subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + \
-                          "\" -T SMI -t \"" + str(cc_smi) + "\" -r -m -z -b", 
-                          shell=True)
-            # get list from lines in molDescriptors output
-            mol_des = file_to_lines("molDescriptors.out")
-            #logger.info(mol_des)
-      
 
-            # make string out of list
-            mol_str = ''.join(mol_des)
-            # logger.info(mol_str)
-            # sanity check string not empty
-            if mol_str != '':
+            # handles errors..
+            try:
+              subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + \
+                            "\" -T SMI -t \"" + str(cc_smi) + "\" -r -m -z -b", 
+                            shell=True)
+              # get list from lines in molDescriptors output
+              mol_des = file_to_lines("molDescriptors.out")
+              #logger.info(mol_des)
+        
 
-              # tanimoto similarity string or other string
-              str_match = 'Tanimoto (Sim.)= '
-              # find the string
-              str_numb = mol_str.find(str_match)
-              sim_index = (str_numb + len(str_match))
+              # make string out of list
+              mol_str = ''.join(mol_des)
+              # logger.info(mol_str)
+              # sanity check string not empty
+              if mol_str != '':
 
-              sim_string = mol_str[sim_index:(sim_index+3)]
-              # get similarity number and convert to float
-              similarity = float(sim_string)
+                # tanimoto similarity string or other string
+                str_match = 'Tanimoto (Sim.)= '
+                # find the string
+                str_numb = mol_str.find(str_match)
+                sim_index = (str_numb + len(str_match))
 
-              if similarity >= float(threshold):
-                # append to list
-                match_cc_list.append(cc)
+                sim_string = mol_str[sim_index:(sim_index+3)]
+                # get similarity number and convert to float
+                similarity = float(sim_string)
 
-              if similarity >= 1.0:
-                sim1.append(cc)
+                if similarity >= float(threshold):
+                  # append to list
+                  match_cc_list.append(cc)
 
-              if similarity >= 0.9:
-                sim09.append(cc)
+                if similarity >= 1.0:
+                  sim1.append(cc)
 
-              if similarity >= 0.8:
-                sim08.append(cc)
+                if similarity >= 0.9:
+                  sim09.append(cc)
 
-              if similarity >= 0.7:
-                sim07.append(cc)
+                if similarity >= 0.8:
+                  sim08.append(cc)
+
+                if similarity >= 0.7:
+                  sim07.append(cc)
+            except:
+              logger.warning('We have skipped one comparison!')
+              pass
 
 
       # check the list is not empty
@@ -1807,7 +1813,7 @@ def main():
   # generate chembl dictionary
   chembl_dic = run_or_pickle("1_chembl_dic", process_chembl, CHEMBL_INPUT)
 
-  logger.info(chembl_dic)
+  #logger.info(chembl_dic)
   # get list of uniprot ids from chembl_dic
   chembl_uniprot_list = run_or_pickle("1_chembl_uniprot_list",
                                       flatten_dic, chembl_dic, "values")
@@ -2212,15 +2218,14 @@ def main():
   # this is all the drugs in the map, pointing to the cc in the pdbs of
   # of their targets
   chembl_to_cc = merge_dic(chembl_dic,uniprot_filt, pdb_cc_dic)
-  logger.info(len(chembl_to_cc))
-  #logger.info(pdb_cc_dic)
+  #logger.info(len(chembl_to_cc))
 
 
   logger.info('We have filtered out the ChEMBL drugs that ' +
               'do not point to a crystal structure in complex with ' +
               'a small molecule, to obtain ' + str(len(chembl_id_smi_opt)) +
-              ' ChEMBL drugs mapped to their smiles.')
-
+              ' ChEMBL drugs mapped to their smiles' +
+              '; these will be clustered.')
 
 
   #####################
@@ -2296,15 +2301,15 @@ def main():
   chembl_cluster = run_or_pickle("7_chembl_cluster", run_smsd, 
                                 chembl_id_smi_opt, cc_smi_filt,
                                 "pair_2dic", SIM_THRESHOLD, chembl_to_cc)
-  #logger.info(chembl_cluster)
+  logger.info(chembl_cluster)
   # move output file to current dir
   mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
 
   logger.info('We have clustered the ChEMBL drugs, to obtain ' + 
-              len(chembl_cluster) + ' drugs mapped to at least ' +
+              str(len(chembl_cluster)) + ' drugs mapped to at least ' +
               'a chemical component with Tanimoto similarity above ' +
-              SIM_THRESHOLD + '.')
-
+              str(SIM_THRESHOLD) + 
+              ' (other similarity thresholds written to file).')
 
 
   # # tanimoto 0.9
@@ -2317,7 +2322,7 @@ def main():
 
 
   logger.info('------------------- END OF PART 7 -------------------')
-  
+
   ####################################
   ### PART 8 DRUGBANK CLUSTERING   ###
   ####################################
@@ -2347,8 +2352,17 @@ def main():
 
   # obtain drug to cc dictionary, merging three dics
   drugbank_to_cc = merge_dic(drugbank_dic,uniprot_filt, pdb_cc_dic)
-  logger.info(len(drugbank_to_cc))
+  #logger.info(len(drugbank_to_cc))
   
+  logger.info('We have filtered the drugs, as before, to obtain ' + 
+              str(len(drugbank_to_cc)) +
+              ' DrugBank drugs that will be clustered.')
+
+  # divide drugbank_to_cc into chunks!
+
+
+
+
   # OVERWRITE DRUGBANK FOR TESTING
   # drugbank_to_cc = {'DB04260': ['D1V', 'DIH', 'A2F', '7DG', 'IMH', 'GUN', '22A', 'AZG', 'AC2', '3DG', 'IM5', '229', '2FD', 'MSG', 'GMP', '2DI', 'NOS'], 'DB00909': ['4MD', 'E1E', 'AZM', 'E1F']}
   #drugbank_to_cc = {' DB07204': ['796', '3SB', '1SB', 'A03', 'IPH', 'S69', '4SB', '2SB', 'SKE', 'YTP', 'XFE', 'L9L', 'L9M', 'L9N', 'VX6', 'BUD', 'IQB'], ' DB07207': ['0GE', 'BEN', '7NH', 'PY3', '0GJ', '380', '6NH', 'PI0', '2KF', 'BGC', 'FUC', 'FUL', 'CR9', '1OK', 'N1H', '905', '5PI', '1OJ', '346', '2KE', 'ASO', '24X', '3BP', 'GLC', '771', 'P5B', '567', 'PBZ', '03R', '1NL', 'GIL', '1NJ', '1NK', '1T7', 'PSM', '3CB', 'C1B', '0Z6', '0G7', '413', '1GG', '1GE', '359']}
