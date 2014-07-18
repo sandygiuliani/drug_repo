@@ -1703,7 +1703,7 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
 def mv_file(origin, filename, new_name):
 
   # if the file is not there already
-  if os.path.isfile(filename) == False:
+  if os.path.isfile(new_name) == False:
     current_dir = os.getcwd()
 
     os.chdir(origin)
@@ -2294,10 +2294,10 @@ def main():
   chembl_cluster = run_or_pickle("7_chembl_cluster", run_smsd, 
                                 chembl_id_smi_opt, cc_smi_filt,
                                 "pair_2dic", 0.9, chembl_to_cc)
-  logger.info(chembl_cluster)
+  #logger.info(chembl_cluster)
   mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
 
-
+  logger.info(len(chembl_cluster))
 
   # # tanimoto 0.2
   # chembl_cc_02 = run_or_pickle("7_chembl_cc_02", run_smsd,
@@ -2355,11 +2355,11 @@ def main():
   #drugbank_to_cc = {' DB07204': ['796', '3SB', '1SB', 'A03', 'IPH', 'S69', '4SB', '2SB', 'SKE', 'YTP', 'XFE', 'L9L', 'L9M', 'L9N', 'VX6', 'BUD', 'IQB'], ' DB07207': ['0GE', 'BEN', '7NH', 'PY3', '0GJ', '380', '6NH', 'PI0', '2KF', 'BGC', 'FUC', 'FUL', 'CR9', '1OK', 'N1H', '905', '5PI', '1OJ', '346', '2KE', 'ASO', '24X', '3BP', 'GLC', '771', 'P5B', '567', 'PBZ', '03R', '1NL', 'GIL', '1NJ', '1NK', '1T7', 'PSM', '3CB', 'C1B', '0Z6', '0G7', '413', '1GG', '1GE', '359']}
 
 
-  drugbank_cluster = run_or_pickle("8_drugbank_cluster", run_smsd, 
-                                drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", 0.9, drugbank_to_cc)
+  # drugbank_cluster = run_or_pickle("8_drugbank_cluster", run_smsd, 
+  #                               drugbank_id_smi_filt, cc_smi_filt,
+  #                               "pair_2dic", 0.9, drugbank_to_cc)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_drugbank_cluster.txt')
+  # mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_drugbank_cluster.txt')
 
 
   logger.info('------------------- END OF PART 8 -------------------')
