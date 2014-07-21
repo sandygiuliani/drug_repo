@@ -1511,7 +1511,7 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
 
     #loop over drug in the map
     for drug in dic_map:
-      logger.info(drug)
+      #logger.info(drug)
       # list of cc that match each drug
       match_cc_list = []
       sim1 = []
@@ -1583,7 +1583,7 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
       if match_cc_list:
         # add list to dictionary
         drug_cc_dic[drug] = match_cc_list
-        logger.info(drug_cc_dic)
+        #logger.info(drug_cc_dic)
 
       if sim1:
         drug1[drug] = sim1
@@ -1706,7 +1706,7 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
   # move back to working directory!
   os.chdir(initial_dir)
   directory = os.getcwd()
-  logger.debug(directory)
+  #logger.debug(directory)
   
   # return the dictionary
   return drug_cc_dic
@@ -2363,9 +2363,11 @@ def main():
   this = filter_dic_from_list(chembl_schisto_filt_map,chembl_cluster_list)
   logger.info(this)
   
-
+  # write filtered txt csv file to be imported in excel
   filter_txt('chembl_drugs.txt', '7_chembl_clust_excel.txt', 'CHEMBL_ID', 
              chembl_cluster_list)
+
+  logger.info(chembl_repo_map['CHEMBL973'])
 
 
   # # tanimoto 0.9
@@ -2432,45 +2434,55 @@ def main():
 
   # 1st
   logger.info('We are processing the first chunk.')
-  drugbank_cluster = run_or_pickle("8_d1_cluster", run_smsd, 
+  db1_cluster = run_or_pickle("8_db1_cluster", run_smsd, 
                                 drugbank_id_smi_filt, cc_smi_filt,
                                 "pair_2dic", SIM_THRESHOLD, d1)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_d1_cluster.txt')
-
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db1_cluster.txt')
+  #logger.info(len(drugbank_cluster))
   #2nd
   logger.info('We are processing the second chunk.')
-  drugbank_cluster = run_or_pickle("8_d2_cluster", run_smsd, 
+  db2_cluster = run_or_pickle("8_db2_cluster", run_smsd, 
                                 drugbank_id_smi_filt, cc_smi_filt,
                                 "pair_2dic", SIM_THRESHOLD, d2)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_d2_cluster.txt')
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db2_cluster.txt')
 
   #3rd
   logger.info('We are processing the third chunk.')
-  drugbank_cluster = run_or_pickle("8_d3_cluster", run_smsd, 
+  db3_cluster = run_or_pickle("8_db3_cluster", run_smsd, 
                                 drugbank_id_smi_filt, cc_smi_filt,
                                 "pair_2dic", SIM_THRESHOLD, d3)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_d3_cluster.txt')
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
 
   #4th
   logger.info('We are processing the fourth chunk.')
-  drugbank_cluster = run_or_pickle("8_d4_cluster", run_smsd, 
+  db4_cluster = run_or_pickle("8_db4_cluster", run_smsd, 
                                 drugbank_id_smi_filt, cc_smi_filt,
                                 "pair_2dic", SIM_THRESHOLD, d4)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_d4_cluster.txt')
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
 
   #5th
   logger.info('We are processing the fifth chunk.')
-  drugbank_cluster = run_or_pickle("8_d5_cluster", run_smsd, 
+  db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
                                 drugbank_id_smi_filt, cc_smi_filt,
                                 "pair_2dic", SIM_THRESHOLD, d5)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_d5_cluster.txt')
+  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
+
+  # in the end, add here sum of all the 5 dics!
 
 
+  tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
+                  len(db4_cluster) + len(db5_cluster))
+
+  logger.info('We have clustered the DrugBank drugs, to obtain ' + 
+              str(tot_db_length) + ' drugs mapped to at least ' +
+              'a chemical component with Tanimoto similarity above ' +
+              str(SIM_THRESHOLD) + 
+              ' (other similarity thresholds written to file).')
 
 
   logger.info('------------------- END OF PART 8 -------------------')
