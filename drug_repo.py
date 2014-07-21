@@ -1536,8 +1536,8 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
             # handles errors..
             try:
               subprocess.call("sh SMSD.sh -Q SMI -q \"" + str(drug_smi) + \
-                            "\" -T SMI -t \"" + str(cc_smi) + "\" -r -m -z -b", 
-                            shell=True)
+                            "\" -T SMI -t \"" + str(cc_smi) + 
+                            "\" -r -m -z -b", shell=True)
               # get list from lines in molDescriptors output
               mol_des = file_to_lines("molDescriptors.out")
               #logger.info(mol_des)
@@ -1735,6 +1735,47 @@ def mv_file(origin, filename, new_name):
 
 
 ############################################################################
+
+
+
+
+############################################################################
+### FILTER_TXT
+############################################################################
+
+# in the end we need a dictionary of chembl ids vs uniprot ids
+def filter_txt(input_file, output_file, header_name, filt_list):
+  # open chembldrugs.txt for reading
+  lines = file_to_lines(input_file)
+
+
+  # get the headers
+  headers = lines[0]
+  # find header name
+  col_header = header_count(headers, "\t", header_name)
+
+  out = open(output_file, 'w')
+  out.write(headers)
+  #out.write('\n')
+  for i in range(1,len(lines)):
+    rowsplit = lines[i].split("\t")
+
+    # get the chembl drug and target id values for the row
+    col = rowsplit[col_header]
+
+    # only proceed if the target id is not an empty field!
+    if col  != "":
+
+      # check if the molecule chembl id is one of the drugs we want
+      if col in filt_list:
+        out.write(lines[i])
+        #out.write('\n')
+
+  # close output file
+  out.close()
+
+############################################################################
+
 
 
 
@@ -2281,12 +2322,6 @@ def main():
   #babel_smi_to_sdf('test.smi','test.sdf')
 
 
-  #OVERWRITE CHEMBL_TO_CC FOR TESTING
-  #chembl_to_cc = {'CHEMBL870': ['SUF', '210', '1MV', 'NI9', 'RIS', '3N4', 
-  #'3N5', '3N2', '3N3', '3N1', 'GO1', 'GO0', 'UNR', 'UNV', 'M0N', 'BFH', 
-  #'ZOL', 'BFQ', 'YL2', 'AHD', 'IPE', 'MS0', 'IPR', '4GA', 'RSX', 
-  #'11P', 'YS4']}
-
   # TEST
   # logger.info('Start test')
   # now = datetime.now()
@@ -2315,6 +2350,22 @@ def main():
               'a chemical component with Tanimoto similarity above ' +
               str(SIM_THRESHOLD) + 
               ' (other similarity thresholds written to file).')
+
+
+  # get the list of drugs from cluster dic
+  chembl_cluster_list = flatten_dic(chembl_cluster, "keys")
+  logger.info(len(chembl_cluster_list))
+
+  # find how it relates to the maps
+  # chembl_repo_map - big map
+  # chembl_schisto_filt_map - only ones with annotated schisto targ
+  logger.info(chembl_schisto_filt_map)
+  this = filter_dic_from_list(chembl_schisto_filt_map,chembl_cluster_list)
+  logger.info(this)
+  
+
+  filter_txt('chembl_drugs.txt', '7_chembl_clust_excel.txt', 'CHEMBL_ID', 
+             chembl_cluster_list)
 
 
   # # tanimoto 0.9
@@ -2378,10 +2429,6 @@ def main():
               str(len(d3)) + ', ' + str(len(d4)) + ' and ' + 
               str(len(d5)) + ', for easier processing.')
 
-
-  # OVERWRITE DRUGBANK FOR TESTING
-  # drugbank_to_cc = {'DB04260': ['D1V', 'DIH', 'A2F', '7DG', 'IMH', 'GUN', '22A', 'AZG', 'AC2', '3DG', 'IM5', '229', '2FD', 'MSG', 'GMP', '2DI', 'NOS'], 'DB00909': ['4MD', 'E1E', 'AZM', 'E1F']}
-  #drugbank_to_cc = {' DB07204': ['796', '3SB', '1SB', 'A03', 'IPH', 'S69', '4SB', '2SB', 'SKE', 'YTP', 'XFE', 'L9L', 'L9M', 'L9N', 'VX6', 'BUD', 'IQB'], ' DB07207': ['0GE', 'BEN', '7NH', 'PY3', '0GJ', '380', '6NH', 'PI0', '2KF', 'BGC', 'FUC', 'FUL', 'CR9', '1OK', 'N1H', '905', '5PI', '1OJ', '346', '2KE', 'ASO', '24X', '3BP', 'GLC', '771', 'P5B', '567', 'PBZ', '03R', '1NL', 'GIL', '1NJ', '1NK', '1T7', 'PSM', '3CB', 'C1B', '0Z6', '0G7', '413', '1GG', '1GE', '359']}
 
   # 1st
   logger.info('We are processing the first chunk.')
