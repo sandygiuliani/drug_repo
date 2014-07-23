@@ -2472,14 +2472,16 @@ def main():
   
   mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
 
-  # in the end, add here sum of all the 5 dics!
+  # sum of all the 5 dics!
+  tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
+                db3_cluster.items() + db4_cluster.items() + 
+                db5_cluster.items())
 
-
-  tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
-                  len(db4_cluster) + len(db5_cluster))
+  # tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
+  #                 len(db4_cluster) + len(db5_cluster))
 
   logger.info('We have clustered the DrugBank drugs, to obtain ' + 
-              str(tot_db_length) + ' drugs mapped to at least ' +
+              str(len(tot_db)) + ' drugs mapped to at least ' +
               'a chemical component with Tanimoto similarity above ' +
               str(SIM_THRESHOLD) + 
               ' (other similarity thresholds written to file).')
