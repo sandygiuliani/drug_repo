@@ -1794,12 +1794,12 @@ def run_modeller(alnfile, knowns, sequence):
   from modeller.automodel import *    # Load the automodel class
 
 
-  initial_dir = os.getcwd()
+  #initial_dir = os.getcwd()
   #logger.debug(initial_dir)
 
   # navigate to modeller path 
   #(not necessary, but just to avoid writing files here)
-  os.chdir(MODELLER_PATH)
+  #os.chdir(MODELLER_PATH)
   
 
   log.verbose()    # request verbose output
@@ -1818,7 +1818,7 @@ def run_modeller(alnfile, knowns, sequence):
   a.make()                          
 
   #navigate back to initial dir
-  os.chdir(initial_dir)
+  #os.chdir(initial_dir)
 
 ############################################################################
 
@@ -2541,7 +2541,9 @@ def main():
   ####################################
   logger.info('PART 9 - Homology modelling.')
 
-  run_modeller('test.ali', '5fd1','1fdx')
+  # run modeller
+  # requires alignment file and pdb file in the working dir
+  run_modeller('1d3h_schma.ali', '1d3h','schma')
 
   
   logger.info('------------------- END OF PART 9 -------------------')
