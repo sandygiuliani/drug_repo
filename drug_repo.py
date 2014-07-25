@@ -187,6 +187,9 @@ SIM_THRESHOLD = 0.9
 # check if float
 #logger.info(isinstance(SIM_THRESHOLD, float))
 
+# path to run modeller in (where input files are) and dump output here
+MODELLER_PATH = "/home/sandra/alignments"
+
 ############################################################################
 
 
@@ -1779,6 +1782,48 @@ def filter_txt(input_file, output_file, header_name, filt_list):
 
 
 
+############################################################################
+### RUN_MODELLER
+############################################################################
+# run modeller, produce homology model
+# alignment file name, code of template, code of sequence
+def run_modeller(alnfile, knowns, sequence):
+
+  # Homology modeling by the automodel class
+  from modeller import *              # Load standard Modeller classes
+  from modeller.automodel import *    # Load the automodel class
+
+
+  initial_dir = os.getcwd()
+  #logger.debug(initial_dir)
+
+  # navigate to modeller path 
+  #(not necessary, but just to avoid writing files here)
+  os.chdir(MODELLER_PATH)
+  
+
+  log.verbose()    # request verbose output
+  env = environ()  # create a new MODELLER environment to build this model in
+
+  # directories for input atom files
+  env.io.atom_files_directory = ['.', '../atom_files']
+
+  a = automodel(env, alnfile, knowns, sequence)
+  
+  # (determines how many models to calculate)
+  a.starting_model= 1                 # index of the first model
+  a.ending_model  = 1                 # index of the last model
+
+  # make the model
+  a.make()                          
+
+  #navigate back to initial dir
+  os.chdir(initial_dir)
+
+############################################################################
+
+
+
 
 ############################################################################
 ### RUN_OR_PICKLE
@@ -2384,7 +2429,7 @@ def main():
   ####################################
   ### PART 8 DRUGBANK CLUSTERING   ###
   ####################################
-  logger.info('PART 7 - In the same way, we wish to take ' +
+  logger.info('PART 8 - In the same way, we wish to take ' +
             'the DrugBank drugs from the mapping and cluster them against ' +
               'the chemical components extracted from the pdb structures.')
 
@@ -2486,8 +2531,21 @@ def main():
               str(SIM_THRESHOLD) + 
               ' (other similarity thresholds written to file).')
 
-
+  logger.info(cath_dic["Q02127"])
+  logger.info(pfam_dic["Q02127"])
   logger.info('------------------- END OF PART 8 -------------------')
+
+
+  ####################################
+  ### PART 9 HOMOLOGY MODELLING   ###
+  ####################################
+  logger.info('PART 9 - Homology modelling.')
+
+  run_modeller('test.ali', '5fd1','1fdx')
+
+  
+  logger.info('------------------- END OF PART 9 -------------------')
+
 
   logger.info('------------------- END OF SCRIPT -------------------')
 
