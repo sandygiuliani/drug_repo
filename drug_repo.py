@@ -7,10 +7,39 @@
 # Please see README.md for more info.
 
 
-import config as c
+
 
 ############################################################################
-### import modules, set up logger
+### LOGGER
+############################################################################
+import logging
+# set up log file to write to, it will be overwritten every time ('w' mode)
+# leave this level setting to DEBUG
+logging.basicConfig(filename='log_drug_repo.log', filemode='w',
+                    level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+# leave this level setting to DEBUG
+logger.setLevel(logging.DEBUG)
+# create console handler
+ch = logging.StreamHandler()
+# CHANGE THIS TO TUNE LOGGING LEVEL from DEBUG/INFO/WARNING
+ch.setLevel(logging.INFO)
+# create formatter, you can add:
+# '%(levelname)s' for level eg DEBUG, INFO..
+# '%(name)s' for level name, eg __main__ in the log
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+# add formatter to ch
+ch.setFormatter(formatter)
+# add ch to logger
+logger.addHandler(ch)
+
+############################################################################
+
+
+
+
+############################################################################
+### import modules
 ############################################################################
 
 # import os (old system)
@@ -42,23 +71,6 @@ from itertools import izip_longest
 # import other modules
 import sys, re, string, fnmatch, shutil
 
-# import Biopython Entrez
-from Bio import Entrez
-# tell NCBI who I am
-Entrez.email = c.my_email
-
-# import SeqIO
-from Bio import SeqIO
-
-# list available databases
-#handle = Entrez.einfo()
-#logger.info(handle.read())
-
-# import expasy for access protein sequences
-from Bio import ExPASy
-
-# import swissprot for parsing swissprot plain text files
-from Bio import SwissProt
 
 # for http
 from urllib2 import urlopen, HTTPError
@@ -74,27 +86,6 @@ from datetime import datetime
 from modeller import *              # Load standard Modeller classes
 from modeller.automodel import *    # Load the automodel class
 
-# set up log
-import logging
-# set up log file to write to, it will be overwritten every time ('w' mode)
-# leave this level setting to DEBUG
-logging.basicConfig(filename='log_drug_repo.log', filemode='w',
-                    level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-# leave this level setting to DEBUG
-logger.setLevel(logging.DEBUG)
-# create console handler
-ch = logging.StreamHandler()
-# CHANGE THIS TO TUNE LOGGING LEVEL from DEBUG/INFO/WARNING
-ch.setLevel(logging.INFO)
-# create formatter, you can add:
-# '%(levelname)s' for level eg DEBUG, INFO..
-# '%(name)s' for level name, eg __main__ in the log
-formatter = logging.Formatter('%(asctime)s - %(message)s')
-# add formatter to ch
-ch.setFormatter(formatter)
-# add ch to logger
-logger.addHandler(ch)
 
 
 # autovivification for creating nested dictionaries automatically
@@ -112,90 +103,40 @@ class AutoVivification(dict):
 
 
 ############################################################################
-### define global variables
+### IMPORT CONFIG
+############################################################################
+try:
+  import config as c
+except ImportError:
+  logger.error('The configuration file config.py is missing' +
+                    ' in the current directory!')
+  logger.warning('The program is aborted.')
+  sys.exit()
 ############################################################################
 
-# define CHEMBL_INPUT as the drug file from ChEMBL ('Browse drugs')
-# 'chembl_drugs.txt'
-# number of drugs should be 10406
-CHEMBL_INPUT = 'chembl_drugs.txt'
 
-# define CHEMBL_TARGETS as the target file from ChEMBL ('Browse drug targets')
-# number of drugs associated with targets should be 2007
-CHEMBL_TARGETS = 'chembl_drugtargets.txt'
 
-# define CHEMBL_UNIPROT as the chemblID/uniprot mapping file
-CHEMBL_UNIPROT = 'chembl_uniprot_mapping.txt'
 
-# define list of clinical phases we are interested
-# eg. '4', '3', '' (empty string for the unknown phase)
-CHEMBL_CLINICAL_PHASES = ['4']
+############################################################################
+### IMPORT BIOPYTHON
+############################################################################
+# import Biopython Entrez
+from Bio import Entrez
+# tell NCBI who I am
+Entrez.email = c.your_email
 
-# define molecule types we are interested in
-CHEMBL_MOL_TYPE = ['Synthetic Small Molecule']
+# import SeqIO
+from Bio import SeqIO
 
-# define DRUGBANK_INPUT as the DrugBank Drug Target Identifiers
-# either: all_target_ids_all.csv (all drugs, 4,026 entries),
-# or: small_molecule_target_ids_all.csv (small molecule drugs, 3,899 entries)
-DRUGBANK_INPUT = 'small_molecule_target_ids_all.csv'
+# list available databases
+#handle = Entrez.einfo()
+#logger.info(handle.read())
 
-# define sdf file with drugbank drugs (contains smiles)
-DRUGBANK_SDF = 'all.sdf'
+# import expasy for access protein sequences
+from Bio import ExPASy
 
-# define TAXA as the list of taxonomy identifiers we are interested in
-# e.g. SCHMA (S. Mansoni), SCHHA (S. haematobium), SCHJA (S. japonicum)
-TAXA = ['SCHMA', 'SCHHA', 'SCHJA']
-
-# format of CATH domain eg '4.10.400.10'
-CATH_FORMAT = re.compile('.*\..*\..*\..*')
-
-# path to archindex binary
-# old path "./../archSchema/bin/archindex" still valid on mac
-# new path on linux machine "./../Arch/archindex"
-ARCHINDEX_PATH = "./../Arch/archindex"
-
-# uniprot to pdb csv mapping file - can also use the .tsv version if easier
-UNIPROT_PDB = "uniprot_pdb.csv"
-
-# pdb to het mapping file, contains all het groups
-PDB_HET = "het_pairs.lst"
-
-# pdb to lig mapping file
-PDB_LIG = "lig_pairs.lst"
-
-# csv containing list of xtal het groups (ligands) we are not interested in
-# here below one of methods to manually add up eg short het groups
-  # thingo = []
-  # logger.debug(len(cc_smi_filt))
-  # for thing in cc_smi_filt:
-  #   #logger.debug(thing)
-  #   if len(cc_smi_filt[thing]) < 5:
-  #     thingo.append(thing)
-  # logger.debug(thingo)
-
-POINTLESS_HET = "pointless_het.csv"
-
-# regular expression for string containing at least one dash
-CONTAINS_DASH = re.compile('.*-.*')
-
-# regular expression for string containing at least one '#'
-CONTAINS_COMMENT = re.compile('#.*')
-
-# chemical component smiles dictionary
-CC_SMI = "Components-smiles-oe.smi"
-
-# absolute path to SMSD directory (where SMSD.sh is)
-# 1.5.1 - first version I have used (from sourceforge)
-# 1.6 - version sent by Asad that should handle multiple sdf and keep ids
-SMSD_PATH = "/home/sandra/SMSD1.6"
-
-# similarity threshold for clustering
-SIM_THRESHOLD = 0.9
-# check if float
-#logger.info(isinstance(SIM_THRESHOLD, float))
-
-# path to run modeller in (where input files are) and dump output here
-MODELLER_PATH = "/home/sandra/alignments"
+# import swissprot for parsing swissprot plain text files
+from Bio import SwissProt
 
 ############################################################################
 
@@ -335,7 +276,7 @@ def process_chembl(input_file):
     # tab separate each row
     rowsplit2 = lines[y].split("\t")
     # check if they are in clinical phase we are intereste in
-    if (rowsplit2[col_phase] in CHEMBL_CLINICAL_PHASES):
+    if (rowsplit2[col_phase] in c.chembl_phases):
       # append the stripped lines to the list
       stripped.append(lines[y])
 
@@ -346,15 +287,15 @@ def process_chembl(input_file):
     # tab separate
     rowsplit3 = line.split("\t")
     # check if they are of the desired drug type
-    if rowsplit3[col_type] in CHEMBL_MOL_TYPE:
+    if rowsplit3[col_type] in c.chembl_mol_type:
       #logger.debug(rowsplit3[col_chemblid])
 
       # make list of chembl ids we are interested in
       chembl_filt_list.append(rowsplit3[col_chemblid])
 
   logger.info('We have filtered the entries in clinical phases ' +
-              str(CHEMBL_CLINICAL_PHASES) + ' and of molecule type ' +
-              str(CHEMBL_MOL_TYPE) + ', to obtain ' +
+              str(c.chembl_phases) + ' and of molecule type ' +
+              str(c.chembl_mol_type) + ', to obtain ' +
               str(len(chembl_filt_list)) + ' drugs.')
   ###
 
@@ -363,7 +304,7 @@ def process_chembl(input_file):
   # {CHEMBL TARGET IDS: (LIST OF CHEMBL DRUG IDS)}
 
   # open the drug targets chembl file and get lines
-  drug_targ = file_to_lines(CHEMBL_TARGETS)
+  drug_targ = file_to_lines(c.chembl_targets)
   # get column number for two headers we want (chembl ids for mol and targets)
   col_mol_id = header_count(drug_targ[0], '\t', 'MOLECULE_CHEMBL_ID')
   col_targ_id = header_count(drug_targ[0], '\t', 'TARGET_CHEMBL_ID')
@@ -421,7 +362,7 @@ def process_chembl(input_file):
   # the dictionary will be {'chemblID1':'uniprotid1', etc..}
   # the dictionary has to be this way because more than one chembl id
   # can point to the same uniprot id
-  chembl_uniprot_map_dic = swap_dic(CHEMBL_UNIPROT)
+  chembl_uniprot_map_dic = swap_dic(c.chembl_uniprot)
   #logger.debug(chembl_uniprot_map_dic)
 
   # compare length dictionary with unique uniprot id values!
@@ -577,7 +518,7 @@ def uniprot_to_arch(uniprot_list,architecture):
     #list in which to store list of CATH domains for each entry
     architect_list = []
     # call archschema on the list
-    subprocess.call(ARCHINDEX_PATH + " -u " + str(uniprot_id) +
+    subprocess.call(c.archindex_path + " -u " + str(uniprot_id) +
                   " -maxa 1 -maxs 1 " + str(flag) +" > temp.txt", shell=True)
     # store lines
     lines = file_to_lines('temp.txt')
@@ -608,13 +549,13 @@ def uniprot_to_arch(uniprot_list,architecture):
             for item in undersc_split:
               # check if the format is CATH one
               #cath_format = re.compile('.*\..*\..*\..*')
-              if CATH_FORMAT.match(item):
+              if c.cath_format.match(item):
                 architect_list.append(item)
 
           # this is the case of just one entry, no undescores
           else:
             # check the format is CATH one
-            if CATH_FORMAT.match(line_nops):
+            if c.cath_format.match(line_nops):
               architect_list.append(line_nops)
 
 
@@ -682,9 +623,9 @@ def arch_to_uniprot(arch_list,architecture):
     # empty list in which to store uniprot values
     uniprot_list = []
     # iterate over the taxa code list (schisto species)
-    for taxa_code in TAXA:
+    for taxa_code in c.taxa:
       # call archschema on the list
-      subprocess.call(ARCHINDEX_PATH + " -p " + str(arch_id) +
+      subprocess.call(c.archindex_path + " -p " + str(arch_id) +
                     " -maxa 1 -maxs 1 " + str(flag) + " -s " + taxa_code +
                     " > temp.txt", shell=True)
       # store lines
@@ -711,13 +652,6 @@ def arch_to_uniprot(arch_list,architecture):
   # rm temp.txt in the end
   # this is the last temp file that overwrote the others
   subprocess.call("rm temp.txt", shell=True)
-
-  #logger.info('Using ' + str(architecture) +
-  #            ' domain architectures we have found ' +
-   #           str(len(uniprot_list)) +
-   #           ' UniProt IDs of schistosoma proteins (taxonomic ids ' +
-   #            str(TAXA) + ').')
-
 
   #return the dictionary
   return uniprot_dic
@@ -1507,7 +1441,7 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
 
   if flag == 'pair_2dic':
     # navigate to SMSD dir
-    os.chdir(SMSD_PATH)
+    os.chdir(c.smsd_path)
 
     output = open('smsd_run_pair_2dic.txt', 'w')
 
@@ -1799,12 +1733,6 @@ def run_modeller(alnfile, knowns, sequence):
 
   foo = ''
 
-  #initial_dir = os.getcwd()
-  #logger.debug(initial_dir)
-
-  # navigate to modeller path 
-  #(not necessary, but just to avoid writing files here)
-  #os.chdir(MODELLER_PATH)
   
   # request verbose output
   #log.verbose()    
@@ -1824,8 +1752,6 @@ def run_modeller(alnfile, knowns, sequence):
   # make the model
   a.make()                          
 
-  #navigate back to initial dir
-  #os.chdir(initial_dir)
   foo = 'model done'
 
   # return 'foo' for pickling the module
@@ -1898,9 +1824,14 @@ def run_or_pickle(function_return_obj, function_name, arg1 = None,
 
 def main():
   # greeting
-  logger.info("Hi there, you are running drug_repo.py for repositioning " +
-              "of known drugs for schistosomiasis." +
-              " Let's do some mapping!")
+  logger.info("Hi " + c.your_name + 
+              ", you are running drug_repo.py for repositioning " +
+              "known drugs for " + c.species + ".")
+
+  logger.info("If your name is not " + c.your_name +
+              ", please customise your settings in config.py " +
+              "before proceeding. Refer to README for more info. " +
+              "If you are all set, let's do some mapping!")
   
   start_time = datetime.now()
   #logger.info(start_time)
@@ -1910,12 +1841,12 @@ def main():
   #################################
   
   logger.info('PART 1 - We wish to take the ChEMBL input file, ' +
-              CHEMBL_INPUT + ', and the DrugBank input file, ' +
-              DRUGBANK_INPUT +', map the drug ids to their target ids ' +
+              c.chembl_input + ', and the DrugBank input file, ' +
+              c.drugbank_input +', map the drug ids to their target ids ' +
               'and obtain a list of unique drug targets.')
   
   # generate chembl dictionary
-  chembl_dic = run_or_pickle("1_chembl_dic", process_chembl, CHEMBL_INPUT)
+  chembl_dic = run_or_pickle("1_chembl_dic", process_chembl, c.chembl_input)
 
   #logger.info(chembl_dic)
   # get list of uniprot ids from chembl_dic
@@ -1928,7 +1859,7 @@ def main():
 
   # generate drugbank_dictionary
   drugbank_dic = run_or_pickle("1_drugbank_dic", process_drugbank, 
-                              DRUGBANK_INPUT)
+                              c.drugbank_input)
 
   #logger.info(len(drugbank_dic))
 
@@ -1996,7 +1927,7 @@ def main():
   ####################################
   
   logger.info('PART 3 - We wish to map the CATH/Pfam ids ' +
-              'to UniProt ids of the taxonomic ids ' + str(TAXA) + '.')
+              'to UniProt ids of the species ' + str(c.species) + '.')
   
   # call archindex on cath values to find the ones from schisto
   uniprot_schisto_cath_dic = run_or_pickle("3_uniprot_schisto_cath_dic", 
@@ -2070,7 +2001,7 @@ def main():
   # logger.debug(len(chembl_repo_map))
   logger.info('We have built the ChEMBL map, mapping ' +
               str(len(chembl_repo_map)) + ' ChEMBL drugs to potential ' +
-              str(TAXA) + ' targets.')
+              str(c.species) + ' targets.')
 
   # list of drugs that are in the map, to be used in part 6
   #chembl_repo_drug_list = chembl_repo_map.keys()
@@ -2085,7 +2016,7 @@ def main():
   
   logger.info('We have built the DrugBank map, mapping ' +
               str(len(drugbank_repo_map)) + ' DrugBank drugs to potential ' +
-              str(TAXA) + ' targets.')
+              str(c.species) + ' targets.')
 
   # list of drugs that are in the map, to be used in part 6
   # below old one, had white spaces!
@@ -2119,17 +2050,17 @@ def main():
   #################################################
   logger.info('PART 5 - We wish to map all available pdb structures ' +
               'to the Het groups the contain, and then filter out ' +
-              'the Het groups contained in ' + POINTLESS_HET + 
+              'the Het groups contained in ' + c.pointless_het + 
               ', a list of ions, metals, peptidic ligands, etc.')
   # make dictionary of pdb to ligands
-  pdb_lig_dic = run_or_pickle("5_pdb_lig_dic", lst_dic, PDB_LIG)
+  pdb_lig_dic = run_or_pickle("5_pdb_lig_dic", lst_dic, c.pdb_lig)
 
   logger.info('We made a dictionary of '+ str(len(pdb_lig_dic)) + 
             ' pdb entries mapped to their ligand identifiers.')
 
   # make list of ccs to ignore
   pointless_het = run_or_pickle("5_pointless_het", csv_to_lst,
-                                    POINTLESS_HET)
+                                    c.pointless_het)
   logger.info("The list of ligands we wish to ignore " +
               "contains " + str(len(pointless_het)) + " ligands.")
 
@@ -2146,7 +2077,7 @@ def main():
   pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
                                     exclude_values_from_dic, 
                                     pdb_lig_pointless_dic, 
-                                    CONTAINS_DASH, "nomatch")
+                                    c.contains_dash, "nomatch")
   #logger.info(pdb_lig_filt_dic)
   
   # list of 'acceptable' pdbs (with useful ligands) from dic
@@ -2176,9 +2107,9 @@ def main():
 
   logger.info('PART 6 - We wish to collect all the drug targets that ' +
               'point to some repositioning target, point them to ' +
-              'the available pdb structures (using ' + UNIPROT_PDB + 
+              'the available pdb structures (using ' + c.uniprot_pdb + 
                 '), filter them according to the map obtained in Part 4 ' +
-                'and extract the ligands (using ' + CC_SMI + ').')
+                'and extract the ligands (using ' + c.cc_smi + ').')
   # obtain list of targets from drugbank_repo_map and chembl_repo_map
   # these are all the uniprot values that are targets of our potential
   # drug repo candidates
@@ -2199,7 +2130,7 @@ def main():
 
   # make dictionary uniprot to pdb
   uniprot_pdb_dic = run_or_pickle("6_uniprot_pdb_dic", csv_to_dic, 
-                                  UNIPROT_PDB)
+                                  c.uniprot_pdb)
   #logger.debug(uniprot_pdb_dic)
 
   # this is dictionary of drug targets that have at least one pdb structure
@@ -2263,7 +2194,7 @@ def main():
               'for a total of ' + str(len(cc_list)) + ' chemical components')
 
   # get cc to smiles dictionary
-  cc_smiles = run_or_pickle("6_cc_smiles", smi_to_dic, CC_SMI, 1, 0)
+  cc_smiles = run_or_pickle("6_cc_smiles", smi_to_dic, c.cc_smi, 1, 0)
 
   #logger.info(len(cc_smiles))
 
@@ -2287,7 +2218,7 @@ def main():
 
   # total chembl drugs to smiles dictionary - 10406 chembl drugs
   chembl_id_smi_dic = run_or_pickle("7_chembl_id_smi_dic", txt_to_dic, 
-                                    CHEMBL_INPUT, "CHEMBL_ID",
+                                    c.chembl_input, "CHEMBL_ID",
                                     "CANONICAL_SMILES")
   #logger.debug(len(chembl_id_smi_dic))
   
@@ -2386,15 +2317,15 @@ def main():
 
   chembl_cluster = run_or_pickle("7_chembl_cluster", run_smsd, 
                                 chembl_id_smi_opt, cc_smi_filt,
-                                "pair_2dic", SIM_THRESHOLD, chembl_to_cc)
+                                "pair_2dic", c.sim_threshold, chembl_to_cc)
   #logger.info(chembl_cluster)
   # move output file to current dir
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
 
   logger.info('We have clustered the ChEMBL drugs, to obtain ' + 
               str(len(chembl_cluster)) + ' drugs mapped to at least ' +
               'a chemical component with Tanimoto similarity above ' +
-              str(SIM_THRESHOLD) + 
+              str(c.sim_threshold) + 
               ' (other similarity thresholds written to file).')
 
 
@@ -2436,7 +2367,7 @@ def main():
 
   # drugbank drugs to smiles dictionary (total 6799 drugs mapped to smiles)
   drugbank_id_smi_dic = run_or_pickle('8_drugbank_id_smi_dic', 
-                                      sdf_to_dic, DRUGBANK_SDF, 
+                                      sdf_to_dic, c.drugbank_sdf, 
                                       'DATABASE_ID', 'SMILES')
   # logger.info(drugbank_id_smi_dic)
   
@@ -2482,41 +2413,41 @@ def main():
   logger.info('We are processing the first chunk.')
   db1_cluster = run_or_pickle("8_db1_cluster", run_smsd, 
                                 drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", SIM_THRESHOLD, d1)
+                                "pair_2dic", c.sim_threshold, d1)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db1_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db1_cluster.txt')
   #logger.info(len(drugbank_cluster))
   #2nd
   logger.info('We are processing the second chunk.')
   db2_cluster = run_or_pickle("8_db2_cluster", run_smsd, 
                                 drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", SIM_THRESHOLD, d2)
+                                "pair_2dic",c.sim_threshold , d2)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db2_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db2_cluster.txt')
 
   #3rd
   logger.info('We are processing the third chunk.')
   db3_cluster = run_or_pickle("8_db3_cluster", run_smsd, 
                                 drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", SIM_THRESHOLD, d3)
+                                "pair_2dic", c.sim_threshold, d3)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
 
   #4th
   logger.info('We are processing the fourth chunk.')
   db4_cluster = run_or_pickle("8_db4_cluster", run_smsd, 
                                 drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", SIM_THRESHOLD, d4)
+                                "pair_2dic", c.sim_threshold, d4)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
 
   #5th
   logger.info('We are processing the fifth chunk.')
   db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
                                 drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", SIM_THRESHOLD, d5)
+                                "pair_2dic", c.sim_threshold, d5)
   
-  mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
 
   # sum of all the 5 dics!
   tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
@@ -2529,7 +2460,7 @@ def main():
   logger.info('We have clustered the DrugBank drugs, to obtain ' + 
               str(len(tot_db)) + ' drugs mapped to at least ' +
               'a chemical component with Tanimoto similarity above ' +
-              str(SIM_THRESHOLD) + 
+              str(c.sim_threshold) + 
               ' (other similarity thresholds written to file).')
 
   # logger.info(cath_dic["Q02127"])
@@ -2556,7 +2487,6 @@ def main():
   
   logger.info('The total runtime of the script is: ' + 
               str(end_time - start_time))
-  logger.info(c.whateva)
   
   logger.info('------------------- END OF SCRIPT -------------------')
 
