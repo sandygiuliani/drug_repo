@@ -7,6 +7,8 @@
 # Please see README.md for more info.
 
 
+import config as c
+
 ############################################################################
 ### import modules, set up logger
 ############################################################################
@@ -43,7 +45,7 @@ import sys, re, string, fnmatch, shutil
 # import Biopython Entrez
 from Bio import Entrez
 # tell NCBI who I am
-Entrez.email = "sandraxgiuliani@gmail.com"
+Entrez.email = c.my_email
 
 # import SeqIO
 from Bio import SeqIO
@@ -68,6 +70,10 @@ import linecache
 # datetime
 from datetime import datetime
 
+# modeller
+from modeller import *              # Load standard Modeller classes
+from modeller.automodel import *    # Load the automodel class
+
 # set up log
 import logging
 # set up log file to write to, it will be overwritten every time ('w' mode)
@@ -89,6 +95,7 @@ formatter = logging.Formatter('%(asctime)s - %(message)s')
 ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
+
 
 # autovivification for creating nested dictionaries automatically
 class AutoVivification(dict):
@@ -1786,13 +1793,11 @@ def filter_txt(input_file, output_file, header_name, filt_list):
 ### RUN_MODELLER
 ############################################################################
 # run modeller, produce homology model
+# this module would return None!
 # alignment file name, code of template, code of sequence
 def run_modeller(alnfile, knowns, sequence):
 
-  # Homology modeling by the automodel class
-  from modeller import *              # Load standard Modeller classes
-  from modeller.automodel import *    # Load the automodel class
-
+  foo = ''
 
   #initial_dir = os.getcwd()
   #logger.debug(initial_dir)
@@ -1801,9 +1806,11 @@ def run_modeller(alnfile, knowns, sequence):
   #(not necessary, but just to avoid writing files here)
   #os.chdir(MODELLER_PATH)
   
-
-  log.verbose()    # request verbose output
-  env = environ()  # create a new MODELLER environment to build this model in
+  # request verbose output
+  #log.verbose()    
+  
+  # create a new MODELLER environment to build this model in
+  env = environ()  
 
   # directories for input atom files
   env.io.atom_files_directory = ['.', '../atom_files']
@@ -1819,6 +1826,10 @@ def run_modeller(alnfile, knowns, sequence):
 
   #navigate back to initial dir
   #os.chdir(initial_dir)
+  foo = 'model done'
+
+  # return 'foo' for pickling the module
+  return foo
 
 ############################################################################
 
@@ -1891,6 +1902,8 @@ def main():
               "of known drugs for schistosomiasis." +
               " Let's do some mapping!")
   
+  start_time = datetime.now()
+  #logger.info(start_time)
 
   #################################
   ### PART 1: FIND DRUG TARGETS ###
@@ -2367,18 +2380,6 @@ def main():
   #babel_smi_to_sdf('test.smi','test.sdf')
 
 
-  # TEST
-  # logger.info('Start test')
-  # now = datetime.now()
-  # test = run_or_pickle("test", run_smsd, chembl_id_smi_opt,
-  #                      cc_smi_filt,"pair_2dic", 1.0, chembl_to_cc)
-  # then = datetime.now()
-  # logger.info(test)
-  # tdelta = then - now
-  # logger.info('End test')
-  # logger.info(tdelta)
-
-
   # # CHEMBL CLUSTERING (takes an hour approx)
   # rn clustering with Tanimoto similarity threshold
   # thresholds for similarity at 1, 0.9, 0.8, 0.7 are also written to output:
@@ -2386,7 +2387,7 @@ def main():
   chembl_cluster = run_or_pickle("7_chembl_cluster", run_smsd, 
                                 chembl_id_smi_opt, cc_smi_filt,
                                 "pair_2dic", SIM_THRESHOLD, chembl_to_cc)
-  logger.info(chembl_cluster)
+  #logger.info(chembl_cluster)
   # move output file to current dir
   mv_file(SMSD_PATH, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
 
@@ -2399,20 +2400,20 @@ def main():
 
   # get the list of drugs from cluster dic
   chembl_cluster_list = flatten_dic(chembl_cluster, "keys")
-  logger.info(len(chembl_cluster_list))
+  #logger.info(len(chembl_cluster_list))
 
   # find how it relates to the maps
   # chembl_repo_map - big map
   # chembl_schisto_filt_map - only ones with annotated schisto targ
-  logger.info(chembl_schisto_filt_map)
-  this = filter_dic_from_list(chembl_schisto_filt_map,chembl_cluster_list)
-  logger.info(this)
+  #logger.info(chembl_schisto_filt_map)
+  #this = filter_dic_from_list(chembl_schisto_filt_map,chembl_cluster_list)
+  #logger.info(this)
   
   # write filtered txt csv file to be imported in excel
   filter_txt('chembl_drugs.txt', '7_chembl_clust_excel.txt', 'CHEMBL_ID', 
              chembl_cluster_list)
 
-  logger.info(chembl_repo_map['CHEMBL973'])
+  #logger.info(chembl_repo_map['CHEMBL973'])
 
 
   # # tanimoto 0.9
@@ -2531,24 +2532,32 @@ def main():
               str(SIM_THRESHOLD) + 
               ' (other similarity thresholds written to file).')
 
-  logger.info(cath_dic["Q02127"])
-  logger.info(pfam_dic["Q02127"])
+  # logger.info(cath_dic["Q02127"])
+  # logger.info(pfam_dic["Q02127"])
   logger.info('------------------- END OF PART 8 -------------------')
 
 
   ####################################
   ### PART 9 HOMOLOGY MODELLING   ###
   ####################################
-  logger.info('PART 9 - Homology modelling.')
+  logger.info('PART 9 - We wish to build a homology model.')
 
   # run modeller
   # requires alignment file and pdb file in the working dir
-  run_modeller('1d3h_schma.ali', '1d3h','schma')
+  model_foo = run_or_pickle('9_model_foo', run_modeller,
+                            '1d3h_schma.ali', '1d3h','schma')
 
+
+  logger.info('We have built a model.')
   
   logger.info('------------------- END OF PART 9 -------------------')
 
-
+  end_time = datetime.now()
+  
+  logger.info('The total runtime of the script is: ' + 
+              str(end_time - start_time))
+  logger.info(c.whateva)
+  
   logger.info('------------------- END OF SCRIPT -------------------')
 
 ############################################################################
