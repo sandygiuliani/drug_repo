@@ -1518,6 +1518,10 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
 
                 if similarity >= 0.7:
                   sim07.append(cc)
+            except KeyboardInterrupt:
+              logger.warning('You are terminating the script!')
+              sys.exit()
+
             except:
               logger.warning('We have skipped one comparison!')
               pass
