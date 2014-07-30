@@ -135,6 +135,18 @@ sim_threshold = 0.9
 
 
 ############################################################################
+### REPOSITIONING CANDIDATE
+############################################################################
+# repositioning candidate you wish to examine
+# put CHEMBL of DB ID eg 'CHEMBL98'
+repo_candidate = 'CHEMBL98'
+
+
+############################################################################
+
+
+
+############################################################################
 ### REGEX
 ############################################################################
 # import regex
@@ -148,4 +160,10 @@ contains_dash = re.compile('.*-.*')
 
 # regular expression for string containing at least one '#'
 contains_comment = re.compile('#.*')
+
+# chembl id format
+chembl_format = re.compile('CHEMBL.*')
+
+# drugbank id format
+drugbank_format = re.compile('DB.*')
 ############################################################################
