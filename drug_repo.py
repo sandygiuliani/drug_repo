@@ -19,7 +19,7 @@ logging.basicConfig(filename='log_drug_repo.log', filemode='w',
                     level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 # leave this level setting to DEBUG
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 # create console handler
 ch = logging.StreamHandler()
 # CHANGE THIS TO TUNE LOGGING LEVEL from DEBUG/INFO/WARNING
@@ -39,13 +39,11 @@ logger.addHandler(ch)
 
 
 ############################################################################
-### import modules
+### IMPORT MODULES
 ############################################################################
 
-# import os (old system)
+# import os (old system) - deprecated, use subprocess instead
 import os
-# os system does not work very well, it is deprecated, use subprocess
-#os.system('./../archSchema/bin/archindex -u B6DTB2 > test2.txt')
 
 # import os.path for checking if files exist
 import os.path
@@ -71,7 +69,6 @@ from itertools import izip_longest
 # import other modules
 import sys, re, string, fnmatch, shutil
 
-
 # for http
 from urllib2 import urlopen, HTTPError
 #import urllib2
@@ -85,8 +82,6 @@ from datetime import datetime
 # modeller
 from modeller import *              # Load standard Modeller classes
 from modeller.automodel import *    # Load the automodel class
-
-
 
 # autovivification for creating nested dictionaries automatically
 class AutoVivification(dict):
@@ -1758,7 +1753,7 @@ def run_modeller(alnfile, knowns, sequence):
 
   foo = 'model done'
 
-  # return 'foo' for pickling the module
+  # return 'foo' 
   return foo
 
 ############################################################################
@@ -2322,7 +2317,7 @@ def main():
   chembl_cluster = run_or_pickle("7_chembl_cluster", run_smsd, 
                                 chembl_id_smi_opt, cc_smi_filt,
                                 "pair_2dic", c.sim_threshold, chembl_to_cc)
-  #logger.info(chembl_cluster)
+
   # move output file to current dir
   mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
 
@@ -2430,65 +2425,111 @@ def main():
   mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db2_cluster.txt')
 
   #3rd
-  logger.info('We are processing the third chunk.')
-  db3_cluster = run_or_pickle("8_db3_cluster", run_smsd, 
-                                drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", c.sim_threshold, d3)
+  # logger.info('We are processing the third chunk.')
+  # db3_cluster = run_or_pickle("8_db3_cluster", run_smsd, 
+  #                               drugbank_id_smi_filt, cc_smi_filt,
+  #                               "pair_2dic", c.sim_threshold, d3)
   
-  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
+  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
 
-  #4th
-  logger.info('We are processing the fourth chunk.')
-  db4_cluster = run_or_pickle("8_db4_cluster", run_smsd, 
-                                drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", c.sim_threshold, d4)
+  # #4th
+  # logger.info('We are processing the fourth chunk.')
+  # db4_cluster = run_or_pickle("8_db4_cluster", run_smsd, 
+  #                               drugbank_id_smi_filt, cc_smi_filt,
+  #                               "pair_2dic", c.sim_threshold, d4)
   
-  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
+  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
 
-  #5th
-  logger.info('We are processing the fifth chunk.')
-  db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
-                                drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", c.sim_threshold, d5)
+  # #5th
+  # logger.info('We are processing the fifth chunk.')
+  # db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
+  #                               drugbank_id_smi_filt, cc_smi_filt,
+  #                               "pair_2dic", c.sim_threshold, d5)
   
-  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
+  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
 
-  # sum of all the 5 dics!
-  tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
-                db3_cluster.items() + db4_cluster.items() + 
-                db5_cluster.items())
+  # # sum of all the 5 dics!
+  # tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
+  #               db3_cluster.items() + db4_cluster.items() + 
+  #               db5_cluster.items())
 
-  # tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
-  #                 len(db4_cluster) + len(db5_cluster))
+  # # tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
+  # #                 len(db4_cluster) + len(db5_cluster))
 
-  logger.info('We have clustered the DrugBank drugs, to obtain ' + 
-              str(len(tot_db)) + ' drugs mapped to at least ' +
-              'a chemical component with Tanimoto similarity above ' +
-              str(c.sim_threshold) + 
-              ' (other similarity thresholds written to file).')
+  # logger.info('We have clustered the DrugBank drugs, to obtain ' + 
+  #             str(len(tot_db)) + ' drugs mapped to at least ' +
+  #             'a chemical component with Tanimoto similarity above ' +
+  #             str(c.sim_threshold) + 
+  #             ' (other similarity thresholds written to file).')
 
   # logger.info(cath_dic["Q02127"])
   # logger.info(pfam_dic["Q02127"])
   logger.info('------------------- END OF PART 8 -------------------')
+  
+
+
+
+  ########################################
+  ### PART 9 REPOSITIONING CANDIDATE   ###
+  ########################################
+  logger.info('PART 9 - We wish to investigate the repositioning candidate ' + 
+              c.repo_candidate + '.')
+
+  full_map = ('cannot be found! Please check you have picked the right ID ' +
+              'in the config.py file.')
+
+  # chembl drug
+  # check format
+  if c.chembl_format.match(c.repo_candidate):
+    # check it is in there
+    if c.repo_candidate in chembl_repo_map:
+      full_map = chembl_repo_map[c.repo_candidate]
+
+  # drugbank drug
+  # check format
+  elif c.drugbank_format.match(c.repo_candidate):
+    if c.repo_candidate in drugbank_repo_map:
+      full_map = drugbank_repo_map[c.repo_candidate]
+
+
+  logger.info('The complete mapping dictionary for the drug ' + 
+              str(full_map))
+
+  logger.info(chembl_dic_uni_drugs[c.repo_candidate])
+  
+  # targets we are interested in
+  logger.info('The targets that have a crystal structure with a small '
+              'molecule are: '+ str(chembl_dic_uni_drugs[c.repo_candidate]))
+
+  # pdbs
+  for thing in chembl_dic_uni_drugs[c.repo_candidate]:
+    logger.info(uniprot_pdb_w_lig[thing])
+    
+    for pdb in uniprot_pdb_w_lig[thing]:
+      if pdb == chembl_dic_uni_drugs[c.repo_candidate]:
+        logger.info('We are interested in the UniProt '+ thing)
+
+  logger.info('------------------- END OF PART 9 -------------------')
 
 
   ####################################
-  ### PART 9 HOMOLOGY MODELLING   ###
+  ### PART 10 HOMOLOGY MODELLING   ###
   ####################################
-  logger.info('PART 9 - We wish to build a homology model.')
+  logger.info('PART 10 - We wish to build a homology model.')
 
   # run modeller
   # requires alignment file and pdb file in the working dir
-  model_foo = run_or_pickle('9_model_foo', run_modeller,
-                            '1d3h_schma.ali', '1d3h','schma')
+  # model_foo = run_or_pickle('10_model_foo', run_modeller,
+                            # '1d3h_schma.ali', '1d3h','schma')
 
 
   logger.info('We have built a model.')
   
-  logger.info('------------------- END OF PART 9 -------------------')
+  logger.info('------------------- END OF PART 10 -------------------')
 
-  end_time = datetime.now()
   
+  end_time = datetime.now()
+
   logger.info('The total runtime of the script is: ' + 
               str(end_time - start_time))
   
