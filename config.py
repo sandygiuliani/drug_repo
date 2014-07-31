@@ -19,7 +19,7 @@ your_email = "sandraxgiuliani@gmail.com"
 ############################################################################
 # define taxa as the list of taxonomy identifiers we are interested in
 # e.g. SCHMA (S. Mansoni), SCHHA (S. haematobium), SCHJA (S. japonicum)
-taxa = ['SCHMA','SCHHA','SCHJA']
+taxa = ['SCHMA']
 
 species_lst = []
 
@@ -166,4 +166,7 @@ chembl_format = re.compile('CHEMBL.*')
 
 # drugbank id format
 drugbank_format = re.compile('DB.*')
+
+# starts with colon
+starts_colon = re.compile(':.*')
 ############################################################################
