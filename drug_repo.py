@@ -2425,23 +2425,23 @@ def main():
   mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db2_cluster.txt')
 
   #3rd
-  # logger.info('We are processing the third chunk.')
-  # db3_cluster = run_or_pickle("8_db3_cluster", run_smsd, 
-  #                               drugbank_id_smi_filt, cc_smi_filt,
-  #                               "pair_2dic", c.sim_threshold, d3)
+  logger.info('We are processing the third chunk.')
+  db3_cluster = run_or_pickle("8_db3_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", c.sim_threshold, d3)
   
-  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
 
-  # #4th
-  # logger.info('We are processing the fourth chunk.')
-  # db4_cluster = run_or_pickle("8_db4_cluster", run_smsd, 
-  #                               drugbank_id_smi_filt, cc_smi_filt,
-  #                               "pair_2dic", c.sim_threshold, d4)
+  #4th
+  logger.info('We are processing the fourth chunk.')
+  db4_cluster = run_or_pickle("8_db4_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", c.sim_threshold, d4)
   
-  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
 
-  # #5th
-  # logger.info('We are processing the fifth chunk.')
+  #5th
+  logger.info('We are processing the fifth chunk.')
   # db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
   #                               drugbank_id_smi_filt, cc_smi_filt,
   #                               "pair_2dic", c.sim_threshold, d5)
@@ -2462,8 +2462,6 @@ def main():
   #             str(c.sim_threshold) + 
   #             ' (other similarity thresholds written to file).')
 
-  # logger.info(cath_dic["Q02127"])
-  # logger.info(pfam_dic["Q02127"])
   logger.info('------------------- END OF PART 8 -------------------')
   
 
@@ -2472,11 +2470,13 @@ def main():
   ########################################
   ### PART 9 REPOSITIONING CANDIDATE   ###
   ########################################
+  # no caching, just info retrieval
   logger.info('PART 9 - We wish to investigate the repositioning candidate ' + 
               c.repo_candidate + '.')
 
   full_map = ('cannot be found! Please check you have picked the right ID ' +
               'in the config.py file.')
+  ref_het = ('no')
 
   # chembl drug
   # check format
@@ -2485,6 +2485,12 @@ def main():
     if c.repo_candidate in chembl_repo_map:
       full_map = chembl_repo_map[c.repo_candidate]
 
+    # check is in there
+    if c.repo_candidate in chembl_cluster:
+      ref_het = chembl_cluster[c.repo_candidate]
+
+
+
   # drugbank drug
   # check format
   elif c.drugbank_format.match(c.repo_candidate):
@@ -2492,22 +2498,28 @@ def main():
       full_map = drugbank_repo_map[c.repo_candidate]
 
 
+
+
   logger.info('The complete mapping dictionary for the drug ' + 
               str(full_map))
 
-  logger.info(chembl_dic_uni_drugs[c.repo_candidate])
+  logger.info('The drug is associated to ' + 
+              str(ref_het) + ' het group(s) in the clustering.')
+
   
   # targets we are interested in
-  logger.info('The targets that have a crystal structure with a small '
-              'molecule are: '+ str(chembl_dic_uni_drugs[c.repo_candidate]))
+  logger.info('Of these targets, ' +
+              str(chembl_dic_uni_drugs[c.repo_candidate]) + 
+              ' have crystal structures in complex with small molecules.')
 
   # pdbs
-  for thing in chembl_dic_uni_drugs[c.repo_candidate]:
-    logger.info(uniprot_pdb_w_lig[thing])
+  for protein in chembl_dic_uni_drugs[c.repo_candidate]:
+    logger.info('The pdbs associated with UniProt ' + protein +
+                ' are: ' + str(uniprot_pdb_w_lig[protein]))
     
-    for pdb in uniprot_pdb_w_lig[thing]:
+    for pdb in uniprot_pdb_w_lig[protein]:
       if pdb == chembl_dic_uni_drugs[c.repo_candidate]:
-        logger.info('We are interested in the UniProt '+ thing)
+        logger.info('We are interested in the UniProt '+ protein)
 
   logger.info('------------------- END OF PART 9 -------------------')
 
