@@ -621,20 +621,25 @@ def arch_to_uniprot(arch_list,architecture):
     for taxa_code in c.taxa:
       # call archschema on the list
       subprocess.call(c.archindex_path + " -p " + str(arch_id) +
-                    " -maxa 1 -maxs 1 " + str(flag) + " -s " + taxa_code +
+                    " -maxa 1 -maxs 100 " + str(flag) + " -s " + taxa_code +
                     " > temp.txt", shell=True)
       # store lines
       lines = file_to_lines('temp.txt')
-      #logger.debug(temp.txt)
+      #logger.info(lines)
 
       # get the uniprot values and append them to uniprot_list
       for i in range(len(lines)):
         # find line that starts with parent
-        if lines[i][0:7] == ':PARENT':
-          # take the line after the ':PARENT' and split it
-          line_split = lines[i+1].split("\t")
+        if lines[i][0:2] == ':A':
+          
+          counter = 0
+          # while the line is not finishing line
+          while not c.starts_colon.match(lines[i+2+counter].split("\t")[0]):
+            # take the line' and split it
+            line_split = lines[i+2+counter].split("\t")
+            uniprot_list.append(line_split[0])
+            counter = counter +1
 
-          uniprot_list.append(line_split[0])
 
     # check list is not empty
     if uniprot_list:
@@ -1898,7 +1903,7 @@ def main():
   cath_dic = run_or_pickle("2_cath_dic", uniprot_to_arch, uniprot_list, 
                           "cath")
 
-  #logger.debug(len(cath_dic))
+  #logger.info(cath_dic)
 
   # generate list, flatten it and rm duplicates
   cath_list = run_or_pickle("2_cath_list", flatten_dic, cath_dic, "values")
@@ -1920,26 +1925,30 @@ def main():
   
   logger.info('------------------- END OF PART 2 -------------------')
 
+  #logger.info(cath_dic['Q92769'])
+  # overwrite cath_list
+  pfam_list = ['PF01180']
 
   ####################################
   ### PART 3: FIND SCHISTO TARGETS ###
   ####################################
   
-  logger.info('PART 3 - We wish to map the CATH/Pfam ids ' +
-              'to UniProt ids of the species ' + str(c.species) + '.')
+  # logger.info('PART 3 - We wish to map the CATH/Pfam ids ' +
+  #             'to UniProt ids of the species ' + str(c.species) + '.')
   
-  # call archindex on cath values to find the ones from schisto
-  uniprot_schisto_cath_dic = run_or_pickle("3_uniprot_schisto_cath_dic", 
-                                          arch_to_uniprot, cath_list, "cath")
-  #logger.debug(len(uniprot_schisto_cath_dic))
+  # # call archindex on cath values to find the ones from schisto
+  # uniprot_schisto_cath_dic = run_or_pickle("3_uniprot_schisto_cath_dic", 
+  #                                         arch_to_uniprot, cath_list, "cath")
+  # #DEBUG
+  # logger.info(uniprot_schisto_cath_dic)
 
-  # generate list, flatten it and rm duplicates
-  uniprot_schisto_cath_list = run_or_pickle("3_uniprot_schisto_cath_list",
-                              flatten_dic, uniprot_schisto_cath_dic, "values")
+  # # generate list, flatten it and rm duplicates
+  # uniprot_schisto_cath_list = run_or_pickle("3_uniprot_schisto_cath_list",
+  #                             flatten_dic, uniprot_schisto_cath_dic, "values")
 
-  logger.info('We have mapped ' + str(len(uniprot_schisto_cath_dic)) + 
-              ' CATH ids to ' + str(len(uniprot_schisto_cath_list)) +
-              ' Uniprot ids.')
+  # logger.info('We have mapped ' + str(len(uniprot_schisto_cath_dic)) + 
+  #             ' CATH ids to ' + str(len(uniprot_schisto_cath_list)) +
+  #             ' Uniprot ids.')
 
   # call archindex on pfam values to find ones from schisto
   uniprot_schisto_pfam_dic = run_or_pickle("3_uniprot_schisto_pfam_dic", 
@@ -1950,606 +1959,619 @@ def main():
   uniprot_schisto_pfam_list = run_or_pickle("3_uniprot_schisto_pfam_list",
                               flatten_dic, uniprot_schisto_pfam_dic, "values")
 
+  logger.info(uniprot_schisto_pfam_dic)
   logger.info('We have mapped ' + str(len(uniprot_schisto_pfam_dic)) + 
               ' CATH ids to ' + str(len(uniprot_schisto_pfam_list)) +
               ' Uniprot ids.')
 
-  # merge and rm duplicates
-  # this is total list of unique schisto uniprot ids
-  uniprot_schisto_list = run_or_pickle("3_uniprot_schisto_list", merge_lists,
-                        uniprot_schisto_cath_list, uniprot_schisto_pfam_list)
+  # # merge and rm duplicates
+  # # this is total list of unique schisto uniprot ids
+  # uniprot_schisto_list = run_or_pickle("3_uniprot_schisto_list", merge_lists,
+  #                       uniprot_schisto_cath_list, uniprot_schisto_pfam_list)
   
-  logger.info('In total, we have identified ' + 
-              str(len(uniprot_schisto_list)) + 
-              ' unique targets that point to known drugs.')
+  # logger.info('In total, we have identified ' + 
+  #             str(len(uniprot_schisto_list)) + 
+  #             ' unique targets that point to known drugs.')
 
-  ### OVERWRITE UNIPROT_SCHISTO_LIST WITH MADE-UP LIST
-  # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
-  #'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
-  #example of unreviewed entries: 'C7TY75', 'G4LXF4', 'C1L491'
-  #uniprot_schisto_list = ['P13566','Q9U8F1','P33676',
-  #'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
-  ###
+  # ### OVERWRITE UNIPROT_SCHISTO_LIST WITH MADE-UP LIST
+  # # this one is the 10 reviewd results ['P13566','Q9U8F1','P33676',
+  # #'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
+  # #example of unreviewed entries: 'C7TY75', 'G4LXF4', 'C1L491'
+  # #uniprot_schisto_list = ['P13566','Q9U8F1','P33676',
+  # #'P30114','Q26499','P16641','C4PZQ3','P37227','C4QCD2','Q5D8V5']
+  # ###
 
-  # filter list for only reviewed ones
-  uniprot_schisto_filt = run_or_pickle("3_uniprot_schisto_filt",
-                                        expasy_filter,
-                                        uniprot_schisto_list, "reviewed")
+  # # filter list for only reviewed ones
+  # uniprot_schisto_filt = run_or_pickle("3_uniprot_schisto_filt",
+  #                                       expasy_filter,
+  #                                       uniprot_schisto_list, "reviewed")
 
-  ### OVERWRITE FILTERED LIST
-  #uniprot_schisto_filt = ['P33676']
-  ###
+  # ### OVERWRITE FILTERED LIST
+  # #uniprot_schisto_filt = ['P33676']
+  # ###
 
-  logger.info('Of those targets, the reviewed Uniprot entries are ' + 
-              str(len(uniprot_schisto_filt)) +  '.')
+  # logger.info('Of those targets, the reviewed Uniprot entries are ' + 
+  #             str(len(uniprot_schisto_filt)) +  '.')
   
-  logger.info('------------------- END OF PART 3 -------------------')
+  # logger.info('------------------- END OF PART 3 -------------------')
 
 
   ############################
   ### PART 4 GENERATE MAPS ###
   ############################
-  logger.info('PART 4 - We wish to create two dictionaries that collect ' +
-              'all the mapping so far, one for ChEMBL and one for DrugBank.')
+  # logger.info('PART 4 - We wish to create two dictionaries that collect ' +
+  #             'all the mapping so far, one for ChEMBL and one for DrugBank.')
 
-  # generate big map for chembl drugs
-  chembl_repo_map = run_or_pickle("4_chembl_repo_map", chembl_repo, 
-                                  chembl_dic, cath_dic,
-                                  uniprot_schisto_cath_dic, pfam_dic, 
-                                  uniprot_schisto_pfam_dic)
-  # logger.debug(len(chembl_repo_map))
-  logger.info('We have built the ChEMBL map, mapping ' +
-              str(len(chembl_repo_map)) + ' ChEMBL drugs to potential ' +
-              str(c.species) + ' targets.')
+  # # generate big map for chembl drugs
+  # chembl_repo_map = run_or_pickle("4_chembl_repo_map", chembl_repo, 
+  #                                 chembl_dic, cath_dic,
+  #                                 uniprot_schisto_cath_dic, pfam_dic, 
+  #                                 uniprot_schisto_pfam_dic)
+  # # logger.debug(len(chembl_repo_map))
+  # logger.info('We have built the ChEMBL map, mapping ' +
+  #             str(len(chembl_repo_map)) + ' ChEMBL drugs to potential ' +
+  #             str(c.species) + ' targets.')
 
-  # list of drugs that are in the map, to be used in part 6
-  #chembl_repo_drug_list = chembl_repo_map.keys()
-  chembl_repo_drug_list = flatten_dic(chembl_repo_map, 'keys')
-  #logger.info(chembl_repo_drug_list)
+  # # list of drugs that are in the map, to be used in part 6
+  # #chembl_repo_drug_list = chembl_repo_map.keys()
+  # chembl_repo_drug_list = flatten_dic(chembl_repo_map, 'keys')
+  # #logger.info(chembl_repo_drug_list)
 
-  # generate big map for drugbank drugs
-  drugbank_repo_map = run_or_pickle("4_drugbank_repo_map", drugbank_repo, 
-                                    drugbank_dic, cath_dic,
-                                    uniprot_schisto_cath_dic, pfam_dic, 
-                                    uniprot_schisto_pfam_dic)
+  # # generate big map for drugbank drugs
+  # drugbank_repo_map = run_or_pickle("4_drugbank_repo_map", drugbank_repo, 
+  #                                   drugbank_dic, cath_dic,
+  #                                   uniprot_schisto_cath_dic, pfam_dic, 
+  #                                   uniprot_schisto_pfam_dic)
   
-  logger.info('We have built the DrugBank map, mapping ' +
-              str(len(drugbank_repo_map)) + ' DrugBank drugs to potential ' +
-              str(c.species) + ' targets.')
+  # logger.info('We have built the DrugBank map, mapping ' +
+  #             str(len(drugbank_repo_map)) + ' DrugBank drugs to potential ' +
+  #             str(c.species) + ' targets.')
 
-  # list of drugs that are in the map, to be used in part 6
-  # below old one, had white spaces!
-  #drugbank_repo_drug_list = drugbank_repo_map.keys()
-  #logger.debug(drugbank_repo_drug_list)
-  # new list, no white spaces!
-  drugbank_repo_drug_list = flatten_dic(drugbank_repo_map, 'keys')
-  logger.debug(drugbank_repo_drug_list)
+  # # list of drugs that are in the map, to be used in part 6
+  # # below old one, had white spaces!
+  # #drugbank_repo_drug_list = drugbank_repo_map.keys()
+  # #logger.debug(drugbank_repo_drug_list)
+  # # new list, no white spaces!
+  # drugbank_repo_drug_list = flatten_dic(drugbank_repo_map, 'keys')
+  # logger.debug(drugbank_repo_drug_list)
 
-  # filtered ap for reviewed entries!
-  # this one should then include the drugbank entries once they are ready
-  # obtain filtered mapping dictionary for filtered entries
-  chembl_schisto_filt_map = run_or_pickle("4_chembl_schisto_filt_map",
-                                          filt_schisto_map, chembl_repo_map,
-                                          uniprot_schisto_filt)
-
-
-  drugbank_schisto_filt_map = run_or_pickle("4_drugbank_schisto_filt_map",
-                                            filt_schisto_map, 
-                                            drugbank_repo_map,
-                                            uniprot_schisto_filt)
+  # # filtered ap for reviewed entries!
+  # # this one should then include the drugbank entries once they are ready
+  # # obtain filtered mapping dictionary for filtered entries
+  # chembl_schisto_filt_map = run_or_pickle("4_chembl_schisto_filt_map",
+  #                                         filt_schisto_map, chembl_repo_map,
+  #                                         uniprot_schisto_filt)
 
 
-  #logger.debug(chembl_schisto_filt_map)
-  #logger.debug(drugbank_schisto_filt_map)
-  logger.info('------------------- END OF PART 4 -------------------')
+  # drugbank_schisto_filt_map = run_or_pickle("4_drugbank_schisto_filt_map",
+  #                                           filt_schisto_map, 
+  #                                           drugbank_repo_map,
+  #                                           uniprot_schisto_filt)
 
 
-  #################################################
-  ### PART 5 PDB TO HET GROUPS                  ###
-  #################################################
-  logger.info('PART 5 - We wish to map all available pdb structures ' +
-              'to the Het groups the contain, and then filter out ' +
-              'the Het groups contained in ' + c.pointless_het + 
-              ', a list of ions, metals, peptidic ligands, etc.')
-  # make dictionary of pdb to ligands
-  pdb_lig_dic = run_or_pickle("5_pdb_lig_dic", lst_dic, c.pdb_lig)
-
-  logger.info('We made a dictionary of '+ str(len(pdb_lig_dic)) + 
-            ' pdb entries mapped to their ligand identifiers.')
-
-  # make list of ccs to ignore
-  pointless_het = run_or_pickle("5_pointless_het", csv_to_lst,
-                                    c.pointless_het)
-  logger.info("The list of ligands we wish to ignore " +
-              "contains " + str(len(pointless_het)) + " ligands.")
+  # #logger.debug(chembl_schisto_filt_map)
+  # #logger.debug(drugbank_schisto_filt_map)
+  # logger.info('------------------- END OF PART 4 -------------------')
 
 
-  # filter dictionary pdb to lig, excluding lig that are in the 'pointless'
-  # list
-  pdb_lig_pointless_dic = run_or_pickle("5_pdb_lig_pointless_dic",
-                                    exclude_values_from_dic, pdb_lig_dic, 
-                                    pointless_het, "exclude")
-  #logger.debug(len(pdb_lig_pointless_dic))
+  # #################################################
+  # ### PART 5 PDB TO HET GROUPS                  ###
+  # #################################################
+  # logger.info('PART 5 - We wish to map all available pdb structures ' +
+  #             'to the Het groups the contain, and then filter out ' +
+  #             'the Het groups contained in ' + c.pointless_het + 
+  #             ', a list of ions, metals, peptidic ligands, etc.')
+  # # make dictionary of pdb to ligands
+  # pdb_lig_dic = run_or_pickle("5_pdb_lig_dic", lst_dic, c.pdb_lig)
+
+  # logger.info('We made a dictionary of '+ str(len(pdb_lig_dic)) + 
+  #           ' pdb entries mapped to their ligand identifiers.')
+
+  # # make list of ccs to ignore
+  # pointless_het = run_or_pickle("5_pointless_het", csv_to_lst,
+  #                                   c.pointless_het)
+  # logger.info("The list of ligands we wish to ignore " +
+  #             "contains " + str(len(pointless_het)) + " ligands.")
+
+
+  # # filter dictionary pdb to lig, excluding lig that are in the 'pointless'
+  # # list
+  # pdb_lig_pointless_dic = run_or_pickle("5_pdb_lig_pointless_dic",
+  #                                   exclude_values_from_dic, pdb_lig_dic, 
+  #                                   pointless_het, "exclude")
+  # #logger.debug(len(pdb_lig_pointless_dic))
   
-  # second filter, to eliminate those with dash
-  # this is filtered dic of all useful pdbs (with useful ligands!)
-  pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
-                                    exclude_values_from_dic, 
-                                    pdb_lig_pointless_dic, 
-                                    c.contains_dash, "nomatch")
-  #logger.info(pdb_lig_filt_dic)
+  # # second filter, to eliminate those with dash
+  # # this is filtered dic of all useful pdbs (with useful ligands!)
+  # pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
+  #                                   exclude_values_from_dic, 
+  #                                   pdb_lig_pointless_dic, 
+  #                                   c.contains_dash, "nomatch")
+  # #logger.info(pdb_lig_filt_dic)
   
-  # list of 'acceptable' pdbs (with useful ligands) from dic
-  pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
-                                pdb_lig_filt_dic, "keys")
-  # the length here is obviously the same as the length of dic!
-  #logger.info(pdb_w_lig_list)
+  # # list of 'acceptable' pdbs (with useful ligands) from dic
+  # pdb_w_lig_list = run_or_pickle("5_pdb_w_lig_list", flatten_dic, 
+  #                               pdb_lig_filt_dic, "keys")
+  # # the length here is obviously the same as the length of dic!
+  # #logger.info(pdb_w_lig_list)
 
-  # list of 'acceptable' ligands from dic
-  filtered_ligs = run_or_pickle("5_filtered_ligs", flatten_dic,
-                                pdb_lig_filt_dic, "values")
-  #logger.debug(filtered_ligs)
-
-
-  logger.info('We have excluded the pdb entries that only have ' +
-              'ligands from such list, ' + 
-              'to obtain ' + str(len(pdb_lig_filt_dic)) +
-              ' pdb entries, mapped to a total of ' +
-              str(len(filtered_ligs)) + ' unique ligands.')
-
-  logger.info('------------------- END OF PART 5 -------------------')
+  # # list of 'acceptable' ligands from dic
+  # filtered_ligs = run_or_pickle("5_filtered_ligs", flatten_dic,
+  #                               pdb_lig_filt_dic, "values")
+  # #logger.debug(filtered_ligs)
 
 
-  ##################################################
-  ### PART 6 DRUG TARGETS WITH STRUCTURAL INFO   ###
-  ##################################################
+  # logger.info('We have excluded the pdb entries that only have ' +
+  #             'ligands from such list, ' + 
+  #             'to obtain ' + str(len(pdb_lig_filt_dic)) +
+  #             ' pdb entries, mapped to a total of ' +
+  #             str(len(filtered_ligs)) + ' unique ligands.')
 
-  logger.info('PART 6 - We wish to collect all the drug targets that ' +
-              'point to some repositioning target, point them to ' +
-              'the available pdb structures (using ' + c.uniprot_pdb + 
-                '), filter them according to the map obtained in Part 4 ' +
-                'and extract the ligands (using ' + c.cc_smi + ').')
-  # obtain list of targets from drugbank_repo_map and chembl_repo_map
-  # these are all the uniprot values that are targets of our potential
-  # drug repo candidates
-  chembl_drug_targ = run_or_pickle("6_chembl_drug_targ", 
-                                  list_second_level_dic, chembl_repo_map)
-  #logger.info(chembl_drug_targ)
+  # logger.info('------------------- END OF PART 5 -------------------')
+
+
+  # ##################################################
+  # ### PART 6 DRUG TARGETS WITH STRUCTURAL INFO   ###
+  # ##################################################
+
+  # logger.info('PART 6 - We wish to collect all the drug targets that ' +
+  #             'point to some repositioning target, point them to ' +
+  #             'the available pdb structures (using ' + c.uniprot_pdb + 
+  #               '), filter them according to the map obtained in Part 4 ' +
+  #               'and extract the ligands (using ' + c.cc_smi + ').')
+  # # obtain list of targets from drugbank_repo_map and chembl_repo_map
+  # # these are all the uniprot values that are targets of our potential
+  # # drug repo candidates
+  # chembl_drug_targ = run_or_pickle("6_chembl_drug_targ", 
+  #                                 list_second_level_dic, chembl_repo_map)
+  # #logger.info(chembl_drug_targ)
   
-  drugbank_drug_targ = run_or_pickle("6_drugbank_drug_targ", 
-                                  list_second_level_dic, drugbank_repo_map)
+  # drugbank_drug_targ = run_or_pickle("6_drugbank_drug_targ", 
+  #                                 list_second_level_dic, drugbank_repo_map)
 
-  # logger.debug(len(drugbank_drug_targ))
+  # # logger.debug(len(drugbank_drug_targ))
 
-  tot_drug_targ = run_or_pickle("6_tot_drug_targ", merge_lists, 
-                                chembl_drug_targ, drugbank_drug_targ)
+  # tot_drug_targ = run_or_pickle("6_tot_drug_targ", merge_lists, 
+  #                               chembl_drug_targ, drugbank_drug_targ)
 
-  logger.info('Overall, we have ' + str(len(tot_drug_targ)) + 
-              ' drug targets that could be mapped to some schisto target.')
+  # logger.info('Overall, we have ' + str(len(tot_drug_targ)) + 
+  #             ' drug targets that could be mapped to some schisto target.')
 
-  # make dictionary uniprot to pdb
-  uniprot_pdb_dic = run_or_pickle("6_uniprot_pdb_dic", csv_to_dic, 
-                                  c.uniprot_pdb)
-  #logger.debug(uniprot_pdb_dic)
+  # # make dictionary uniprot to pdb
+  # uniprot_pdb_dic = run_or_pickle("6_uniprot_pdb_dic", csv_to_dic, 
+  #                                 c.uniprot_pdb)
+  # #logger.debug(uniprot_pdb_dic)
 
-  # this is dictionary of drug targets that have at least one pdb structure
-  uniprot_filt = run_or_pickle("6_uniprot_filt", filter_dic_from_list, 
-                              uniprot_pdb_dic, tot_drug_targ)
+  # # this is dictionary of drug targets that have at least one pdb structure
+  # uniprot_filt = run_or_pickle("6_uniprot_filt", filter_dic_from_list, 
+  #                             uniprot_pdb_dic, tot_drug_targ)
 
-  #logger.info(uniprot_filt)
+  # #logger.info(uniprot_filt)
 
-  logger.info('Of those targets, ' + str(len(uniprot_filt)) + 
-              ' have at least one pdb structure associated to them.')
-  # apply filter
-  #logger.debug(uniprot_filt)
+  # logger.info('Of those targets, ' + str(len(uniprot_filt)) + 
+  #             ' have at least one pdb structure associated to them.')
+  # # apply filter
+  # #logger.debug(uniprot_filt)
  
-  #####
-  # this would be alternative method for finding entries with pdb
-  # BUT! it returns larger list (eg 2751 instead of 2711) because it includes
-  # pdb ids that point to model structures, not accepted in the pdb anymore
-  # # obtain filtered list of drug targets that have associated pdbs
-  # uniprot_filt_pdb = run_or_pickle("5_uniprot_filt_pdb", expasy_filter, 
-  #                                 uniprot_list, "pdb")
-  #####
+  # #####
+  # # this would be alternative method for finding entries with pdb
+  # # BUT! it returns larger list (eg 2751 instead of 2711) because it includes
+  # # pdb ids that point to model structures, not accepted in the pdb anymore
+  # # # obtain filtered list of drug targets that have associated pdbs
+  # # uniprot_filt_pdb = run_or_pickle("5_uniprot_filt_pdb", expasy_filter, 
+  # #                                 uniprot_list, "pdb")
+  # #####
 
 
-  # take dic of drug target uniprot to pdb and keep only ones that 
-  # are in in the 'acceptable' pdb list
-  uniprot_pdb_w_lig = run_or_pickle("6_uniprot_pdb_w_lig", 
-                                    exclude_values_from_dic, uniprot_filt,
-                                    pdb_w_lig_list, "include")
-  #logger.info(uniprot_pdb_w_lig)
+  # # take dic of drug target uniprot to pdb and keep only ones that 
+  # # are in in the 'acceptable' pdb list
+  # uniprot_pdb_w_lig = run_or_pickle("6_uniprot_pdb_w_lig", 
+  #                                   exclude_values_from_dic, uniprot_filt,
+  #                                   pdb_w_lig_list, "include")
+  # #logger.info(uniprot_pdb_w_lig)
 
-  ###
-  # get list of uniprot from dic above
-  uniprot_w_lig_list = uniprot_pdb_w_lig.keys()
-  logger.info(len(uniprot_w_lig_list))
+  # ###
+  # # get list of uniprot from dic above
+  # uniprot_w_lig_list = uniprot_pdb_w_lig.keys()
+  # logger.info(len(uniprot_w_lig_list))
 
-  ###
+  # ###
 
-  # get the pdb list from the dic above
-  pdb_w_lig = run_or_pickle("6_pdb_w_lig", list_second_level_dic,
-                                uniprot_pdb_w_lig)
+  # # get the pdb list from the dic above
+  # pdb_w_lig = run_or_pickle("6_pdb_w_lig", list_second_level_dic,
+  #                               uniprot_pdb_w_lig)
   
-  logger.info('Of those, ' + str(len(uniprot_pdb_w_lig)) +
-              ' have at least one pdb structure ' +
-              'in complex with a small molecule associated to them. ' +
-              'The unique pdb structures are ' + str(len(pdb_w_lig)) + '.')
+  # logger.info('Of those, ' + str(len(uniprot_pdb_w_lig)) +
+  #             ' have at least one pdb structure ' +
+  #             'in complex with a small molecule associated to them. ' +
+  #             'The unique pdb structures are ' + str(len(pdb_w_lig)) + '.')
 
 
-  # now filter the pdb_lig_filt_dic, to obtain the pdbs we want
-  # { PDBID: [list of CC]}
-  # this will be the dic we refer to later!
-  pdb_cc_dic = run_or_pickle("6_pdb_cc_dic", filter_dic_from_list, 
-                                pdb_lig_filt_dic, pdb_w_lig)
+  # # now filter the pdb_lig_filt_dic, to obtain the pdbs we want
+  # # { PDBID: [list of CC]}
+  # # this will be the dic we refer to later!
+  # pdb_cc_dic = run_or_pickle("6_pdb_cc_dic", filter_dic_from_list, 
+  #                               pdb_lig_filt_dic, pdb_w_lig)
 
 
-  # finally obtain the list of cc we need! - the ones that are in the pdbs
-  # this is the list of cc we need to try and match to the drugs cc!!
-  # will be around 8435 in the list
-  cc_list = run_or_pickle("6_cc_list", list_second_level_dic,
-                          pdb_cc_dic)
-  logger.info('We have extracted the chemical components from the pdbs, ' +
-              'for a total of ' + str(len(cc_list)) + ' chemical components')
+  # # finally obtain the list of cc we need! - the ones that are in the pdbs
+  # # this is the list of cc we need to try and match to the drugs cc!!
+  # # will be around 8435 in the list
+  # cc_list = run_or_pickle("6_cc_list", list_second_level_dic,
+  #                         pdb_cc_dic)
+  # logger.info('We have extracted the chemical components from the pdbs, ' +
+  #             'for a total of ' + str(len(cc_list)) + ' chemical components')
 
-  # get cc to smiles dictionary
-  cc_smiles = run_or_pickle("6_cc_smiles", smi_to_dic, c.cc_smi, 1, 0)
+  # # get cc to smiles dictionary
+  # cc_smiles = run_or_pickle("6_cc_smiles", smi_to_dic, c.cc_smi, 1, 0)
 
-  #logger.info(len(cc_smiles))
+  # #logger.info(len(cc_smiles))
 
 
-  # dic of cc we ar interested in, mapped to their smiles
-  cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
-                              cc_smiles, cc_list)
+  # # dic of cc we ar interested in, mapped to their smiles
+  # cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
+  #                             cc_smiles, cc_list)
   
-  logger.info('We have mapped ' + str(len(cc_smi_filt)) + 
-              ' of these chemical components to their smiles.')
-  
-  logger.info('------------------- END OF PART 6 -------------------')
-
-
-  ####################################
-  ### PART 7 CHEMBL CLUSTERING   ###
-  ####################################
-  logger.info('PART 7 - We wish to take the ChEMBL drugs ' +
-              'from the mapping and cluster them against ' +
-              'the chemical components extracted from the pdb structures.')
-
-  # total chembl drugs to smiles dictionary - 10406 chembl drugs
-  chembl_id_smi_dic = run_or_pickle("7_chembl_id_smi_dic", txt_to_dic, 
-                                    c.chembl_input, "CHEMBL_ID",
-                                    "CANONICAL_SMILES")
-  #logger.debug(len(chembl_id_smi_dic))
-  
-
-  # filter dictionary to only drugs that are in chembl_repo_drug_list
-  # these are all chembl drugs (783) that are in the map
-  chembl_id_smi_filt = run_or_pickle("7_chembl_id_smi_filt", 
-                                      filter_dic_from_list, 
-                                      chembl_id_smi_dic,chembl_repo_drug_list)
-  
-  logger.info('We have mapped the ' + str(len(chembl_id_smi_filt)) +
-              ' ChEMBL drugs to their smiles.')
-
-
-  # filter chembl_dic to only the 783 drugs, using chembl_repo_drug_list
-  chembl_dic_mapped_drugs = filter_dic_from_list(chembl_dic, 
-                            chembl_repo_drug_list)
-  #logger.info(len(chembl_dic_mapped_drugs))
-  # filter out the uniprots, using uniprot_w_lig_list
-  chembl_dic_uni_drugs = exclude_values_from_dic(chembl_dic_mapped_drugs, 
-                        uniprot_w_lig_list, "include")
-  #logger.info(len(chembl_dic_uni_drugs))
-  chembl_uni_drugs_list = chembl_dic_uni_drugs.keys()
-  #logger.info(len(chembl_uni_drugs_list))
-  # filter chembl_id_smi_filt to what obtained above
-  chembl_id_smi_opt = filter_dic_from_list(chembl_id_smi_filt, 
-                      chembl_uni_drugs_list) 
-  #logger.info(len(chembl_id_smi_opt))
-  
-
-  # obtain drug to cc dictionary, merging three dics
-  # this is all the drugs in the map, pointing to the cc in the pdbs of
-  # of their targets
-  chembl_to_cc = merge_dic(chembl_dic,uniprot_filt, pdb_cc_dic)
-  #logger.info(len(chembl_to_cc))
-
-
-  logger.info('We have filtered out the ChEMBL drugs that ' +
-              'do not point to a crystal structure in complex with ' +
-              'a small molecule, to obtain ' + str(len(chembl_id_smi_opt)) +
-              ' ChEMBL drugs mapped to their smiles' +
-              '; these will be clustered.')
-
-
-  #####################
-  #openbabel conversion - not necessary for now
-  #####################
-  # # cc: create file with smiles to feed to openbabel
-  # dic_to_txt(cc_smi_filt, '6_cc_smi_filt.smi')
-
-  # # ligands converted to sdf
-  # # babel_smi_to_sdf('test.smi','test.sdf')
-
-  # # ligands converted to sdf 3d and no hydrogens
-  # #babel_smi_to_sdf('test.smi','test_noh.sdf')
-
-  # # convert smiles to sdf
-  # babel_smi_to_sdf('6_cc_smi_filt.smi','6_cc_smi_filt.sdf')
-  
-  # # this number is the same number of entries I should obtained in the 
-  # # SMSD output!! check!
   # logger.info('We have mapped ' + str(len(cc_smi_filt)) + 
-  #             ' small-molecule chemical components to their smiles, ' +
-  #             'and converted them to 3d sdf.')
-
-  # or do conversion in separate shell
-  # same command (with gen3d and hydrogen removed)
-  #babel_smi_to_sdf('cc_smi_filt.smi','cc_smi_filt.sdf')
-  # logger.info(chembl_id_smi_filt)
-  #######################
+  #             ' of these chemical components to their smiles.')
+  
+  # logger.info('------------------- END OF PART 6 -------------------')
 
 
-  # possibly test with catcvs input as well before proceeding
+  # ####################################
+  # ### PART 7 CHEMBL CLUSTERING   ###
+  # ####################################
+  # logger.info('PART 7 - We wish to take the ChEMBL drugs ' +
+  #             'from the mapping and cluster them against ' +
+  #             'the chemical components extracted from the pdb structures.')
 
-
-  # convert dic into smile file (module return none, it just writes to file)
-  #dic_to_txt(cc_smi_filt, 'cc_smi_filt.smi')
+  # # total chembl drugs to smiles dictionary - 10406 chembl drugs
+  # chembl_id_smi_dic = run_or_pickle("7_chembl_id_smi_dic", txt_to_dic, 
+  #                                   c.chembl_input, "CHEMBL_ID",
+  #                                   "CANONICAL_SMILES")
+  # #logger.debug(len(chembl_id_smi_dic))
   
 
-  # # OVERWRITE CHEMBL
-  # chembl_id_smi_filt = {'CHEMBL1115': 'CN(C)C(=O)Oc1ccc[n+](C)c1', 
-  #'CHEMBL965': 'C[N+](C)(C)CCOC(=O)N', 
-  #'CHEMBL964': 'CCN(CC)C(=S)SSC(=S)N(CC)CC'}
-  #logger.info(chembl_id_smi_filt)
-
-  # # cc: create file with smiles to feed to openbabel
-  #dic_to_txt(cc_smi_filt, 'test.smi')
-
-  # # ligands converted to sdf
-  #babel_smi_to_sdf('test.smi','test.sdf')
-
-
-  # # CHEMBL CLUSTERING (takes an hour approx)
-  # rn clustering with Tanimoto similarity threshold
-  # thresholds for similarity at 1, 0.9, 0.8, 0.7 are also written to output:
-
-  chembl_cluster = run_or_pickle("7_chembl_cluster", run_smsd, 
-                                chembl_id_smi_opt, cc_smi_filt,
-                                "pair_2dic", c.sim_threshold, chembl_to_cc)
-
-  # move output file to current dir
-  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
-
-  logger.info('We have clustered the ChEMBL drugs, to obtain ' + 
-              str(len(chembl_cluster)) + ' drugs mapped to at least ' +
-              'a chemical component with Tanimoto similarity above ' +
-              str(c.sim_threshold) + 
-              ' (other similarity thresholds written to file).')
-
-
-  # get the list of drugs from cluster dic
-  chembl_cluster_list = flatten_dic(chembl_cluster, "keys")
-  #logger.info(len(chembl_cluster_list))
-
-  # find how it relates to the maps
-  # chembl_repo_map - big map
-  # chembl_schisto_filt_map - only ones with annotated schisto targ
-  #logger.info(chembl_schisto_filt_map)
-  #this = filter_dic_from_list(chembl_schisto_filt_map,chembl_cluster_list)
-  #logger.info(this)
+  # # filter dictionary to only drugs that are in chembl_repo_drug_list
+  # # these are all chembl drugs (783) that are in the map
+  # chembl_id_smi_filt = run_or_pickle("7_chembl_id_smi_filt", 
+  #                                     filter_dic_from_list, 
+  #                                     chembl_id_smi_dic,chembl_repo_drug_list)
   
-  # write filtered txt csv file to be imported in excel
-  filter_txt('chembl_drugs.txt', '7_chembl_clust_excel.txt', 'CHEMBL_ID', 
-             chembl_cluster_list)
-
-  #logger.info(chembl_repo_map['CHEMBL973'])
+  # logger.info('We have mapped the ' + str(len(chembl_id_smi_filt)) +
+  #             ' ChEMBL drugs to their smiles.')
 
 
-  # # tanimoto 0.9
-  # chembl_cc_09 = run_or_pickle("7_chembl_cc_09", run_smsd,
-  #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.9)
-  # # tanimoto 1.0
-  # chembl_cc_1 = run_or_pickle("7_chembl_cc_1", run_smsd,
-  #                               chembl_id_smi_opt,cc_smi_filt,"pair", 1.0)
-  # #logger.info(chembl_cc_02)
-
-
-  logger.info('------------------- END OF PART 7 -------------------')
-
-  ####################################
-  ### PART 8 DRUGBANK CLUSTERING   ###
-  ####################################
-  logger.info('PART 8 - In the same way, we wish to take ' +
-            'the DrugBank drugs from the mapping and cluster them against ' +
-              'the chemical components extracted from the pdb structures.')
-
-  # drugbank drugs to smiles dictionary (total 6799 drugs mapped to smiles)
-  drugbank_id_smi_dic = run_or_pickle('8_drugbank_id_smi_dic', 
-                                      sdf_to_dic, c.drugbank_sdf, 
-                                      'DATABASE_ID', 'SMILES')
-  # logger.info(drugbank_id_smi_dic)
+  # # filter chembl_dic to only the 783 drugs, using chembl_repo_drug_list
+  # chembl_dic_mapped_drugs = filter_dic_from_list(chembl_dic, 
+  #                           chembl_repo_drug_list)
+  # #logger.info(len(chembl_dic_mapped_drugs))
+  # # filter out the uniprots, using uniprot_w_lig_list
+  # chembl_dic_uni_drugs = exclude_values_from_dic(chembl_dic_mapped_drugs, 
+  #                       uniprot_w_lig_list, "include")
+  # #logger.info(len(chembl_dic_uni_drugs))
+  # chembl_uni_drugs_list = chembl_dic_uni_drugs.keys()
+  # #logger.info(len(chembl_uni_drugs_list))
+  # # filter chembl_id_smi_filt to what obtained above
+  # chembl_id_smi_opt = filter_dic_from_list(chembl_id_smi_filt, 
+  #                     chembl_uni_drugs_list) 
+  # #logger.info(len(chembl_id_smi_opt))
   
 
-  # filter dictionary to only drugs that in the drugbank_repo_drug_list
-  drugbank_id_smi_filt = run_or_pickle("8_drugbank_id_smi_filt", 
-                                      filter_dic_from_list, 
-                                      drugbank_id_smi_dic,
-                                      drugbank_repo_drug_list)
+  # # obtain drug to cc dictionary, merging three dics
+  # # this is all the drugs in the map, pointing to the cc in the pdbs of
+  # # of their targets
+  # chembl_to_cc = merge_dic(chembl_dic,uniprot_filt, pdb_cc_dic)
+  # #logger.info(len(chembl_to_cc))
+
+
+  # logger.info('We have filtered out the ChEMBL drugs that ' +
+  #             'do not point to a crystal structure in complex with ' +
+  #             'a small molecule, to obtain ' + str(len(chembl_id_smi_opt)) +
+  #             ' ChEMBL drugs mapped to their smiles' +
+  #             '; these will be clustered.')
+
+
+  # #####################
+  # #openbabel conversion - not necessary for now
+  # #####################
+  # # # cc: create file with smiles to feed to openbabel
+  # # dic_to_txt(cc_smi_filt, '6_cc_smi_filt.smi')
+
+  # # # ligands converted to sdf
+  # # # babel_smi_to_sdf('test.smi','test.sdf')
+
+  # # # ligands converted to sdf 3d and no hydrogens
+  # # #babel_smi_to_sdf('test.smi','test_noh.sdf')
+
+  # # # convert smiles to sdf
+  # # babel_smi_to_sdf('6_cc_smi_filt.smi','6_cc_smi_filt.sdf')
   
-  #logger.info(len(drugbank_id_smi_filt))
-  #logger.info(drugbank_repo_drug_list)
+  # # # this number is the same number of entries I should obtained in the 
+  # # # SMSD output!! check!
+  # # logger.info('We have mapped ' + str(len(cc_smi_filt)) + 
+  # #             ' small-molecule chemical components to their smiles, ' +
+  # #             'and converted them to 3d sdf.')
 
- 
-  logger.info('We have mapped ' + str(len(drugbank_id_smi_filt)) +
-              ' DrugBank drugs to their smiles.')
+  # # or do conversion in separate shell
+  # # same command (with gen3d and hydrogen removed)
+  # #babel_smi_to_sdf('cc_smi_filt.smi','cc_smi_filt.sdf')
+  # # logger.info(chembl_id_smi_filt)
+  # #######################
 
-  # obtain drug to cc dictionary, merging three dics
-  drugbank_to_cc = merge_dic(drugbank_dic,uniprot_filt, pdb_cc_dic)
-  #logger.info(len(drugbank_to_cc))
+
+  # # possibly test with catcvs input as well before proceeding
+
+
+  # # convert dic into smile file (module return none, it just writes to file)
+  # #dic_to_txt(cc_smi_filt, 'cc_smi_filt.smi')
   
-  logger.info('We have filtered the drugs, as before, to obtain ' + 
-              str(len(drugbank_to_cc)) +
-              ' DrugBank drugs that will be clustered.')
+
+  # # # OVERWRITE CHEMBL
+  # # chembl_id_smi_filt = {'CHEMBL1115': 'CN(C)C(=O)Oc1ccc[n+](C)c1', 
+  # #'CHEMBL965': 'C[N+](C)(C)CCOC(=O)N', 
+  # #'CHEMBL964': 'CCN(CC)C(=S)SSC(=S)N(CC)CC'}
+  # #logger.info(chembl_id_smi_filt)
+
+  # # # cc: create file with smiles to feed to openbabel
+  # #dic_to_txt(cc_smi_filt, 'test.smi')
+
+  # # # ligands converted to sdf
+  # #babel_smi_to_sdf('test.smi','test.sdf')
 
 
-  # splitting drugbank_to_cc into 5 chunks
-  items1,items2,items3, items4, items5 = \
-                        zip(*izip_longest(*[iter(drugbank_to_cc.items())]*5))
-  d1 = dict(item for item in items1 if item is not None)
-  d2 = dict(item for item in items2 if item is not None)
-  d3 = dict(item for item in items3 if item is not None)
-  d4 = dict(item for item in items4 if item is not None)
-  d5 = dict(item for item in items5 if item is not None)
-  
-  logger.info('We have split the drugbank entries into chunks of ' +
-              str(len(d1)) + ', ' + str(len(d2)) + ', ' +
-              str(len(d3)) + ', ' + str(len(d4)) + ' and ' + 
-              str(len(d5)) + ', for easier processing.')
+  # # # CHEMBL CLUSTERING (takes an hour approx)
+  # # rn clustering with Tanimoto similarity threshold
+  # # thresholds for similarity at 1, 0.9, 0.8, 0.7 are also written to output:
 
+  # chembl_cluster = run_or_pickle("7_chembl_cluster", run_smsd, 
+  #                               chembl_id_smi_opt, cc_smi_filt,
+  #                               "pair_2dic", c.sim_threshold, chembl_to_cc)
 
-  # 1st
-  logger.info('We are processing the first chunk.')
-  db1_cluster = run_or_pickle("8_db1_cluster", run_smsd, 
-                                drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", c.sim_threshold, d1)
-  
-  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db1_cluster.txt')
-  #logger.info(len(drugbank_cluster))
-  #2nd
-  logger.info('We are processing the second chunk.')
-  db2_cluster = run_or_pickle("8_db2_cluster", run_smsd, 
-                                drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic",c.sim_threshold , d2)
-  
-  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db2_cluster.txt')
+  # # move output file to current dir
+  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
 
-  #3rd
-  logger.info('We are processing the third chunk.')
-  db3_cluster = run_or_pickle("8_db3_cluster", run_smsd, 
-                                drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", c.sim_threshold, d3)
-  
-  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
-
-  #4th
-  logger.info('We are processing the fourth chunk.')
-  db4_cluster = run_or_pickle("8_db4_cluster", run_smsd, 
-                                drugbank_id_smi_filt, cc_smi_filt,
-                                "pair_2dic", c.sim_threshold, d4)
-  
-  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
-
-  #5th
-  logger.info('We are processing the fifth chunk.')
-  # db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
-  #                               drugbank_id_smi_filt, cc_smi_filt,
-  #                               "pair_2dic", c.sim_threshold, d5)
-  
-  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
-
-  # # sum of all the 5 dics!
-  # tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
-  #               db3_cluster.items() + db4_cluster.items() + 
-  #               db5_cluster.items())
-
-  # # tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
-  # #                 len(db4_cluster) + len(db5_cluster))
-
-  # logger.info('We have clustered the DrugBank drugs, to obtain ' + 
-  #             str(len(tot_db)) + ' drugs mapped to at least ' +
+  # logger.info('We have clustered the ChEMBL drugs, to obtain ' + 
+  #             str(len(chembl_cluster)) + ' drugs mapped to at least ' +
   #             'a chemical component with Tanimoto similarity above ' +
   #             str(c.sim_threshold) + 
   #             ' (other similarity thresholds written to file).')
 
-  logger.info('------------------- END OF PART 8 -------------------')
+
+  # # get the list of drugs from cluster dic
+  # chembl_cluster_list = flatten_dic(chembl_cluster, "keys")
+  # #logger.info(len(chembl_cluster_list))
+
+  # # find how it relates to the maps
+  # # chembl_repo_map - big map
+  # # chembl_schisto_filt_map - only ones with annotated schisto targ
+  # #logger.info(chembl_schisto_filt_map)
+  # #this = filter_dic_from_list(chembl_schisto_filt_map,chembl_cluster_list)
+  # #logger.info(this)
+  
+  # # write filtered txt csv file to be imported in excel
+  # filter_txt('chembl_drugs.txt', '7_chembl_clust_excel.txt', 'CHEMBL_ID', 
+  #            chembl_cluster_list)
+
+  # #logger.info(chembl_repo_map['CHEMBL973'])
+
+
+  # # # tanimoto 0.9
+  # # chembl_cc_09 = run_or_pickle("7_chembl_cc_09", run_smsd,
+  # #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.9)
+  # # # tanimoto 1.0
+  # # chembl_cc_1 = run_or_pickle("7_chembl_cc_1", run_smsd,
+  # #                               chembl_id_smi_opt,cc_smi_filt,"pair", 1.0)
+  # # #logger.info(chembl_cc_02)
+
+
+  # logger.info('------------------- END OF PART 7 -------------------')
+
+  # ####################################
+  # ### PART 8 DRUGBANK CLUSTERING   ###
+  # ####################################
+  # logger.info('PART 8 - In the same way, we wish to take ' +
+  #           'the DrugBank drugs from the mapping and cluster them against ' +
+  #             'the chemical components extracted from the pdb structures.')
+
+  # # drugbank drugs to smiles dictionary (total 6799 drugs mapped to smiles)
+  # drugbank_id_smi_dic = run_or_pickle('8_drugbank_id_smi_dic', 
+  #                                     sdf_to_dic, c.drugbank_sdf, 
+  #                                     'DATABASE_ID', 'SMILES')
+  # # logger.info(drugbank_id_smi_dic)
+  
+
+  # # filter dictionary to only drugs that in the drugbank_repo_drug_list
+  # drugbank_id_smi_filt = run_or_pickle("8_drugbank_id_smi_filt", 
+  #                                     filter_dic_from_list, 
+  #                                     drugbank_id_smi_dic,
+  #                                     drugbank_repo_drug_list)
+  
+  # #logger.info(len(drugbank_id_smi_filt))
+  # #logger.info(drugbank_repo_drug_list)
+
+ 
+  # logger.info('We have mapped ' + str(len(drugbank_id_smi_filt)) +
+  #             ' DrugBank drugs to their smiles.')
+
+  # # obtain drug to cc dictionary, merging three dics
+  # drugbank_to_cc = merge_dic(drugbank_dic,uniprot_filt, pdb_cc_dic)
+  # #logger.info(len(drugbank_to_cc))
+  
+  # logger.info('We have filtered the drugs, as before, to obtain ' + 
+  #             str(len(drugbank_to_cc)) +
+  #             ' DrugBank drugs that will be clustered.')
+
+
+  # # splitting drugbank_to_cc into 5 chunks
+  # items1,items2,items3, items4, items5 = \
+  #                       zip(*izip_longest(*[iter(drugbank_to_cc.items())]*5))
+  # d1 = dict(item for item in items1 if item is not None)
+  # d2 = dict(item for item in items2 if item is not None)
+  # d3 = dict(item for item in items3 if item is not None)
+  # d4 = dict(item for item in items4 if item is not None)
+  # d5 = dict(item for item in items5 if item is not None)
+  
+  # logger.info('We have split the drugbank entries into chunks of ' +
+  #             str(len(d1)) + ', ' + str(len(d2)) + ', ' +
+  #             str(len(d3)) + ', ' + str(len(d4)) + ' and ' + 
+  #             str(len(d5)) + ', for easier processing.')
+
+
+  # # 1st
+  # logger.info('We are processing the first chunk.')
+  # db1_cluster = run_or_pickle("8_db1_cluster", run_smsd, 
+  #                               drugbank_id_smi_filt, cc_smi_filt,
+  #                               "pair_2dic", c.sim_threshold, d1)
+  
+  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db1_cluster.txt')
+  # #logger.info(len(drugbank_cluster))
+  # #2nd
+  # logger.info('We are processing the second chunk.')
+  # db2_cluster = run_or_pickle("8_db2_cluster", run_smsd, 
+  #                               drugbank_id_smi_filt, cc_smi_filt,
+  #                               "pair_2dic",c.sim_threshold , d2)
+  
+  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db2_cluster.txt')
+
+  # #3rd
+  # logger.info('We are processing the third chunk.')
+  # db3_cluster = run_or_pickle("8_db3_cluster", run_smsd, 
+  #                               drugbank_id_smi_filt, cc_smi_filt,
+  #                               "pair_2dic", c.sim_threshold, d3)
+  
+  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
+
+  # #4th
+  # logger.info('We are processing the fourth chunk.')
+  # db4_cluster = run_or_pickle("8_db4_cluster", run_smsd, 
+  #                               drugbank_id_smi_filt, cc_smi_filt,
+  #                               "pair_2dic", c.sim_threshold, d4)
+  
+  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
+
+  # #5th
+  # logger.info('We are processing the fifth chunk.')
+  # # db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
+  # #                               drugbank_id_smi_filt, cc_smi_filt,
+  # #                               "pair_2dic", c.sim_threshold, d5)
+  
+  # # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
+
+  # # # sum of all the 5 dics!
+  # # tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
+  # #               db3_cluster.items() + db4_cluster.items() + 
+  # #               db5_cluster.items())
+
+  # # # tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
+  # # #                 len(db4_cluster) + len(db5_cluster))
+
+  # # logger.info('We have clustered the DrugBank drugs, to obtain ' + 
+  # #             str(len(tot_db)) + ' drugs mapped to at least ' +
+  # #             'a chemical component with Tanimoto similarity above ' +
+  # #             str(c.sim_threshold) + 
+  # #             ' (other similarity thresholds written to file).')
+
+  # logger.info('------------------- END OF PART 8 -------------------')
   
 
 
 
-  ########################################
-  ### PART 9 REPOSITIONING CANDIDATE   ###
-  ########################################
-  # no caching, just info retrieval
-  logger.info('PART 9 - We wish to investigate the repositioning candidate ' + 
-              c.repo_candidate + '.')
+  # ########################################
+  # ### PART 9 REPOSITIONING CANDIDATE   ###
+  # ########################################
+  # # no caching, just info retrieval
+  # logger.info('PART 9 - We wish to investigate the repositioning candidate ' + 
+  #             c.repo_candidate + '.')
 
-  full_map = ('cannot be found! Please check you have picked the right ID ' +
-              'in the config.py file.')
-  ref_het = ('no')
+  # full_map = ('cannot be found! Please check you have picked the right ID ' +
+  #             'in the config.py file.')
+  # ref_het = ('-')
 
-  # chembl drug
-  # check format
-  if c.chembl_format.match(c.repo_candidate):
-    # check it is in there
-    if c.repo_candidate in chembl_repo_map:
-      full_map = chembl_repo_map[c.repo_candidate]
+  # lucky_uniprot = {}
 
-    # check is in there
-    if c.repo_candidate in chembl_cluster:
-      ref_het = chembl_cluster[c.repo_candidate]
+  # # chembl drug
+  # # check format
+  # if c.chembl_format.match(c.repo_candidate):
+  #   # full map
+  #   if c.repo_candidate in chembl_repo_map:
+  #     full_map = chembl_repo_map[c.repo_candidate]
 
-
-
-  # drugbank drug
-  # check format
-  elif c.drugbank_format.match(c.repo_candidate):
-    if c.repo_candidate in drugbank_repo_map:
-      full_map = drugbank_repo_map[c.repo_candidate]
+  #   # het group in cluster
+  #   if c.repo_candidate in chembl_cluster:
+  #     ref_het = chembl_cluster[c.repo_candidate]
 
 
+  #   # find which pdb has het group(s)
+  #   for het in ref_het:
+  #     # each uniprot (only ones associated with small mol)
+  #     for protein in chembl_dic_uni_drugs[c.repo_candidate]:
+  #       # list to store pdbs
+  #       lucky_pdb = []
+
+  #       #logger.info(protein)
+  #       # each pdb associated with them
+  #       for pdb in uniprot_pdb_w_lig[protein]:
+  #         #logger.info(pdb)
+  #         if het in pdb_cc_dic[pdb]:
+  #           lucky_pdb.append(pdb)
+
+  #       # check list is not empty
+  #       if lucky_pdb:
+  #         lucky_uniprot[protein] = lucky_pdb
 
 
-  logger.info('The complete mapping dictionary for the drug ' + 
-              str(full_map))
+  # # drugbank drug
+  # # check format
+  # elif c.drugbank_format.match(c.repo_candidate):
+  #   if c.repo_candidate in drugbank_repo_map:
+  #     full_map = drugbank_repo_map[c.repo_candidate]
 
-  logger.info('The drug is associated to ' + 
-              str(ref_het) + ' het group(s) in the clustering.')
+  #   # add db cluster here!
+
+
+
+
+  # logger.info('The complete mapping dictionary for the drug is ' + 
+  #             str(full_map))
+
+  # # targets we are interested in
+  # logger.info('Of these drug targets, we are only interested in ' +
+  #             str(len(lucky_uniprot)) + 
+  #             ' - the one(s) that have crystal structure(s) in complex' + 
+  #             ' with ' + str(ref_het) + ', the het group(s) ' +
+  #             'the drug is associated to in the clustering.')
+
+  # logger.info('The target(s), associated with their pdb ids, are: ' +
+  #             str(lucky_uniprot))
+
+  # logger.info('------------------- END OF PART 9 -------------------')
+
+
+  # ####################################
+  # ### PART 10 HOMOLOGY MODELLING   ###
+  # ####################################
+  # logger.info('PART 10 - We wish to build a homology model.')
+
+  # # run modeller
+  # # requires alignment file and pdb file in the working dir
+  # # model_foo = run_or_pickle('10_model_foo', run_modeller,
+  #                           # '1d3h_schma.ali', '1d3h','schma')
+
+
+  # logger.info('We have built a model.')
+  
+  # logger.info('------------------- END OF PART 10 -------------------')
 
   
-  # targets we are interested in
-  logger.info('Of these targets, ' +
-              str(chembl_dic_uni_drugs[c.repo_candidate]) + 
-              ' have crystal structures in complex with small molecules.')
+  # end_time = datetime.now()
 
-  # pdbs
-  for protein in chembl_dic_uni_drugs[c.repo_candidate]:
-    logger.info('The pdbs associated with UniProt ' + protein +
-                ' are: ' + str(uniprot_pdb_w_lig[protein]))
-    
-    for pdb in uniprot_pdb_w_lig[protein]:
-      if pdb == chembl_dic_uni_drugs[c.repo_candidate]:
-        logger.info('We are interested in the UniProt '+ protein)
-
-  logger.info('------------------- END OF PART 9 -------------------')
-
-
-  ####################################
-  ### PART 10 HOMOLOGY MODELLING   ###
-  ####################################
-  logger.info('PART 10 - We wish to build a homology model.')
-
-  # run modeller
-  # requires alignment file and pdb file in the working dir
-  # model_foo = run_or_pickle('10_model_foo', run_modeller,
-                            # '1d3h_schma.ali', '1d3h','schma')
-
-
-  logger.info('We have built a model.')
-  
-  logger.info('------------------- END OF PART 10 -------------------')
-
-  
-  end_time = datetime.now()
-
-  logger.info('The total runtime of the script is: ' + 
-              str(end_time - start_time))
+  # logger.info('The total runtime of the script is: ' + 
+  #             str(end_time - start_time))
   
   logger.info('------------------- END OF SCRIPT -------------------')
 
 ############################################################################
-
-
 
 
 ############################################################################
