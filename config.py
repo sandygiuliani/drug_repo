@@ -139,7 +139,7 @@ sim_threshold = 0.9
 ############################################################################
 # repositioning candidate you wish to examine
 # put CHEMBL of DB ID eg 'CHEMBL98'
-repo_candidate = 'CHEMBL98'
+repo_candidate = 'CHEMBL941'
 
 
 ############################################################################
