@@ -2338,7 +2338,6 @@ def main():
               str(c.sim_threshold) + 
               ' (other similarity thresholds written to file).')
 
-
   # get the list of drugs from cluster dic
   chembl_cluster_list = flatten_dic(chembl_cluster, "keys")
   #logger.info(len(chembl_cluster_list))
@@ -2364,13 +2363,31 @@ def main():
   # chembl_cc_1 = run_or_pickle("7_chembl_cc_1", run_smsd,
   #                               chembl_id_smi_opt,cc_smi_filt,"pair", 1.0)
   # #logger.info(chembl_cc_02)
+  
+  new_dic = AutoVivification()
+
+  for item in chembl_repo_map:
+    if item in chembl_cluster_list:
+      new_dic[item] = chembl_repo_map[item]
+
+  
+  whatevs = []
+  for thing in new_dic:
+    for targ  in new_dic[thing]:
+      for arc in new_dic[thing][targ]:
+        for uni in new_dic[thing][targ][arc]:
+          whatevs.append(uni)
+
+  logger.info(len(whatevs))
+  whatevs = list(set(whatevs))
+  logger.info(len(whatevs))
 
 
   logger.info('------------------- END OF PART 7 -------------------')
 
-  # ####################################
-  # ### PART 8 DRUGBANK CLUSTERING   ###
-  # ####################################
+  ####################################
+  ### PART 8 DRUGBANK CLUSTERING   ###
+  ####################################
   # logger.info('PART 8 - In the same way, we wish to take ' +
   #           'the DrugBank drugs from the mapping and cluster them against ' +
   #             'the chemical components extracted from the pdb structures.')
@@ -2453,27 +2470,27 @@ def main():
 
   # #5th
   # logger.info('We are processing the fifth chunk.')
-  # # db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
-  # #                               drugbank_id_smi_filt, cc_smi_filt,
-  # #                               "pair_2dic", c.sim_threshold, d5)
+  # db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
+  #                               drugbank_id_smi_filt, cc_smi_filt,
+  #                               "pair_2dic", c.sim_threshold, d5)
   
-  # # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
+  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
 
-  # # # sum of all the 5 dics!
-  # # tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
-  # #               db3_cluster.items() + db4_cluster.items() + 
-  # #               db5_cluster.items())
+  # # sum of all the 5 dics!
+  # tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
+  #               db3_cluster.items() + db4_cluster.items() + 
+  #               db5_cluster.items())
 
-  # # # tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
-  # # #                 len(db4_cluster) + len(db5_cluster))
+  # # tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
+  # #                 len(db4_cluster) + len(db5_cluster))
 
-  # # logger.info('We have clustered the DrugBank drugs, to obtain ' + 
-  # #             str(len(tot_db)) + ' drugs mapped to at least ' +
-  # #             'a chemical component with Tanimoto similarity above ' +
-  # #             str(c.sim_threshold) + 
-  # #             ' (other similarity thresholds written to file).')
+  # logger.info('We have clustered the DrugBank drugs, to obtain ' + 
+  #             str(len(tot_db)) + ' drugs mapped to at least ' +
+  #             'a chemical component with Tanimoto similarity above ' +
+  #             str(c.sim_threshold) + 
+  #             ' (other similarity thresholds written to file).')
 
-  # logger.info('------------------- END OF PART 8 -------------------')
+  logger.info('------------------- END OF PART 8 -------------------')
   
 
 
@@ -2534,49 +2551,6 @@ def main():
 
     # add db cluster here!
 
-  whateva = ['G4VD74', 'G4VD73', 'G4LV14', 'G4V7Y0', 
-  'G4VF34', 'G4LZX2', 'Q6WP91', 'Q6WP90', 'Q9GT39', 
-  'G4M064', 'G4V6E8', 'G4VS66', 'G4V6R5', 'G4LYG8', 
-  'G4VAV5', 'G4V7A7', 'G4M0N9', 'G4VH74', 'G4VNC0', 
-  'Q6WP89', 'Q962H3', 'G4VCP3', 'G4LVI1','G4VC54', 'D1H0Y8','G4VN41', 
-  'G4LVC3', 'G4VC36', 'G4VGX0', 'G4VLS3', 'G4V9L2', 'G4LYG8', 'G4VB70',
-  'G4VAU2', 'C4Q5Y9', 'G4VKS5','G4LXU8', 'G4LV75', 'G4V8J8', 'G4VS79', 
-  'G4M1Q6', 'G4VQI0', 'G4VS81', 'G4VI21', 'G4V711', 'G4VPB8', 'G4VK92', 
-  'G4M0H5', 'C4QJA8', 'G4M0H8', 'C4QTR6', 'G4VIN3', 'G4V649', 'G4VLX0', 
-  'G4VIN4', 'G4VIN5', 'G4M1T3', 'G4VLZ2', 'G4VP17', 'G4V782', 'Q9U595', 
-  'Q9U594', 'Q9U596','G4LXX3', 'G4M0H5', 'G4M0H6', 'G4VS81', 
-  'G4VRZ4', 'G4LYL1', 'G4VSZ5', 'G4V711', 'G4M0H8', 'G4M0Y1', 
-  'G4LXR2', 'G4VPB8', 'G4VQI0', 'G4VFR4', 'G4V7A7', 
-  'Q9U596', 'Q9U595', 'Q9U594', 'G4VKS4','G4VN41', 
-  'G4VLS3', 'G4VBP7', 'G4VC36', 'G4VB70','G4V5E4',
-  'G4VTU3', 'G4VCA2', 'G4VRR4', 'G4VGZ3', 'G4VQ39',
-  'G4VIT1','G4LZX2', 'G4VH74', 'G4LYL9','G4VEG6', 
-  'G4LYF9', 'C7DPD5', 'G4VI20', 'Q6GZL5', 'G4M1B1',
-  'G4V7Q8', 'G4VR00', 'G4VEM5', 'G4M0H6', 'G4VGZ6',
-  'G4VSY8', 'G4V603', 'G4LV00', 'G4VEB4', 'G4VRK2', 
-  'G4VGJ2', 'G4VGQ2', 'G4V8H0', 'G4VDA4', 'G4VRZ4', 
-  'G4LUY3', 'G4VSZ5', 'C4QBE7', 'G4V778', 'G4M0X1',
-  'G4LWE1', 'G4VF20', 'G4V7H6', 'G4VCS7', 'G4VMB7', 
-  'G4VJ57', 'G4VKC3', 'G4LZG2', 'G4VIZ8', 'G4M138',
-  'G4VAB5', 'G4VG59', 'G4LUZ9', 'G4VP87', 'G4M0Y1', 
-  'G4M0N0', 'Q1EG71', 'G4LX69', 'G4VTU1', 'G4V6L5',
-  'G4VL87', 'G4VCT2', 'G4VCT0', 'G4VJQ4', 'G4VKS4',
-  'G4VCE8', 'G4LYB2', 'C1M0Q3', 'G4VGE2', 'C4Q5Z0',
-  'Q6YHU9', 'G4VDA3', 'G4LWR2', 'G4LXR2', 'Q6JXF2',
-  'G4LZA5', 'G4LXX3', 'G4VQ85', 'C4QMU7', 'G4VQN8',
-  'G4VDM1', 'G4M1I2', 'G4VDM4', 'G4VKM3', 'G4LZY5',
-  'G4LUN3', 'G4V727', 'G4VQA3', 'G4VQA2', 'G4VE82',
-  'G4VT52', 'G4VLY7', 'G4VMW6', 'G4LX36', 'G4V732',
-  'G4VTV4', 'G4V8L0', 'G4V7L2', 'G4V635', 'G4VNF5',
-  'G4VHT7', 'G4M282', 'G4VLP5', 'G4VF57', 'G4VAT7',
-  'G4VLX9', 'G4VDM2', 'G4VGW8', 'G4VJ86', 'G4VJM6',
-  'G4VJM7', 'G4VR94', 'G4VR95', 'G4VBP9', 'G4VN90',
-  'G4VR11', 'G4VN08', 'G4V5Q0', 'G4VP53']
-  logger.info(len(whateva))
-  whatevas = list(set(whateva))
-  logger.info(len(whatevas))
-
-
 
   #logger.info('The complete mapping dictionary for the drug is ' + 
   #            str(full_map))
@@ -2591,7 +2565,12 @@ def main():
   logger.info('The target(s), associated with their pdb ids, are: ' +
               str(lucky_uniprot))
 
-  logger.info(partial_map)
+  #logger.info(partial_map)
+  for stuff in partial_map:
+    for gnnnn in partial_map[stuff]:
+      for unipr in partial_map[stuff][gnnnn]:
+        if unipr == 'D1H0Y7' or unipr == 'D1H0Y8':
+          logger.info(unipr)
 
 
   logger.info('------------------- END OF PART 9 -------------------')
