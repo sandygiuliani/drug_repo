@@ -21,20 +21,20 @@ A. By mapping! known drugs -> their targets -> their domain architecture -> para
 | File  | Description |
 | ------------- | ------------- |
 | **drug_repo.py**  | Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.    |
-| Row2 Cell1    | Row2 Cell2    |  
-| Row2 Cell1    | Row2 Cell2    | 
-| Row2 Cell1    | Row2 Cell2    | 
-| Row2 Cell1    | Row2 Cell2    | 
-| Row2 Cell1    | Row2 Cell2    | 
-| Row2 Cell1    | Row2 Cell2    | 
+| **config.py**    | configuration file    |  
+| **README.md**    | this readme file   | 
+| **LICENSE.md**    | license    | 
+| chembl\_drugs.txt    | ChEMBL drugs; downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drugstore/), accessed 30/04/2014    |
+| chembl\_drugtargets.txt    | ChEMBL drug targets; downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drug/targets/), accessed 30/04/2014 and manually edited to strip a newline character at lines 383/384.     | 
+| chembl\_uniprot\_mapping.txt    | ChEMBL uniprot mapping, chembl ID to UniProt codes; downloaded from the ChEMBL 18 release page: ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/, accessed 25/04/2014     | 
+| all\_target\_ids\_all.csv    | DrugBank Drug Target Identifiers/All Drugs; downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers), accessed 06/05/2014     | 
+|    |     |
+|    |     | 
+|    |     | 
+|    |     | 
+|    |     | |    |     | 
 
-* **drug_repo.py** - Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.  
-* **config.py** - configuration file  
-* **README.md** - this readme file
-* **LICENSE.md** - license
-* chembl\_drugs.txt - ChEMBL drugs; downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drugstore/), accessed 30/04/2014
-* chembl\_drugtargets.txt - ChEMBL drug targets; downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drug/targets/), accessed 30/04/2014 and manually edited to strip a newline character at lines 383/384.  
-* chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes; downloaded from the ChEMBL 18 release page: ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/, accessed 25/04/2014  
+ 
 * all\_target\_ids\_all.csv - DrugBank Drug Target Identifiers/All Drugs; downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers), accessed 06/05/2014  
 * small\_molecule\_target\_ids\_all.csv - DrugBank Drug Target Identifier/Small Molecule Drugs; downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers), accessed 06/05/2014  
 * uniprot_pdb.*sv (csv and tsv) - Uniprot to pdb mapping file; downloaded from [SIFTS](http://www.ebi.ac.uk/pdbe/docs/sifts/quick.html), accessed 12/06/2014  
