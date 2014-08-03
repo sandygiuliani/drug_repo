@@ -17,6 +17,17 @@ A. By mapping! known drugs -> their targets -> their domain architecture -> para
 
 
 **CONTENTS**  
+
+| File  | Description |
+| ------------- | ------------- |
+| **drug_repo.py**  | Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.    |
+| Row2 Cell1    | Row2 Cell2    |  
+| Row2 Cell1    | Row2 Cell2    | 
+| Row2 Cell1    | Row2 Cell2    | 
+| Row2 Cell1    | Row2 Cell2    | 
+| Row2 Cell1    | Row2 Cell2    | 
+| Row2 Cell1    | Row2 Cell2    | 
+
 * **drug_repo.py** - Python script that reads input files (chemb/drugbank), filters data, extracts relevant info for mapping with domain architecture info. It is being developed at the moment.  
 * **config.py** - configuration file  
 * **README.md** - this readme file
