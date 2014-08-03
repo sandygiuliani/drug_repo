@@ -69,9 +69,9 @@ The MIT license is approved by the [Open Source Initiative](http://opensource.or
 
 
 **DISCLAIMER**  
-THIS IS A WORK IN PROGRESS. I AM NEW TO GITHUB AND NEW TO PROGRAMMING IN GENERAL! Feedback is welcome but please be kind.  
+THIS IS A WORK IN PROGRESS. The main script (drug_repo.py) is currently being developed at the [London School of Hygiene and Tropical Medicine](http://www.lshtm.ac.uk/), under the supervision of Dr Nick Furnham.   
   
 
 **CONTACT**  
-Drop me a line at: sandraxgiuliani [at] gmail [dot] com  
+Feedback is very welcome, please raise an issue or drop me a line at: sandraxgiuliani [at] gmail [dot] com  
 You might also want to follow me on Twitter [@sandygiuliani](https://twitter.com/sandygiuliani) or visit my [personal website](http://www.sandragiuliani.com/).  
