@@ -22,8 +22,8 @@ A. By mapping! known drugs -> their targets -> their domain architecture -> para
 * chembl\_drugs.txt - ChEMBL drugs; downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drugstore/), accessed 30/04/2014
 * chembl\_drugtargets.txt - ChEMBL drug targets; downloaded from [ChEMBL](http://www.ebi.ac.uk/chembl/drug/targets/), accessed 30/04/2014 and manually edited to strip a newline character at lines 383/384.  
 * chembl\_uniprot\_mapping.txt - ChEMBL uniprot mapping, chembl ID to UniProt codes; downloaded from the ChEMBL 18 release page: ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_18/, accessed 25/04/2014  
-* all\_target\_ids\_all.csv - DrugBank Drug Target Identifiers/All Drugs; downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers)  
-* small\_molecule\_target\_ids\_all.csv - DrugBank Drug Target Identifier/Small Molecule Drugs; downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers)  
+* all\_target\_ids\_all.csv - DrugBank Drug Target Identifiers/All Drugs; downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers), accessed 06/05/2014  
+* small\_molecule\_target\_ids\_all.csv - DrugBank Drug Target Identifier/Small Molecule Drugs; downloaded from [DrugBank](http://www.drugbank.ca/downloads#protein-identifiers), accessed 06/05/2014  
 * uniprot_pdb.*sv (csv and tsv) - Uniprot to pdb mapping file; downloaded from [SIFTS](http://www.ebi.ac.uk/pdbe/docs/sifts/quick.html), accessed 12/06/2014  
 * het_pairs.lst - pdb to Het groups mapping file; downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a), accessed 12/06/2014  
 * lig_pairs.lst - pdb to ligand mapping file; downloaded from [PDBsum downloads](http://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetPage.pl?doc=TRUE&template=downloads.html&pdbcode=n/a), accessed 17/06/2014  
