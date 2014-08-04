@@ -91,7 +91,8 @@ drugbank_input = 'small_molecule_target_ids_all.csv'
 # define sdf file with drugbank drugs (contains smiles)
 drugbank_sdf = 'all.sdf'
 
-# uniprot to pdb csv mapping file - can also use the .tsv version if easier
+# uniprot to pdb csv mapping file
+# if necessary, uniprot_pdb.tsv (tsv version) can be retrieved
 uniprot_pdb = "uniprot_pdb.csv"
 
 # pdb to lig mapping file
