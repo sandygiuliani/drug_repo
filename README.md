@@ -5,8 +5,13 @@ _a repository of Python scripts for drug repositioning_
 A bio-/chemoinformatics pipeline for drug repositioning applied to schistosomiasis.  
   
 ## Table of contents 
-- [Freq](#faq)
+- [FAQ](#faq)
 - [Contents of the repository](#contents-of-repository)
+- [Requirements](#requirements)
+- [Instructions](#instructions)
+- [License](#license)
+- [Diclaimer](#disclaimer)
+- [Contact](#contact)
 
 
 
@@ -39,40 +44,27 @@ A. By mapping! known drugs -> their targets -> their domain architecture -> para
   
 
 
-**REQUIREMENTS**  
+##Requirements   
 * ArchIndex/ArchSchema - kindly provided by Dr Laskowski. For more information, please visit the [ArchSchema website](http://www.ebi.ac.uk/thornton-srv/databases/archschema), or read the [main reference for ArchSchema](http://www.ncbi.nlm.nih.gov/pubmed/20299327)  
 * SMSD (Small Molecule Subgraph Detector). For more information, please visit the [SMSD website](http://www.ebi.ac.uk/thornton-srv/software/SMSD/), the [GitHub repository](https://github.com/asad/SMSD), or read the [main reference for SMSD](http://www.jcheminf.com/content/1/1/12)  
+
+
+##Instructions  
+Coming soon!
   
 
 
-**CHECKLIST**  
-drug_repo.py development:
-- [x] ChEMBL processing - clinical phase filter 
-- [x] ChEMBL processing - small molecule filter 
-- [x] ChEMBL processing - uniprot mapping
-- [x] DrugBank data processing
-- [x] write everything to log
-- [x] ChEMBL/DrugBank data merge
-- [x] domain architecture mapping (ArchSchema)
-- [x] schistosoma domains
-- [x] ChEMBL map
-- [x] DrugBank map
-- [ ] structure (pdb) filter
-- [ ] targets shortlist
-  
-
-
-**LICENSE**  
+##License  
 Copyright &copy; 2014 Sandra Giuliani  
 This repository is licensed under the terms of the MIT license. Please see LICENSE.md for more information.  
 The MIT license is approved by the [Open Source Initiative](http://opensource.org/licenses)  
   
 
 
-**DISCLAIMER**  
+##Disclaimer   
 THIS IS A WORK IN PROGRESS. The main script (drug_repo.py) is currently being developed at the [London School of Hygiene and Tropical Medicine](http://www.lshtm.ac.uk/), under the supervision of Dr Nick Furnham.   
   
 
-**CONTACT**  
-Feedback is very welcome, please raise an issue or drop me a line at: sandraxgiuliani [at] gmail [dot] com  
+##Contact     
+Feedback is very welcome, please drop me a line at: sandraxgiuliani [at] gmail [dot] com  
 You might also want to follow me on Twitter [@sandygiuliani](https://twitter.com/sandygiuliani) or visit my [personal website](http://www.sandragiuliani.com/).  
