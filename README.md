@@ -1,7 +1,7 @@
-# drug_repo #  
-![drug_repo_img](https://github.com/sandygiuliani/media/blob/master/drug_repo_img.png)
+# drug_repo #
 _a bio-/chemoinformatics pipeline for drug repositioning applied to schistosomiasis_  
 
+![drug_repo_img](https://github.com/sandygiuliani/media/blob/master/drug_repo_img.png)
   
 ## Table of contents 
 - [FAQ](#faq)
