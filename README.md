@@ -55,7 +55,7 @@ Coming soon!
 
 ##License  
 Copyright &copy; 2014 Sandra Giuliani  
-This repository is licensed under the terms of the MIT license. Please see LICENSE.md for more information.  
+This repository is licensed under the terms of the MIT license. Please see the [license file](LICENSE.md) for more information.  
 The MIT license is approved by the [Open Source Initiative](http://opensource.org/licenses)  
   
 
