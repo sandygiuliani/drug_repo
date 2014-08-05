@@ -6,7 +6,7 @@ A bio-/chemoinformatics pipeline for drug repositioning applied to schistosomias
   
 ## Table of contents 
 - [Freq](#faq)
-- [Contents of the repository](#Contents)
+- [Contents of the repository](#contents-of-repository)
 
 
 
@@ -19,8 +19,7 @@ Q. How does the tool work?
 A. By mapping! known drugs -> their targets -> their domain architecture -> parasite targets  
   
 
-
-## Contents
+## <a name="contents-of-repository"></a>Contents of repository
 
 | File  | Description | Accession date |
 | ------------- | ------------- | ------------- |
