@@ -6,7 +6,7 @@ A bio-/chemoinformatics pipeline for drug repositioning applied to schistosomias
   
 ## Table of contents 
 - [Freq](#faq)
-- [Contents of the repository](#Contents of the repository)
+- [Contents of the repository](#Contents)
 
 
 
@@ -20,7 +20,7 @@ A. By mapping! known drugs -> their targets -> their domain architecture -> para
   
 
 
-## Contents of the repository 
+## Contents
 
 | File  | Description | Accession date |
 | ------------- | ------------- | ------------- |
