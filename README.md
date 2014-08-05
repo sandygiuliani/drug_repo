@@ -1,8 +1,7 @@
-# drug_repo #
-_a repository of Python scripts for drug repositioning_
-  
+# drug_repo #  
+![drug_repo_img](https://github.com/sandygiuliani/media/blob/master/drug_repo_img.png)
+_a bio-/chemoinformatics pipeline for drug repositioning applied to schistosomiasis_  
 
-A bio-/chemoinformatics pipeline for drug repositioning applied to schistosomiasis.  
   
 ## Table of contents 
 - [FAQ](#faq)
