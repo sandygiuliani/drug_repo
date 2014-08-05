@@ -5,7 +5,7 @@ _a repository of Python scripts for drug repositioning_
 A bio-/chemoinformatics pipeline for drug repositioning applied to schistosomiasis.  
   
 ## Table of contents 
-- [FAQ](#faq)
+- [Freq](#faq)
 - [Contents of the repository](#Contents of the repository)
 
 
