@@ -4,9 +4,16 @@ _a repository of Python scripts for drug repositioning_
 
 A bio-/chemoinformatics pipeline for drug repositioning applied to schistosomiasis.  
   
+## TABLE OF CONTENTS  
+- [FAQ](#faq)
+- [Contents of the repository](#contents)
 
 
-**FAQ**  
+
+
+
+
+## FAQ  
 Q. What is drug repositioning?   
 A. The usage of a known drug for a different therapeutic indication. If you are not familiar with this at all, try [Wikipedia](http://en.wikipedia.org/wiki/Drug_repositioning)  
 Q. What is schistosomiasis?  
