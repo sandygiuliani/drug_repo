@@ -219,7 +219,7 @@ def process_chembl(input_file):
   #             + str(len(lines)-1) + ' drugs.')
 
   ### ANALYSE HEADERS AND OBTAIN COLUMN NUMBERS
-
+  logger.info(len(lines))
   # get the headers
   headers = lines[0]
   # remove duplicate spaces
@@ -750,6 +750,10 @@ def expasy_filter(uniprot_list, filter_type):
           if record.data_class == 'Reviewed':
             # add reviewed entry to the list
             filtered_list.append(entry)
+
+        # # FILTER according to reviewed uniprot
+        # elif filter_type == 'human':
+        #   logger.info(record.name)
 
 
     except HTTPError:
@@ -1880,6 +1884,13 @@ def main():
   uniprot_list = run_or_pickle("1_uniprot_list", merge_lists,
                               chembl_uniprot_list, drugbank_uniprot_list)
 
+  #logger.info(uniprot_list)
+  # uniprot_list = ['Q09428', 'Q9H2X9',Q9Y5Y9', 'P01008']
+  reviewed_targets = run_or_pickle("1_reviewed_targets", expasy_filter, uniprot_list, "reviewed") 
+
+  #human_targets = run_or_pickle("1_human_targets", expasy_filter, uniprot_list, "human")
+
+  logger.info(reviewed_targets)
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
@@ -2388,107 +2399,107 @@ def main():
   ####################################
   ### PART 8 DRUGBANK CLUSTERING   ###
   ####################################
-  # logger.info('PART 8 - In the same way, we wish to take ' +
-  #           'the DrugBank drugs from the mapping and cluster them against ' +
-  #             'the chemical components extracted from the pdb structures.')
+  logger.info('PART 8 - In the same way, we wish to take ' +
+            'the DrugBank drugs from the mapping and cluster them against ' +
+              'the chemical components extracted from the pdb structures.')
 
-  # # drugbank drugs to smiles dictionary (total 6799 drugs mapped to smiles)
-  # drugbank_id_smi_dic = run_or_pickle('8_drugbank_id_smi_dic', 
-  #                                     sdf_to_dic, c.drugbank_sdf, 
-  #                                     'DATABASE_ID', 'SMILES')
-  # # logger.info(drugbank_id_smi_dic)
+  # drugbank drugs to smiles dictionary (total 6799 drugs mapped to smiles)
+  drugbank_id_smi_dic = run_or_pickle('8_drugbank_id_smi_dic', 
+                                      sdf_to_dic, c.drugbank_sdf, 
+                                      'DATABASE_ID', 'SMILES')
+  # logger.info(drugbank_id_smi_dic)
   
 
-  # # filter dictionary to only drugs that in the drugbank_repo_drug_list
-  # drugbank_id_smi_filt = run_or_pickle("8_drugbank_id_smi_filt", 
-  #                                     filter_dic_from_list, 
-  #                                     drugbank_id_smi_dic,
-  #                                     drugbank_repo_drug_list)
+  # filter dictionary to only drugs that in the drugbank_repo_drug_list
+  drugbank_id_smi_filt = run_or_pickle("8_drugbank_id_smi_filt", 
+                                      filter_dic_from_list, 
+                                      drugbank_id_smi_dic,
+                                      drugbank_repo_drug_list)
   
-  # #logger.info(len(drugbank_id_smi_filt))
-  # #logger.info(drugbank_repo_drug_list)
+  #logger.info(len(drugbank_id_smi_filt))
+  #logger.info(drugbank_repo_drug_list)
 
  
-  # logger.info('We have mapped ' + str(len(drugbank_id_smi_filt)) +
-  #             ' DrugBank drugs to their smiles.')
+  logger.info('We have mapped ' + str(len(drugbank_id_smi_filt)) +
+              ' DrugBank drugs to their smiles.')
 
-  # # obtain drug to cc dictionary, merging three dics
-  # drugbank_to_cc = merge_dic(drugbank_dic,uniprot_filt, pdb_cc_dic)
-  # #logger.info(len(drugbank_to_cc))
+  # obtain drug to cc dictionary, merging three dics
+  drugbank_to_cc = merge_dic(drugbank_dic,uniprot_filt, pdb_cc_dic)
+  #logger.info(len(drugbank_to_cc))
   
-  # logger.info('We have filtered the drugs, as before, to obtain ' + 
-  #             str(len(drugbank_to_cc)) +
-  #             ' DrugBank drugs that will be clustered.')
+  logger.info('We have filtered the drugs, as before, to obtain ' + 
+              str(len(drugbank_to_cc)) +
+              ' DrugBank drugs that will be clustered.')
 
 
-  # # splitting drugbank_to_cc into 5 chunks
-  # items1,items2,items3, items4, items5 = \
-  #                       zip(*izip_longest(*[iter(drugbank_to_cc.items())]*5))
-  # d1 = dict(item for item in items1 if item is not None)
-  # d2 = dict(item for item in items2 if item is not None)
-  # d3 = dict(item for item in items3 if item is not None)
-  # d4 = dict(item for item in items4 if item is not None)
-  # d5 = dict(item for item in items5 if item is not None)
+  # splitting drugbank_to_cc into 5 chunks
+  items1,items2,items3, items4, items5 = \
+                        zip(*izip_longest(*[iter(drugbank_to_cc.items())]*5))
+  d1 = dict(item for item in items1 if item is not None)
+  d2 = dict(item for item in items2 if item is not None)
+  d3 = dict(item for item in items3 if item is not None)
+  d4 = dict(item for item in items4 if item is not None)
+  d5 = dict(item for item in items5 if item is not None)
   
-  # logger.info('We have split the drugbank entries into chunks of ' +
-  #             str(len(d1)) + ', ' + str(len(d2)) + ', ' +
-  #             str(len(d3)) + ', ' + str(len(d4)) + ' and ' + 
-  #             str(len(d5)) + ', for easier processing.')
+  logger.info('We have split the drugbank entries into chunks of ' +
+              str(len(d1)) + ', ' + str(len(d2)) + ', ' +
+              str(len(d3)) + ', ' + str(len(d4)) + ' and ' + 
+              str(len(d5)) + ', for easier processing.')
 
 
-  # # 1st
-  # logger.info('We are processing the first chunk.')
-  # db1_cluster = run_or_pickle("8_db1_cluster", run_smsd, 
-  #                               drugbank_id_smi_filt, cc_smi_filt,
-  #                               "pair_2dic", c.sim_threshold, d1)
+  # 1st
+  logger.info('We are processing the first chunk.')
+  db1_cluster = run_or_pickle("8_db1_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", c.sim_threshold, d1)
   
-  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db1_cluster.txt')
-  # #logger.info(len(drugbank_cluster))
-  # #2nd
-  # logger.info('We are processing the second chunk.')
-  # db2_cluster = run_or_pickle("8_db2_cluster", run_smsd, 
-  #                               drugbank_id_smi_filt, cc_smi_filt,
-  #                               "pair_2dic",c.sim_threshold , d2)
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db1_cluster.txt')
+  #logger.info(len(drugbank_cluster))
+  #2nd
+  logger.info('We are processing the second chunk.')
+  db2_cluster = run_or_pickle("8_db2_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic",c.sim_threshold , d2)
   
-  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db2_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db2_cluster.txt')
 
-  # #3rd
-  # logger.info('We are processing the third chunk.')
-  # db3_cluster = run_or_pickle("8_db3_cluster", run_smsd, 
-  #                               drugbank_id_smi_filt, cc_smi_filt,
-  #                               "pair_2dic", c.sim_threshold, d3)
+  #3rd
+  logger.info('We are processing the third chunk.')
+  db3_cluster = run_or_pickle("8_db3_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", c.sim_threshold, d3)
   
-  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db3_cluster.txt')
 
-  # #4th
-  # logger.info('We are processing the fourth chunk.')
-  # db4_cluster = run_or_pickle("8_db4_cluster", run_smsd, 
-  #                               drugbank_id_smi_filt, cc_smi_filt,
-  #                               "pair_2dic", c.sim_threshold, d4)
+  #4th
+  logger.info('We are processing the fourth chunk.')
+  db4_cluster = run_or_pickle("8_db4_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", c.sim_threshold, d4)
   
-  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db4_cluster.txt')
 
-  # #5th
-  # logger.info('We are processing the fifth chunk.')
-  # db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
-  #                               drugbank_id_smi_filt, cc_smi_filt,
-  #                               "pair_2dic", c.sim_threshold, d5)
+  #5th
+  logger.info('We are processing the fifth chunk.')
+  db5_cluster = run_or_pickle("8_db5_cluster", run_smsd, 
+                                drugbank_id_smi_filt, cc_smi_filt,
+                                "pair_2dic", c.sim_threshold, d5)
   
-  # mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
+  mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
 
-  # # sum of all the 5 dics!
-  # tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
-  #               db3_cluster.items() + db4_cluster.items() + 
-  #               db5_cluster.items())
+  # sum of all the 5 dics!
+  tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
+                db3_cluster.items() + db4_cluster.items() + 
+                db5_cluster.items())
 
-  # # tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
-  # #                 len(db4_cluster) + len(db5_cluster))
+  # tot_db_length = (len(db1_cluster) + len(db2_cluster) + len(db3_cluster) +
+  #                 len(db4_cluster) + len(db5_cluster))
 
-  # logger.info('We have clustered the DrugBank drugs, to obtain ' + 
-  #             str(len(tot_db)) + ' drugs mapped to at least ' +
-  #             'a chemical component with Tanimoto similarity above ' +
-  #             str(c.sim_threshold) + 
-  #             ' (other similarity thresholds written to file).')
+  logger.info('We have clustered the DrugBank drugs, to obtain ' + 
+              str(len(tot_db)) + ' drugs mapped to at least ' +
+              'a chemical component with Tanimoto similarity above ' +
+              str(c.sim_threshold) + 
+              ' (other similarity thresholds written to file).')
 
   logger.info('------------------- END OF PART 8 -------------------')
   
