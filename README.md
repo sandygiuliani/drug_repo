@@ -21,6 +21,8 @@ Q. What is schistosomiasis?
 A. A very nasty parasitic disease affecting over 200 million people. Learn more about schistosomiasis on the [World Health Organization website](http://www.who.int/topics/schistosomiasis/en/)  
 Q. How does the tool work?  
 A. By mapping! known drugs -> their targets -> their domain architecture -> parasite targets  
+Q. I am reading this README on my local machine, why is the formatting all weird?  
+A. This README is formatted in GitHub markdown, please open it on GitHub. I will include an instructions-only plain text readme soon  
   
 
 ## <a name="contents-of-repository"></a>Contents of repository
@@ -42,7 +44,6 @@ A. By mapping! known drugs -> their targets -> their domain architecture -> para
 |all.sdf|DrugBank drugs in sdf format; downloaded from [DrugBank](http://www.drugbank.ca/downloads#structures)|16/07/2014 |
   
 
-
 ##Requirements   
 * ArchIndex/ArchSchema - kindly provided by Dr Laskowski. For more information, please visit the [ArchSchema website](http://www.ebi.ac.uk/thornton-srv/databases/archschema), or read the [main reference for ArchSchema](http://www.ncbi.nlm.nih.gov/pubmed/20299327)  
 * SMSD (Small Molecule Subgraph Detector). For more information, please visit the [SMSD website](http://www.ebi.ac.uk/thornton-srv/software/SMSD/), the [GitHub repository](https://github.com/asad/SMSD), or read the [main reference for SMSD](http://www.jcheminf.com/content/1/1/12)  
@@ -52,11 +53,9 @@ A. By mapping! known drugs -> their targets -> their domain architecture -> para
 Coming soon!
   
 
-
 ##License  
 Copyright &copy; 2014 Sandra Giuliani  
-This repository is licensed under the terms of the MIT license. Please see the [license file](LICENSE.md) for more information.  
-The MIT license is approved by the [Open Source Initiative](http://opensource.org/licenses)  
+This repository is licensed under the terms of the MIT license. Please see the [license file](LICENSE.md) for more information. The MIT license is approved by the [Open Source Initiative](http://opensource.org/licenses)  
   
 
 
