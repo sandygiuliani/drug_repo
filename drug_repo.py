@@ -685,7 +685,7 @@ def merge_lists(list1, list2):
 ### EXPASY_FILTER
 ############################################################################
 # take list of uniprot, call expasy and applies filter to find the reviewed
-# entries
+# entries (returns list)
 
   # entrez fetch does not seem to handle non-swissprot ids (TrEMBL)
   #prothandle = Entrez.efetch(
@@ -751,10 +751,6 @@ def expasy_filter(uniprot_list, filter_type):
             # add reviewed entry to the list
             filtered_list.append(entry)
 
-        # # FILTER according to reviewed uniprot
-        # elif filter_type == 'human':
-        #   logger.info(record.name)
-
 
     except HTTPError:
       obsolete = obsolete + 1
@@ -764,6 +760,49 @@ def expasy_filter(uniprot_list, filter_type):
   logger.debug(obsolete)
   return filtered_list
   #logger.info('The entries with multiple ids are ' + str(mult_count) + '.')
+
+############################################################################
+
+
+
+
+############################################################################
+### EXPASY_DIC
+############################################################################
+# takes list of uniprot, runs expasy, retrieves info and writes dictionary
+# eg {taxa1:[list of uniprot], taxa2:[list of uniprot]}
+
+def expasy_dic(uniprot_list, filter_type):        
+
+  # dictionary
+  final_dic = {}
+
+  for entry in uniprot_list:
+    try:
+        # get handle
+        handle = ExPASy.get_sprot_raw(entry)
+        # swissprot read
+        record = SwissProt.read(handle)
+
+        # FILTER according to reviewed uniprot
+        if filter_type == 'taxa':
+          # list of uniprots matching each
+          taxa_id = record.taxonomy_id[0]
+          # if it is already there
+          if taxa_id in final_dic:
+            # add entry to list
+            final_dic[taxa_id].append(entry)
+
+          else:
+            entry_list = []
+            entry_list.append(entry)
+            # add entry (as a list) to dic
+            final_dic[taxa_id] = entry_list
+          
+    except HTTPError:
+      pass
+  
+  return final_dic
 
 ############################################################################
 
@@ -1885,12 +1924,21 @@ def main():
                               chembl_uniprot_list, drugbank_uniprot_list)
 
   #logger.info(uniprot_list)
-  # uniprot_list = ['Q09428', 'Q9H2X9',Q9Y5Y9', 'P01008']
-  reviewed_targets = run_or_pickle("1_reviewed_targets", expasy_filter, uniprot_list, "reviewed") 
+  #uniprot_list = ['Q09428', 'Q5BVT7', 'P00519']
+  reviewed_targets = run_or_pickle("1_reviewed_targets", expasy_filter, 
+                                    uniprot_list, "reviewed") 
 
-  #human_targets = run_or_pickle("1_human_targets", expasy_filter, uniprot_list, "human")
+  # dictionary of taxa codes vs lists of uniprot
+  # to evaluate how many human targets and other species
+  taxa_targets = run_or_pickle("1_human_targets", expasy_dic, uniprot_list, 
+                              "taxa")
 
-  logger.info(reviewed_targets)
+  #logger.info(taxa_targets['5833'])
+
+  #logger.info(taxa_targets.keys())
+  #logger.info(taxa_targets['6185'])
+  percent_human = round(float(len(taxa_targets['9606'])) / 
+                        float(len(uniprot_list)) * 100)
   ### OVERWRITE UNIPROT_LIST WITH MADE-UP LIST
   # overwrite the list with a small set ['B6DTB2', 'Q4JEY0','P11511']
   #['Q4JEY0', 'P68363', 'P10613', 'P18825', 'Q9UM73', 'E1FVX6']
@@ -1899,6 +1947,8 @@ def main():
 
   logger.info('We have obtained a unique list of ' + str(len(uniprot_list)) +
               ' drug targets.')
+  logger.info('Of these targets, ' + str(len(taxa_targets['9606'])) + 
+              ' are human proteins (the ' + str(percent_human) + ' %).')
 
   logger.info('------------------- END OF PART 1 -------------------')
 
@@ -2059,7 +2109,6 @@ def main():
                                             filt_schisto_map, 
                                             drugbank_repo_map,
                                             uniprot_schisto_filt)
-
 
   # logger.info(chembl_repo_map['CHEMBL98'])
   #logger.debug(drugbank_schisto_filt_map)
