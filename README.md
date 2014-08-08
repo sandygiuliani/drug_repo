@@ -42,6 +42,7 @@ A. This README is formatted in GitHub markdown, please open it on GitHub. I will
 |  Components-smiles-oa.smi  |   chemical components dictionary in smiles format; downloaded from [RCSB Ligand Expo Downloads](http://ligand-expo.rcsb.org/ld-download.html), in the SMILES/InChi data files (if necessary, stereo versions and CACTVS-generated versions available)  |  20/06/2014 | 
 |  pointless_het.csv  |  contains list of 'pointless' het ligands, including aminoacids, nucleotides, metals and crystallographic solvets/aids     |  n/a | 
 |all.sdf|DrugBank drugs in sdf format; downloaded from [DrugBank](http://www.drugbank.ca/downloads#structures)|16/07/2014 |
+|speclist.txt| taxonomic codes and mnemonic codes for all species; downloaded from [UniProt]( http://www.uniprot.org/docs/speclist.txt)|07/06/2014|  
   
 
 ##Requirements   
