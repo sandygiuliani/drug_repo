@@ -216,7 +216,7 @@ repo_candidate = 'CHEMBL941'
 ### HOMOLOGY MODEL
 ############################################################################
 # number of homology models to make
-model_no = 3
+model_no = 10
 # alignment file - has to be in PIR format
 model_align = '1d3h_schma.ali'
 # template name - PDB ID of the crystal structure
