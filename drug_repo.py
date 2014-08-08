@@ -79,10 +79,6 @@ import linecache
 # datetime
 from datetime import datetime
 
-# modeller
-from modeller import *              # Load standard Modeller classes
-from modeller.automodel import *    # Load the automodel class
-
 # autovivification for creating nested dictionaries automatically
 class AutoVivification(dict):
   """Implementation of perl's autovivification feature."""
@@ -601,7 +597,7 @@ def uniprot_to_arch(uniprot_list,architecture):
 ############################################################################
 # run archindex, filter for TAXA and find uniprot ids
 def arch_to_uniprot(arch_list,architecture):
-  '''(list of str -> list of str)
+  '''
   run archindex, return dictionary of uniprot from list of domain
   architecture values applying a filter for TAXA (organism)
   '''
@@ -1739,7 +1735,6 @@ def filter_txt(input_file, output_file, header_name, filt_list):
   # open chembldrugs.txt for reading
   lines = file_to_lines(input_file)
 
-
   # get the headers
   headers = lines[0]
   # find header name
@@ -1778,11 +1773,13 @@ def filter_txt(input_file, output_file, header_name, filt_list):
 # alignment file name, code of template, code of sequence
 def run_modeller(alnfile, knowns, sequence):
 
+  from modeller import *              # Load standard Modeller classes
+  from modeller.automodel import *    # Load the automodel class
+  
   foo = ''
 
-  
-  # request verbose output
-  #log.verbose()    
+  # request minimal/verbose/none output
+  log.minimal()    
   
   # create a new MODELLER environment to build this model in
   env = environ()  
@@ -1790,14 +1787,15 @@ def run_modeller(alnfile, knowns, sequence):
   # directories for input atom files
   env.io.atom_files_directory = ['.', '../atom_files']
 
-  a = automodel(env, alnfile, knowns, sequence)
+  a = automodel(env, alnfile, knowns, sequence, assess_methods=(assess.DOPE))
   
   # (determines how many models to calculate)
-  a.starting_model= 1                 # index of the first model
-  a.ending_model  = 1                 # index of the last model
+  a.starting_model= 1                
+  # index of last model
+  a.ending_model  = c.model_no            
 
   # make the model
-  a.make()                          
+  a.make()                        
 
   foo = 'model done'
 
@@ -1884,10 +1882,10 @@ def main():
   #logger.info(start_time)
 
   #################################
-  ### PART 1: FIND DRUG TARGETS ###
+  ### STEP 1: FIND DRUG TARGETS ###
   #################################
   
-  logger.info('PART 1 - We wish to take the ChEMBL input file, ' +
+  logger.info('STEP 1 - We wish to take the ChEMBL input file, ' +
               c.chembl_input + ', and the DrugBank input file, ' +
               c.drugbank_input +', map the drug ids to their target ids ' +
               'and obtain a list of unique drug targets.')
@@ -1950,14 +1948,14 @@ def main():
   logger.info('Of these targets, ' + str(len(taxa_targets['9606'])) + 
               ' are human proteins (the ' + str(percent_human) + ' %).')
 
-  logger.info('------------------- END OF PART 1 -------------------')
+  logger.info('------------------- END OF STEP 1 -------------------')
 
 
   ############################
-  ### PART 2: FIND ARCH    ###
+  ### STEP 2: FIND ARCH    ###
   ############################
 
-  logger.info('PART 2 - We wish to build dictionaries of ' +
+  logger.info('STEP 2 - We wish to build dictionaries of ' +
               'the targets\' Uniprot ids to CATH/Uniprot ids.')
 
   # run or pickle uniprot_to_arch to retrieve cath domain architectures
@@ -1984,7 +1982,7 @@ def main():
   logger.info('We have mapped ' + str(len(pfam_dic)) + ' uniprot ids to ' +
               str(len(pfam_list)) + ' Pfam ids.')
   
-  logger.info('------------------- END OF PART 2 -------------------')
+  logger.info('------------------- END OF STEP 2 -------------------')
 
   #logger.info(cath_dic['Q92769'])
   # overwrite cath_list
@@ -1992,10 +1990,10 @@ def main():
   # pfam_list = ['PF00850']
 
   ####################################
-  ### PART 3: FIND SCHISTO TARGETS ###
+  ### STEP 3: FIND SCHISTO TARGETS ###
   ####################################
   
-  logger.info('PART 3 - We wish to map the CATH/Pfam ids ' +
+  logger.info('STEP 3 - We wish to map the CATH/Pfam ids ' +
               'to UniProt ids of the species ' + str(c.species) + '.')
   
   # call archindex on cath values to find the ones from schisto
@@ -2055,13 +2053,13 @@ def main():
   logger.info('Of those targets, the reviewed Uniprot entries are ' + 
               str(len(uniprot_schisto_filt)) +  '.')
   
-  logger.info('------------------- END OF PART 3 -------------------')
+  logger.info('------------------- END OF STEP 3 -------------------')
 
 
   ############################
-  ### PART 4 GENERATE MAPS ###
+  ### STEP 4 GENERATE MAPS ###
   ############################
-  logger.info('PART 4 - We wish to create two dictionaries that collect ' +
+  logger.info('STEP 4 - We wish to create two dictionaries that collect ' +
               'all the mapping so far, one for ChEMBL and one for DrugBank.')
 
   # generate big map for chembl drugs
@@ -2112,13 +2110,13 @@ def main():
 
   # logger.info(chembl_repo_map['CHEMBL98'])
   #logger.debug(drugbank_schisto_filt_map)
-  logger.info('------------------- END OF PART 4 -------------------')
+  logger.info('------------------- END OF STEP 4 -------------------')
 
 
   #################################################
-  ### PART 5 PDB TO HET GROUPS                  ###
+  ### STEP 5 PDB TO HET GROUPS                  ###
   #################################################
-  logger.info('PART 5 - We wish to map all available pdb structures ' +
+  logger.info('STEP 5 - We wish to map all available pdb structures ' +
               'to the Het groups the contain, and then filter out ' +
               'the Het groups contained in ' + c.pointless_het + 
               ', a list of ions, metals, peptidic ligands, etc.')
@@ -2168,14 +2166,14 @@ def main():
               ' pdb entries, mapped to a total of ' +
               str(len(filtered_ligs)) + ' unique ligands.')
 
-  logger.info('------------------- END OF PART 5 -------------------')
+  logger.info('------------------- END OF STEP 5 -------------------')
 
 
   ##################################################
-  ### PART 6 DRUG TARGETS WITH STRUCTURAL INFO   ###
+  ### STEP 6 DRUG TARGETS WITH STRUCTURAL INFO   ###
   ##################################################
 
-  logger.info('PART 6 - We wish to collect all the drug targets that ' +
+  logger.info('STEP 6 - We wish to collect all the drug targets that ' +
               'point to some repositioning target, point them to ' +
               'the available pdb structures (using ' + c.uniprot_pdb + 
                 '), filter them according to the map obtained in Part 4 ' +
@@ -2276,13 +2274,13 @@ def main():
   logger.info('We have mapped ' + str(len(cc_smi_filt)) + 
               ' of these chemical components to their smiles.')
   
-  logger.info('------------------- END OF PART 6 -------------------')
+  logger.info('------------------- END OF STEP 6 -------------------')
 
 
   ####################################
-  ### PART 7 CHEMBL CLUSTERING   ###
+  ### STEP 7 CHEMBL CLUSTERING   ###
   ####################################
-  logger.info('PART 7 - We wish to take the ChEMBL drugs ' +
+  logger.info('STEP 7 - We wish to take the ChEMBL drugs ' +
               'from the mapping and cluster them against ' +
               'the chemical components extracted from the pdb structures.')
 
@@ -2443,12 +2441,12 @@ def main():
   logger.info(len(whatevs))
 
 
-  logger.info('------------------- END OF PART 7 -------------------')
+  logger.info('------------------- END OF STEP 7 -------------------')
 
   ####################################
-  ### PART 8 DRUGBANK CLUSTERING   ###
+  ### STEP 8 DRUGBANK CLUSTERING   ###
   ####################################
-  logger.info('PART 8 - In the same way, we wish to take ' +
+  logger.info('STEP 8 - In the same way, we wish to take ' +
             'the DrugBank drugs from the mapping and cluster them against ' +
               'the chemical components extracted from the pdb structures.')
 
@@ -2550,16 +2548,16 @@ def main():
               str(c.sim_threshold) + 
               ' (other similarity thresholds written to file).')
 
-  logger.info('------------------- END OF PART 8 -------------------')
+  logger.info('------------------- END OF STEP 8 -------------------')
   
 
 
 
   ########################################
-  ### PART 9 REPOSITIONING CANDIDATE   ###
+  ### STEP 9 REPOSITIONING CANDIDATE   ###
   ########################################
   # no caching, just info retrieval
-  logger.info('PART 9 - We wish to investigate the repositioning candidate ' + 
+  logger.info('STEP 9 - We wish to investigate the repositioning candidate ' + 
               c.repo_candidate + '.')
 
   full_map = ('empty! Please check you have picked the right ID ' +
@@ -2633,29 +2631,35 @@ def main():
           logger.info(unipr)
 
 
-  logger.info('------------------- END OF PART 9 -------------------')
+  logger.info('------------------- END OF STEP 9 -------------------')
 
 
-  # ####################################
-  # ### PART 10 HOMOLOGY MODELLING   ###
-  # ####################################
-  # logger.info('PART 10 - We wish to build a homology model.')
+  ####################################
+  ### STEP 10 HOMOLOGY MODELLING   ###
+  ####################################
+  logger.info('STEP 10 - We wish to build a homology model of ' +
+              'the sequence ' + c.model_seq + ', using the template ' +
+              c.model_xray + ' and the alignment file ' +
+              c.model_align + '.')
 
-  # # run modeller
-  # # requires alignment file and pdb file in the working dir
-  # # model_foo = run_or_pickle('10_model_foo', run_modeller,
-  #                           # '1d3h_schma.ali', '1d3h','schma')
+  # run modeller
+  # requires alignment file and pdb file in the working dir
+  model_foo = run_or_pickle('10_model_foo', run_modeller,
+                            c.model_align, c.model_xray, c.model_seq)
 
 
-  # logger.info('We have built a model.')
+  logger.info('We have built ' + str(c.model_no) + ' model(s).')
   
-  # logger.info('------------------- END OF PART 10 -------------------')
+  logger.info('------------------- END OF STEP 10 -------------------')
 
-  
-  # end_time = datetime.now()
+ 
 
-  # logger.info('The total runtime of the script is: ' + 
-  #             str(end_time - start_time))
+
+
+  end_time = datetime.now()
+
+  logger.info('The total runtime of the script is: ' + 
+              str(end_time - start_time))
   
   logger.info('------------------- END OF SCRIPT -------------------')
 
