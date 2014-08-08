@@ -15,3 +15,6 @@ pickles_*/
 
 # anything starting with 'test'
 test*
+
+# .pyc files
+*.pyc
