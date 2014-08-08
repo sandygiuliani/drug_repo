@@ -15,24 +15,90 @@ your_email = "sandraxgiuliani@gmail.com"
 
 
 ############################################################################
+### REGEX
+############################################################################
+# import regex
+import re
+
+# format of CATH domain eg '4.10.400.10'
+cath_format = re.compile('.*\..*\..*\..*')
+
+# regular expression for string containing at least one dash
+contains_dash = re.compile('.*-.*')
+
+# regular expression for string containing at least one '#'
+contains_comment = re.compile('#.*')
+
+# chembl id format
+chembl_format = re.compile('CHEMBL.*')
+
+# drugbank id format
+drugbank_format = re.compile('DB.*')
+
+# starts with colon
+starts_colon = re.compile(':.*')
+
+# starts with 'N='
+starts_n = re.compile('N=.*')
+############################################################################
+
+
+
+
+############################################################################
 ### TAXONOMY
 ############################################################################
-# define taxa as the list of taxonomy identifiers we are interested in
-# e.g. SCHMA (S. Mansoni), SCHHA (S. haematobium), SCHJA (S. japonicum)
+# to identify a specific species, parse the speclist.txt 
+# to find the mnemonic code
+# e.g. Schistosoma
+# SCHMA (S. Mansoni), SCHHA (S. haematobium), SCHJA (S. japonicum)
+# e.g Trypanosoma
+# TRYB2 = Trypanosoma brucei brucei (strain 927/4 GUTat10.1)
+# TRYB9 = Trypanosoma brucei gambiense (strain MHOM/CI/86/DAL972)
+# TRYBB = Trypanosoma brucei brucei
+# TRYBG = Trypanosoma brucei gambiense
+# TRYBR = Trypanosoma brucei rhodesiense
+# TRYCC = Trypanosoma cruzi (strain CL Brener)
+# TRYCI = Trypanosoma congolense (strain IL3000)
+# TRYCO = Trypanosoma congolense
+# TRYCR = Trypanosoma cruzi
+# TRYEQ = Trypanosoma equiperdum
+# TRYEV = Trypanosoma evansi
+# e.g. plasmodium (there are many others!)
+# PLAF1 E   57265: N=Plasmodium falciparum (isolate 311)
+
+# define list of taxa ids we are interested in
 taxa = ['SCHMA']
 
 species_lst = []
 
+# string to be used in the loggers
 species = ''
 
-# dictionary
-taxa_to_species = {'SCHMA': 'S. mansoni',
-					'SCHHA':'S. haematobium','SCHJA':'S. japonicum'}
+for tax in taxa:
 
-# below here make string with names of species
-for item in taxa:
-	species_lst.append(taxa_to_species[item])
+	bits_list = []
+	with open('speclist.txt') as f:
 
+		for line in f:
+			#split
+			split_line = line.split(' ')
+			if split_line[0].strip(' ') == tax:
+				#print split_line
+				for i in range(1,len(split_line)):
+					#print split_line[i]
+					if starts_n.match(split_line[i]):
+						# print split_line[i]
+						match = i
+						for j in range(match,len(split_line)):
+							bits_list.append(split_line[j].rstrip('\n').lstrip('N='))
+						# print split_line[i]
+
+	species_string = " ".join(bits_list)
+	# print species_string
+	species_lst.append(species_string)
+
+# string 'species' lists the species
 
 if len(species_lst) == 1:
 	species = str(species_lst[0])
@@ -46,7 +112,6 @@ if len(species_lst) > 2:
 
 	species = (species + species_lst[len(species_lst)-2] + ' and ')
 	species = (species + species_lst[len(species_lst)-1])
-
 ############################################################################
 
 
@@ -139,11 +204,9 @@ sim_threshold = 0.9
 ############################################################################
 ### REPOSITIONING CANDIDATE
 ############################################################################
-# repositioning candidate you wish to examine
+# repositioning candidate to be examined
 # put CHEMBL of DB ID eg 'CHEMBL98'
 repo_candidate = 'CHEMBL941'
-
-
 ############################################################################
 
 
@@ -152,36 +215,12 @@ repo_candidate = 'CHEMBL941'
 ############################################################################
 ### HOMOLOGY MODEL
 ############################################################################
-# number of homology models
+# number of homology models to make
 model_no = 3
-
-
-############################################################################
-
-
-
-
-############################################################################
-### REGEX
-############################################################################
-# import regex
-import re
-
-# format of CATH domain eg '4.10.400.10'
-cath_format = re.compile('.*\..*\..*\..*')
-
-# regular expression for string containing at least one dash
-contains_dash = re.compile('.*-.*')
-
-# regular expression for string containing at least one '#'
-contains_comment = re.compile('#.*')
-
-# chembl id format
-chembl_format = re.compile('CHEMBL.*')
-
-# drugbank id format
-drugbank_format = re.compile('DB.*')
-
-# starts with colon
-starts_colon = re.compile(':.*')
+# alignment file - has to be in PIR format
+model_align = '1d3h_schma.ali'
+# template name - PDB ID of the crystal structure
+model_xray = '1d3h'
+# sequence to model name - arbitrary name, but has to match in the .ali file
+model_seq = 'schma'
 ############################################################################
