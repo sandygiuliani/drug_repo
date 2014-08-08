@@ -88,6 +88,10 @@ class AutoVivification(dict):
       except KeyError:
           value = self[item] = type(self)()
           return value
+
+# modeller
+from modeller import *              # Load standard Modeller classes
+from modeller.automodel import *    # Load the automodel class
 ############################################################################
 
 
@@ -1771,15 +1775,11 @@ def filter_txt(input_file, output_file, header_name, filt_list):
 # run modeller, produce homology model
 # this module would return None!
 # alignment file name, code of template, code of sequence
-def run_modeller(alnfile, knowns, sequence):
+def run_modeller(no_models, alnfile, knowns, sequence):
 
-  from modeller import *              # Load standard Modeller classes
-  from modeller.automodel import *    # Load the automodel class
-  
-  foo = ''
 
   # request minimal/verbose/none output
-  log.minimal()    
+  # log.minimal()    
   
   # create a new MODELLER environment to build this model in
   env = environ()  
@@ -1787,20 +1787,26 @@ def run_modeller(alnfile, knowns, sequence):
   # directories for input atom files
   env.io.atom_files_directory = ['.', '../atom_files']
 
-  a = automodel(env, alnfile, knowns, sequence, assess_methods=(assess.DOPE))
+  a = automodel(env, alnfile, knowns, sequence, 
+                assess_methods=(assess.DOPE, assess.GA341))
   
   # (determines how many models to calculate)
   a.starting_model= 1                
   # index of last model
-  a.ending_model  = c.model_no            
+  a.ending_model  = no_models            
 
   # make the model
-  a.make()                        
+  a.make()
 
-  foo = 'model done'
+  # get list of successfully but models
+  ok_models = filter(lambda x: x['failure'] is None, a.outputs)
+
+  # rank models by DOPE score
+  key = 'DOPE score'
+  ok_models.sort(lambda a,b: cmp(a[key], b[key]))                        
 
   # return 'foo' 
-  return foo
+  return ok_models
 
 ############################################################################
 
@@ -2637,18 +2643,27 @@ def main():
   ####################################
   ### STEP 10 HOMOLOGY MODELLING   ###
   ####################################
-  logger.info('STEP 10 - We wish to build a homology model of ' +
-              'the sequence ' + c.model_seq + ', using the template ' +
-              c.model_xray + ' and the alignment file ' +
-              c.model_align + '.')
+  logger.info('STEP 10 - We wish to build ' + str(c.model_no) +
+              ' homology model of the sequence ' + c.model_seq + 
+              ', using the template ' + c.model_xray + 
+              ' and the alignment file ' + c.model_align + '.')
 
   # run modeller
   # requires alignment file and pdb file in the working dir
-  model_foo = run_or_pickle('10_model_foo', run_modeller,
+  # return sorted list of models
+  model_foo = run_or_pickle('10_model_foo', run_modeller, c.model_no,
                             c.model_align, c.model_xray, c.model_seq)
 
+  for i in range(0,len(model_foo)):
+    logger.info(str(model_foo[i]['num']) + ' ' +
+                str(model_foo[i]['name']) + str(model_foo[i]['DOPE score']))
 
-  logger.info('We have built ' + str(c.model_no) + ' model(s).')
+
+  logger.info('We have successfully built ' + 
+              str(len(model_foo)) + ' homology model(s).')
+  logger.info('The top scoring model is ' + str(model_foo[0]['name']) +
+              ', with a DOPE score of ' + str(model_foo[0]['DOPE score']) +
+              '.')
   
   logger.info('------------------- END OF STEP 10 -------------------')
 
