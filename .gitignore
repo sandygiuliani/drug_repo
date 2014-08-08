@@ -18,3 +18,8 @@ test*
 
 # .pyc files
 *.pyc
+
+# various extensions produced by modeller
+*.ini
+*.rsr
+*.sch
