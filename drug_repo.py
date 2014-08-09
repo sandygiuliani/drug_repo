@@ -1814,6 +1814,80 @@ def run_modeller(no_models, alnfile, knowns, sequence):
 
 
 ############################################################################
+### UNIPROT_TO_FASTA
+############################################################################
+# takes uniprot list and writes to file all fasta sequences
+# returns foo
+def uniprot_to_fasta(uniprot_list):
+  
+  foo = ''
+
+  # make string for file name
+  file_name = str(uniprot_list[0] + '_align.fasta')
+
+  logger.info(file_name)
+  
+  with open(str(file_name), 'w') as f:
+    # for uniprot in uniprot_list:
+    for entry in uniprot_list:
+      try:
+          # get handle
+          handle = ExPASy.get_sprot_raw(entry)
+          # swissprot read
+          record = SwissProt.read(handle)
+
+          # list of uniprots matching each
+          seq = record.sequence
+          # add first line
+          f.write('>' + entry + '\n')
+          # add sequence
+          f.write(seq + '\n')
+          #logger.info(seq)
+            
+      except HTTPError:
+        pass
+
+  foo = 'done'
+
+  return foo
+
+
+############################################################################
+
+
+############################################################################
+### RUN_TCOFFEE
+############################################################################
+# takes fasta file and runs tcoffee to produce multisequence alignment
+def run_tcoffee(fasta_file):
+  # run t-coffeee
+  # st out redirected to log file
+  # - output=clustalw (default)
+  # clustalw_aln, clustalw : ClustalW format.
+  # gcg, msf_aln       : MSF alignment.
+  # pir_aln  : pir alignment.
+  # fasta_aln: fasta alignment.
+  # phylip: Phylip format.
+  # pir_seq: pir sequences (no gap).
+  # fasta_seq: fasta sequences (no gap
+
+  try:
+    subprocess.call("t_coffee " + str(fasta_file) + 
+                    " -email=" + str(c.your_email) + 
+                    ' -quiet=t_coffee.log -output=score_ascii', shell=True)
+    # get list from lines in molDescriptors output
+
+  except KeyboardInterrupt:
+    logger.warning('You are terminating the script!')
+    sys.exit()
+
+  except:
+    logger.warning('T-coffee is failing, we are exiting the script!')
+    sys.exit()
+
+############################################################################
+
+############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
 # run module and dump in pickle or retreive pickle without running module
@@ -2615,12 +2689,20 @@ def main():
 
     # add db cluster here!
 
+  # get uniprot to align
+  logger.info(lucky_uniprot.keys()[c.repo_target_no])
+  
 
-  #logger.info('The complete mapping dictionary for the drug is ' + 
-  #            str(full_map))
+  # display full_map or partial_map
+  logger.info('The mapping dictionary for the drug is ' + 
+             str(partial_map))
 
+  logger.info(len(full_map.values()))
   # targets we are interested in
-  logger.info('Of these drug targets, we are only interested in ' +
+  logger.info('The drug was mapped to ' + str(len(full_map)) + 
+              ' drug target(s), ' + str(full_map.keys()))
+
+  logger.info('Of these targets, we are only interested in ' +
               str(len(lucky_uniprot)) + 
               ' - the one(s) that have crystal structure(s) in complex' + 
               ' with ' + str(ref_het) + ', the het group(s) ' +
@@ -2629,13 +2711,45 @@ def main():
   logger.info('The target(s), associated with their pdb ids, are: ' +
               str(lucky_uniprot))
 
-  #logger.info(partial_map)
-  for stuff in partial_map:
-    for gnnnn in partial_map[stuff]:
-      for unipr in partial_map[stuff][gnnnn]:
-        if unipr == 'D1H0Y7' or unipr == 'D1H0Y8':
-          logger.info(unipr)
 
+  # drug target to focus on
+  target_to_align = lucky_uniprot.keys()[c.repo_target_no]
+
+  # if there is more than oen target, inform on which one we are focusing on
+  # can change the target number in config file, default is the first one
+  if len(lucky_uniprot) > 1:
+    logger.info('We are focusing on target number ' + 
+                str(c.repo_target_no + 1) + ', ' + 
+                target_to_align + '.')
+
+
+  # get list of uniprots, the drug targets and all the ones mapped to it
+  uniprot_to_align = []
+  # add all targets
+  for arch in partial_map[target_to_align]:
+    for uni in partial_map[target_to_align][arch]:
+      uniprot_to_align.append(uni)
+    # logger.info(partial_map[target_to_align][arch])
+  
+  #get rid of duplicates
+  uniprot_to_align = list(set(uniprot_to_align))
+
+  # logger.info(len(uniprot_to_align))
+  logger.info('We are aligning it to all the ' + c.species +
+              ' targets that were found to be related to it, (' +
+              str(len(uniprot_to_align)) + ' unique targets).')
+  
+  # add the drug target at the beginning of the list
+  uniprot_to_align.insert(0, target_to_align) 
+  logger.info(uniprot_to_align)
+
+  #write fasta file from list of uniprots
+  uniprot_to_fasta(uniprot_to_align)
+
+  # align list of uniprot with t-coffee
+  run_tcoffee('test.fasta')
+
+  #logger.info(partial_map)
 
   logger.info('------------------- END OF STEP 9 -------------------')
 
