@@ -1819,8 +1819,6 @@ def run_modeller(no_models, alnfile, knowns, sequence):
 # takes uniprot list and writes to file all fasta sequences
 # returns foo
 def uniprot_to_fasta(uniprot_list):
-  
-  foo = ''
 
   # make string for file name
   file_name = str(uniprot_list[0] + '_align.fasta')
@@ -1845,11 +1843,12 @@ def uniprot_to_fasta(uniprot_list):
           #logger.info(seq)
             
       except HTTPError:
-        pass
+        logger.error('We cannot access ExPASy!')
+        logger.warning('We are exiting the program.')
+        sys.exit()
 
-  foo = 'done'
-
-  return foo
+  # simply return the file name
+  return file_name
 
 
 ############################################################################
@@ -1870,12 +1869,14 @@ def run_tcoffee(fasta_file):
   # phylip: Phylip format.
   # pir_seq: pir sequences (no gap).
   # fasta_seq: fasta sequences (no gap
-
+  # quiet
+  # -quiet=t_coffee.log
   try:
     subprocess.call("t_coffee " + str(fasta_file) + 
                     " -email=" + str(c.your_email) + 
-                    ' -quiet=t_coffee.log -output=score_ascii', shell=True)
+                    ' -quiet=t_coffee.log', shell=True)
     # get list from lines in molDescriptors output
+    
 
   except KeyboardInterrupt:
     logger.warning('You are terminating the script!')
@@ -2636,7 +2637,7 @@ def main():
   ########################################
   ### STEP 9 REPOSITIONING CANDIDATE   ###
   ########################################
-  # no caching, just info retrieval
+  # info retrieval and alignment
   logger.info('STEP 9 - We wish to investigate the repositioning candidate ' + 
               c.repo_candidate + '.')
 
@@ -2741,13 +2742,14 @@ def main():
   
   # add the drug target at the beginning of the list
   uniprot_to_align.insert(0, target_to_align) 
-  logger.info(uniprot_to_align)
+  # logger.info(uniprot_to_align)
 
-  #write fasta file from list of uniprots
-  uniprot_to_fasta(uniprot_to_align)
+  #write fasta file from list of uniprots, simply returns name of the file
+  alignment_name = run_or_pickle('9_align', uniprot_to_fasta, 
+                                  uniprot_to_align)
 
   # align list of uniprot with t-coffee
-  run_tcoffee('test.fasta')
+  run_tcoffee(str(alignment_name))
 
   #logger.info(partial_map)
 
