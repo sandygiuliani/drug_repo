@@ -7,7 +7,7 @@
 # your name
 your_name = "Sandra"
 
-# email (for NCBI Expasy)
+# email (for NCBI Expasy and T-coffee)
 your_email = "sandraxgiuliani@gmail.com"
 ############################################################################
 
@@ -48,7 +48,7 @@ starts_n = re.compile('N=.*')
 ############################################################################
 ### TAXONOMY
 ############################################################################
-# to identify a specific species, parse the speclist.txt 
+# to identify a specific species, look up species name in speclist.txt 
 # to find the mnemonic code
 # e.g. Schistosoma
 # SCHMA (S. Mansoni), SCHHA (S. haematobium), SCHJA (S. japonicum)
@@ -69,6 +69,8 @@ starts_n = re.compile('N=.*')
 
 # define list of taxa ids we are interested in
 taxa = ['SCHMA']
+
+
 
 species_lst = []
 
@@ -205,8 +207,12 @@ sim_threshold = 0.9
 ### REPOSITIONING CANDIDATE
 ############################################################################
 # repositioning candidate to be examined
-# put CHEMBL of DB ID eg 'CHEMBL98'
-repo_candidate = 'CHEMBL941'
+# put CHEMBL or DB ID eg 'CHEMBL98'
+repo_candidate = 'CHEMBL973'
+# target number, for selecting which drug target to align to the potential
+# parasite targets. 
+# 0 is the first one (could be the only one), 1 the second one...
+repo_target_no = 0
 ############################################################################
 
 
