@@ -208,7 +208,7 @@ sim_threshold = 0.9
 ############################################################################
 # repositioning candidate to be examined
 # put CHEMBL or DB ID eg 'CHEMBL98'
-repo_candidate = 'CHEMBL973'
+repo_candidate = 'CHEMBL941'
 # target number, for selecting which drug target to align to the potential
 # parasite targets. 
 # 0 is the first one (could be the only one), 1 the second one...
