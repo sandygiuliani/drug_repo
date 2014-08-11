@@ -10,6 +10,25 @@
 
 
 ############################################################################
+### IMPORT CONFIG
+############################################################################
+# import configuration file config.py, raise warning if absent
+
+try:
+  import config as c
+# handle importerror if config.py is missing
+except ImportError:
+  logger.error('The configuration file config.py is missing' +
+                    ' in the current directory!')
+  logger.warning('The program is aborted.')
+  # exit script
+  sys.exit()
+############################################################################
+
+
+
+
+############################################################################
 ### LOGGER SET UP
 ############################################################################
 # set up logger for logging messages and write to log log_drug_repo.log
@@ -17,7 +36,7 @@
 import logging
 # set up log file to write to, it will be overwritten every time ('w' mode)
 # leave this level setting to DEBUG
-logging.basicConfig(filename='log_drug_repo.log', filemode='w',
+logging.basicConfig(filename=c.log_name, filemode='w',
                     level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 # leave this level setting to DEBUG
@@ -99,25 +118,6 @@ class AutoVivification(dict):
 
 
 ############################################################################
-### IMPORT CONFIG
-############################################################################
-# import configuration file config.py, raise warning if absent
-
-try:
-  import config as c
-# handle importerror if config.py is missing
-except ImportError:
-  logger.error('The configuration file config.py is missing' +
-                    ' in the current directory!')
-  logger.warning('The program is aborted.')
-  # exit script
-  sys.exit()
-############################################################################
-
-
-
-
-############################################################################
 ### IMPORT BIOPYTHON
 ############################################################################
 # import biopython modules
@@ -149,10 +149,10 @@ from Bio import SwissProt
 # import modeller for homology modelling
 
 # load standard modeller classes
-from modeller import *          
-# load the automodel class
-from modeller.automodel import * 
-############################################################################
+# from modeller import *          
+# # load the automodel class
+# from modeller.automodel import * 
+# ############################################################################
 
 
 
@@ -1803,6 +1803,14 @@ def filter_txt(input_file, output_file, header_name, filt_list):
 # alignment file name, code of template, code of sequence
 def run_modeller(no_models, alnfile, knowns, sequence):
 
+  # load standard modeller classes
+  # from modeller import *          
+  # # load the automodel class
+  # from modeller.automodel import * 
+
+  import modeller
+
+  import modeller.automodel
 
   # request minimal/verbose/none output
   # log.minimal()    
@@ -2049,7 +2057,7 @@ def main():
 
 
   # check number of steps
-  if c.steps not in range(0,10):
+  if c.steps not in range(0,11):
     logger.error('You must select a step number between 0 and 10!')
     logger.info('Please check config.py')
     logger.warning('The program is aborted.')
@@ -2427,7 +2435,7 @@ def main():
     logger.info('------------------------- STEP ' + str(step) + ' ' +
                 '-------------------------')
 
-    logger.info('STEP 6 - We wish to collect all the drug targets that ' +
+    logger.info('We wish to collect all the drug targets that ' +
                 'point to some repositioning target, point them to ' +
                 'the available pdb structures (using ' + c.uniprot_pdb + 
                   '), filter them according to the map obtained in Part 4 ' +
@@ -2487,7 +2495,7 @@ def main():
     ###
     # get list of uniprot from dic above
     uniprot_w_lig_list = uniprot_pdb_w_lig.keys()
-    logger.info(len(uniprot_w_lig_list))
+    #logger.info(len(uniprot_w_lig_list))
 
     ###
 
@@ -2946,6 +2954,10 @@ def main():
     #write fasta file from list of uniprots, simply returns name of the file
     alignment_name = run_or_pickle('9_align', uniprot_to_fasta, 
                                     uniprot_to_align)
+    
+    logger.info('We have written a fasta file, ' + alignment_name +
+                ', with the protein sequences not aligned.')
+
 
     # align list of uniprot with t-coffee
     run_tcoffee(str(alignment_name))

@@ -22,8 +22,8 @@ your_email = "sandraxgiuliani@gmail.com"
 ############################################################################
 # define which steps of the pipeline you wish to run
 # integer between 0 and 10
-# eg steps = 6 will run all steps up to 6, included
-steps = 2
+# eg steps = 6 will run all steps up to (and including) 6
+steps = 8
 ############################################################################
 
 
@@ -119,9 +119,27 @@ spec_list = 'speclist.txt'
 
 
 ############################################################################
+### OUTPUT_FILES
+############################################################################
+# define names of output files, they will be overwritten every time
+# if you do not want that to happen, add a timestamp to the file names
+# 'dr' stands for drug repositioning
+
+# log
+log_name = 'dr_log.log'
+
+
+
+############################################################################
+
+
+
+
+############################################################################
 ### CHEMBL FILTERING SETTINGS
 ############################################################################
-# define list of clinical phases you are interested in
+# define list of clinical phases you are interested in 
+# (only applies to ChEMBL set)
 # eg. '4', '3', '' (empty string for the unknown phase)
 chembl_phases = ['4']
 
@@ -136,6 +154,7 @@ chembl_mol_type = ['Synthetic Small Molecule']
 ### CLUSTERING SETTINGS
 ############################################################################
 # define similarity threshold for clustering
+# e.g. 0.9
 sim_threshold = 0.9
 # check if float
 #logger.info(isinstance(SIM_THRESHOLD, float))
