@@ -7,11 +7,23 @@
 ############################################################################
 ### PERSONAL_INFO
 ############################################################################
-# your name
+# what is your name?
 your_name = "Sandra"
 
-# email (for NCBI Expasy and T-coffee)
+# what is your email? (for NCBI Expasy and T-coffee)
 your_email = "sandraxgiuliani@gmail.com"
+############################################################################
+
+
+
+
+############################################################################
+### PIPELINE STEPS
+############################################################################
+# define which steps of the pipeline you wish to run
+# integer between 0 and 10
+# eg steps = 6 will run all steps up to 6, included
+steps = 2
 ############################################################################
 
 
@@ -20,6 +32,10 @@ your_email = "sandraxgiuliani@gmail.com"
 ############################################################################
 ### TAXONOMY
 ############################################################################
+# define list of taxa ids you are interested in
+# eg ['SCHMA', 'SCHHA', 'SCHJA']
+taxa = ['SCHMA']
+
 # to identify a specific species, look up species name in speclist.txt 
 # to find the mnemonic code
 # e.g. Schistosoma
@@ -38,13 +54,6 @@ your_email = "sandraxgiuliani@gmail.com"
 # TRYEV = Trypanosoma evansi
 # e.g. plasmodium (there are many others!)
 # PLAF1 E   57265: N=Plasmodium falciparum (isolate 311)
-
-# define list of taxa ids we are interested in
-# eg ['SCHMA', 'SCHHA', 'SCHJA']
-taxa = ['SCHMA']
-
-# species codes to species names mapping file 
-spec_list = 'speclist.txt'
 ############################################################################
 
 
@@ -62,7 +71,6 @@ archindex_path = "./../Arch/archindex"
 # 1.5.1 - first version I have used (from sourceforge)
 # 1.6 - version sent by Asad that should handle multiple sdf and keep ids
 smsd_path = "/home/sandra/SMSD1.6"
-
 ############################################################################
 
 
@@ -103,6 +111,8 @@ pointless_het = "pointless_het.csv"
 # chemical component smiles dictionary
 cc_smi = "Components-smiles-oe.smi"
 
+# location of the species codes to species names mapping file 
+spec_list = 'speclist.txt'
 ############################################################################
 
 
@@ -111,11 +121,11 @@ cc_smi = "Components-smiles-oe.smi"
 ############################################################################
 ### CHEMBL FILTERING SETTINGS
 ############################################################################
-# define list of clinical phases we are interested
+# define list of clinical phases you are interested in
 # eg. '4', '3', '' (empty string for the unknown phase)
 chembl_phases = ['4']
 
-# define molecule types we are interested in
+# define molecule types you are interested in
 chembl_mol_type = ['Synthetic Small Molecule']
 ############################################################################
 
@@ -125,7 +135,7 @@ chembl_mol_type = ['Synthetic Small Molecule']
 ############################################################################
 ### CLUSTERING SETTINGS
 ############################################################################
-# similarity threshold for clustering
+# define similarity threshold for clustering
 sim_threshold = 0.9
 # check if float
 #logger.info(isinstance(SIM_THRESHOLD, float))
