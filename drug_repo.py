@@ -59,7 +59,7 @@ logger.addHandler(ch)
 
 
 ############################################################################
-### IMPORT PYHTON MODULES
+### IMPORT PYTHON MODULES
 ############################################################################
 # import python modules
 
@@ -127,12 +127,12 @@ from Bio import Entrez
 # tell NCBI who I am
 Entrez.email = c.your_email
 
-# import SeqIO
-from Bio import SeqIO
-
 # list available databases
 #handle = Entrez.einfo()
 #logger.info(handle.read())
+
+# import SeqIO
+from Bio import SeqIO
 
 # import expasy for accessing protein sequences
 from Bio import ExPASy
@@ -148,10 +148,25 @@ from Bio import SwissProt
 ############################################################################
 # import modeller for homology modelling
 
-# load standard modeller classes
-# from modeller import *          
-# # load the automodel class
-# from modeller.automodel import * 
+# check if the step of the pipeline that requires modeller needs to run
+if c.steps >= c.modeller_step:
+
+  try:
+    #load standard modeller classes
+    from modeller import *
+    # from modeller import automodel
+    from modeller.automodel import *
+
+  except ImportError:
+    logger.error('MODELLER cannot be found!')
+    logger.info('Please check it is properly installed, ' +
+                'or change the number of steps of the pipeline to run' +
+                ' in config.py to be lower than ' + str(c.modeller_step))
+    
+    logger.warning('The program is aborted.')
+    # exit script
+    sys.exit()
+
 # ############################################################################
 
 
@@ -1803,27 +1818,19 @@ def filter_txt(input_file, output_file, header_name, filt_list):
 # alignment file name, code of template, code of sequence
 def run_modeller(no_models, alnfile, knowns, sequence):
 
-  # load standard modeller classes
-  # from modeller import *          
-  # # load the automodel class
-  # from modeller.automodel import * 
-
-  import modeller
-
-  import modeller.automodel
-
   # request minimal/verbose/none output
-  # log.minimal()    
-  
+  log.none()    
+
   # create a new MODELLER environment to build this model in
   env = environ()  
 
   # directories for input atom files
-  env.io.atom_files_directory = ['.', '../atom_files']
+  env.io.atom_files_directory = ['.']
 
   a = automodel(env, alnfile, knowns, sequence, 
                 assess_methods=(assess.DOPE, assess.GA341))
   
+
   # (determines how many models to calculate)
   a.starting_model= 1                
   # index of last model
@@ -1840,7 +1847,7 @@ def run_modeller(no_models, alnfile, knowns, sequence):
   ok_models.sort(lambda a,b: cmp(a[key], b[key]))                        
 
   # return 'foo' 
-  return ok_models
+  return ok_models  
 
 ############################################################################
 
@@ -2035,6 +2042,9 @@ def taxa_to_species(taxa_list, species_map):
 
   # return string of species
   return species
+############################################################################
+
+
 
 
 ############################################################################
@@ -2981,6 +2991,9 @@ def main():
                 ' homology model of the sequence ' + c.model_seq + 
                 ', using the template ' + c.model_xray + 
                 ' and the alignment file ' + c.model_align + '.')
+
+
+
 
     # run modeller
     # requires alignment file and pdb file in the working dir
