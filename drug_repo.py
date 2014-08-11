@@ -1,17 +1,19 @@
 # Copyright 2014 Sandra Giuliani
 # drug_repo.py
 
-# Mapping of known drugs from ChEMBL and DrugBank to their targets/domain
-# architecture to identify suitable drug repositioning candidates for
-# schistosomiasis.
-# Please see README.md for more info.
+# A bioinformatics pipeline for drug repositioning for schistosomiasis
+
+# Please dowload the full repository from github.com/sandygiuliani/drug_repo
+# See README.md for more info
 
 
 
 
 ############################################################################
-### LOGGER
+### LOGGER SET UP
 ############################################################################
+# set up logger for logging messages and write to log log_drug_repo.log
+
 import logging
 # set up log file to write to, it will be overwritten every time ('w' mode)
 # leave this level setting to DEBUG
@@ -32,15 +34,15 @@ formatter = logging.Formatter('%(asctime)s - %(message)s')
 ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
-
 ############################################################################
 
 
 
 
 ############################################################################
-### IMPORT MODULES
+### IMPORT PYHTON MODULES
 ############################################################################
+# import python modules
 
 # import os (old system) - deprecated, use subprocess instead
 import os
@@ -50,6 +52,9 @@ import os.path
 
 # import pickle
 #import pickle
+
+# import regex
+import re
 
 # cpickle
 import cPickle as pickle
@@ -88,10 +93,6 @@ class AutoVivification(dict):
       except KeyError:
           value = self[item] = type(self)()
           return value
-
-# modeller
-from modeller import *              # Load standard Modeller classes
-from modeller.automodel import *    # Load the automodel class
 ############################################################################
 
 
@@ -100,12 +101,16 @@ from modeller.automodel import *    # Load the automodel class
 ############################################################################
 ### IMPORT CONFIG
 ############################################################################
+# import configuration file config.py, raise warning if absent
+
 try:
   import config as c
+# handle importerror if config.py is missing
 except ImportError:
   logger.error('The configuration file config.py is missing' +
                     ' in the current directory!')
   logger.warning('The program is aborted.')
+  # exit script
   sys.exit()
 ############################################################################
 
@@ -115,6 +120,8 @@ except ImportError:
 ############################################################################
 ### IMPORT BIOPYTHON
 ############################################################################
+# import biopython modules
+
 # import Biopython Entrez
 from Bio import Entrez
 # tell NCBI who I am
@@ -127,19 +134,31 @@ from Bio import SeqIO
 #handle = Entrez.einfo()
 #logger.info(handle.read())
 
-# import expasy for access protein sequences
+# import expasy for accessing protein sequences
 from Bio import ExPASy
 
 # import swissprot for parsing swissprot plain text files
 from Bio import SwissProt
+############################################################################
 
+
+
+############################################################################
+### IMPORT MODELLER
+############################################################################
+# import modeller for homology modelling
+
+# load standard modeller classes
+from modeller import *          
+# load the automodel class
+from modeller.automodel import * 
 ############################################################################
 
 
 
 
 ############################################################################
-### HEADER_COUNT HELPER FUNCTION
+### HEADER_COUNT
 ############################################################################
 # find specific header in line of comma or tab (or other) separated
 # file and return column number of the header
@@ -160,7 +179,7 @@ def header_count(line, separator, header):
 
 
 ############################################################################
-### FILE_TO_LINES HELPER FUNCTION
+### FILE_TO_LINES
 ############################################################################
 # read file using readlines approach and return the lines
 def file_to_lines(text_file):
@@ -184,7 +203,7 @@ def file_to_lines(text_file):
 
 
 ############################################################################
-### SWAP_DIC HELPER FUNCTION
+### SWAP_DIC HELPER
 ############################################################################
 # read tab-separated mapping file with header and return dictionary with
 # second column as key and first column as values - created for the
@@ -208,7 +227,7 @@ def swap_dic(tab_file):
 
 
 ############################################################################
-### PROCESS_CHEMBL FUNCTION
+### PROCESS_CHEMBL
 ############################################################################
 
 # in the end we need a dictionary of chembl ids vs uniprot ids
@@ -402,7 +421,7 @@ def process_chembl(input_file):
 
 
 ############################################################################
-### PROCESS_DRUGBANK FUNCTION
+### PROCESS_DRUGBANK
 ############################################################################
 # process drugbank file, return a dictionary of drugs vs uniprot ids. Deal
 # with duplicate values and append to list in the dictionary.
@@ -528,7 +547,9 @@ def uniprot_to_arch(uniprot_list,architecture):
 
         ### for cath ###
         if architecture == "cath":
-
+          # cath format eg '4.10.400.10'
+          cath_format = re.compile('.*\..*\..*\..*')
+          
           # check if there are 'p's and get rid of them
           if "p" in line_split[2]:
             # replace p's with nothing
@@ -543,14 +564,13 @@ def uniprot_to_arch(uniprot_list,architecture):
 
             for item in undersc_split:
               # check if the format is CATH one
-              #cath_format = re.compile('.*\..*\..*\..*')
-              if c.cath_format.match(item):
+              if cath_format.match(item):
                 architect_list.append(item)
 
           # this is the case of just one entry, no undescores
           else:
             # check the format is CATH one
-            if c.cath_format.match(line_nops):
+            if cath_format.match(line_nops):
               architect_list.append(line_nops)
 
 
@@ -610,6 +630,10 @@ def arch_to_uniprot(arch_list,architecture):
     flag = "-cath"
   elif architecture == "pfam":
     flag = ""
+  
+  # regex starts with colon
+  starts_colon = re.compile(':.*')
+
 
   # empty dictionary
   uniprot_dic = {}
@@ -634,7 +658,7 @@ def arch_to_uniprot(arch_list,architecture):
           
           counter = 0
           # while the line is not finishing line
-          while not c.starts_colon.match(lines[i+2+counter].split("\t")[0]):
+          while not starts_colon.match(lines[i+2+counter].split("\t")[0]):
             # take the line' and split it
             line_split = lines[i+2+counter].split("\t")
             uniprot_list.append(line_split[0])
@@ -1092,6 +1116,8 @@ def csv_to_dic(csv_file):
 # it works but better ADD WRAPPER TO PROPERLY SKIP THE COMMENT LINE!
 
 def csv_to_lst(csv_file):
+  # regular expression for string containing at least one '#'
+  #contains_comment = re.compile('#.*')
 
   # # open and read file
   # lines = file_to_lines(csv_file)
@@ -1876,7 +1902,7 @@ def run_tcoffee(fasta_file):
                     " -email=" + str(c.your_email) + 
                     ' -quiet=t_coffee.log', shell=True)
     # get list from lines in molDescriptors output
-    
+
 
   except KeyboardInterrupt:
     logger.warning('You are terminating the script!')
@@ -1888,6 +1914,9 @@ def run_tcoffee(fasta_file):
 
 ############################################################################
 
+
+
+
 ############################################################################
 ### RUN_OR_PICKLE
 ############################################################################
@@ -1897,7 +1926,6 @@ def run_or_pickle(function_return_obj, function_name, arg1 = None,
 
   # make string with pickle name
   pickle_name = (function_return_obj + ".p")
-  #logger.debug(pickle_name)
 
   # check if pickle file exists
   if os.path.isfile(pickle_name) == True:
@@ -1945,14 +1973,76 @@ def run_or_pickle(function_return_obj, function_name, arg1 = None,
 
 
 ############################################################################
+### TAXA_TO_SPECIES
+############################################################################
+# return string of species from taxa ids, to be used for logging purposes
+
+def taxa_to_species(taxa_list, species_map):
+
+  species_lst = []
+
+  # string to be used in the loggers
+  species = ''
+
+  # regex starts with 'N='
+  starts_n = re.compile('N=.*')  
+
+  for tax in taxa_list:
+
+    bits_list = []
+    with open(species_map) as f:
+
+      for line in f:
+        #split
+        split_line = line.split(' ')
+        if split_line[0].strip(' ') == tax:
+          #print split_line
+          for i in range(1,len(split_line)):
+            #print split_line[i]
+            if starts_n.match(split_line[i]):
+              # print split_line[i]
+              match = i
+              for j in range(match,len(split_line)):
+                bits_list.append(split_line[j].rstrip('\n').lstrip('N='))
+              # print split_line[i]
+
+    species_string = " ".join(bits_list)
+    # print species_string
+    species_lst.append(species_string)
+
+  # string 'species' lists the species
+  if len(species_lst) == 1:
+    species = str(species_lst[0])
+
+  if len(species_lst) == 2:
+    species = (species_lst[0] + ' and ' + species_lst[1])
+
+  if len(species_lst) > 2:
+    for i in range(0,(len(species_lst)-2)):
+      species = (species + species_lst[i] + ', ') 
+
+    species = (species + species_lst[len(species_lst)-2] + ' and ')
+    species = (species + species_lst[len(species_lst)-1])
+
+
+  # return string of species
+  return species
+
+
+############################################################################
 ### MAIN FUNCTION
 ############################################################################
 
 def main():
   # greeting
+  
+  species_string = run_or_pickle("00_species_string", taxa_to_species, 
+                                  c.taxa, c.spec_list)
+
+
   logger.info("Hi " + c.your_name + 
               ", you are running drug_repo.py for repositioning " +
-              "known drugs for " + c.species + ".")
+              "known drugs for " + species_string + ".")
 
   logger.info("If your name is not " + c.your_name +
               ", please customise your settings in config.py " +
@@ -2075,7 +2165,7 @@ def main():
   ####################################
   
   logger.info('STEP 3 - We wish to map the CATH/Pfam ids ' +
-              'to UniProt ids of the species ' + str(c.species) + '.')
+              'to UniProt ids of the species ' + species_string + '.')
   
   # call archindex on cath values to find the ones from schisto
   uniprot_schisto_cath_dic = run_or_pickle("3_uniprot_schisto_cath_dic", 
@@ -2151,7 +2241,7 @@ def main():
   # logger.debug(len(chembl_repo_map))
   logger.info('We have built the ChEMBL map, mapping ' +
               str(len(chembl_repo_map)) + ' ChEMBL drugs to potential ' +
-              str(c.species) + ' targets.')
+              species_string + ' targets.')
 
   # list of drugs that are in the map, to be used in part 6
   #chembl_repo_drug_list = chembl_repo_map.keys()
@@ -2166,7 +2256,7 @@ def main():
   
   logger.info('We have built the DrugBank map, mapping ' +
               str(len(drugbank_repo_map)) + ' DrugBank drugs to potential ' +
-              str(c.species) + ' targets.')
+              species_string + ' targets.')
 
   # list of drugs that are in the map, to be used in part 6
   # below old one, had white spaces!
@@ -2221,12 +2311,15 @@ def main():
                                     pointless_het, "exclude")
   #logger.debug(len(pdb_lig_pointless_dic))
   
+  # regular expression for string containing at least one dash
+  contains_dash = re.compile('.*-.*')
+
   # second filter, to eliminate those with dash
   # this is filtered dic of all useful pdbs (with useful ligands!)
   pdb_lig_filt_dic = run_or_pickle("5_pdb_lig_filt_dic",
                                     exclude_values_from_dic, 
                                     pdb_lig_pointless_dic, 
-                                    c.contains_dash, "nomatch")
+                                    contains_dash, "nomatch")
   #logger.info(pdb_lig_filt_dic)
   
   # list of 'acceptable' pdbs (with useful ligands) from dic
@@ -2439,10 +2532,6 @@ def main():
   # logger.info(chembl_id_smi_filt)
   #######################
 
-
-  # possibly test with catcvs input as well before proceeding
-
-
   # convert dic into smile file (module return none, it just writes to file)
   #dic_to_txt(cc_smi_filt, 'cc_smi_filt.smi')
   
@@ -2649,9 +2738,15 @@ def main():
 
   partial_map = {}
 
+  # chembl id format
+  chembl_format = re.compile('CHEMBL.*')
+
+  # drugbank id format
+  drugbank_format = re.compile('DB.*')
+
   # chembl drug
   # check format
-  if c.chembl_format.match(c.repo_candidate):
+  if chembl_format.match(c.repo_candidate):
     # full map
     if c.repo_candidate in chembl_repo_map:
       full_map = chembl_repo_map[c.repo_candidate]
@@ -2684,7 +2779,7 @@ def main():
 
   # drugbank drug
   # check format
-  elif c.drugbank_format.match(c.repo_candidate):
+  elif drugbank_format.match(c.repo_candidate):
     if c.repo_candidate in drugbank_repo_map:
       full_map = drugbank_repo_map[c.repo_candidate]
 
@@ -2736,7 +2831,7 @@ def main():
   uniprot_to_align = list(set(uniprot_to_align))
 
   # logger.info(len(uniprot_to_align))
-  logger.info('We are aligning it to all the ' + c.species +
+  logger.info('We are aligning it to all the ' + species_string +
               ' targets that were found to be related to it, (' +
               str(len(uniprot_to_align)) + ' unique targets).')
   

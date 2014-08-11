@@ -1,4 +1,7 @@
-# config.py - settings for drug_repo.py
+# Copyright 2014 Sandra Giuliani
+# config.py
+
+# Configuration file for drug_repo.py
 
 
 ############################################################################
@@ -9,37 +12,6 @@ your_name = "Sandra"
 
 # email (for NCBI Expasy and T-coffee)
 your_email = "sandraxgiuliani@gmail.com"
-############################################################################
-
-
-
-
-############################################################################
-### REGEX
-############################################################################
-# import regex
-import re
-
-# format of CATH domain eg '4.10.400.10'
-cath_format = re.compile('.*\..*\..*\..*')
-
-# regular expression for string containing at least one dash
-contains_dash = re.compile('.*-.*')
-
-# regular expression for string containing at least one '#'
-contains_comment = re.compile('#.*')
-
-# chembl id format
-chembl_format = re.compile('CHEMBL.*')
-
-# drugbank id format
-drugbank_format = re.compile('DB.*')
-
-# starts with colon
-starts_colon = re.compile(':.*')
-
-# starts with 'N='
-starts_n = re.compile('N=.*')
 ############################################################################
 
 
@@ -68,52 +40,11 @@ starts_n = re.compile('N=.*')
 # PLAF1 E   57265: N=Plasmodium falciparum (isolate 311)
 
 # define list of taxa ids we are interested in
+# eg ['SCHMA', 'SCHHA', 'SCHJA']
 taxa = ['SCHMA']
 
-
-
-species_lst = []
-
-# string to be used in the loggers
-species = ''
-
-for tax in taxa:
-
-	bits_list = []
-	with open('speclist.txt') as f:
-
-		for line in f:
-			#split
-			split_line = line.split(' ')
-			if split_line[0].strip(' ') == tax:
-				#print split_line
-				for i in range(1,len(split_line)):
-					#print split_line[i]
-					if starts_n.match(split_line[i]):
-						# print split_line[i]
-						match = i
-						for j in range(match,len(split_line)):
-							bits_list.append(split_line[j].rstrip('\n').lstrip('N='))
-						# print split_line[i]
-
-	species_string = " ".join(bits_list)
-	# print species_string
-	species_lst.append(species_string)
-
-# string 'species' lists the species
-
-if len(species_lst) == 1:
-	species = str(species_lst[0])
-
-if len(species_lst) == 2:
-	species = (species_lst[0] + ' and ' + species_lst[1])
-
-if len(species_lst) > 2:
-	for i in range(0,(len(species_lst)-2)):
-		species = (species + species_lst[i] + ', ') 
-
-	species = (species + species_lst[len(species_lst)-2] + ' and ')
-	species = (species + species_lst[len(species_lst)-1])
+# species codes to species names mapping file 
+spec_list = 'speclist.txt'
 ############################################################################
 
 
@@ -207,8 +138,10 @@ sim_threshold = 0.9
 ### REPOSITIONING CANDIDATE
 ############################################################################
 # repositioning candidate to be examined
+
 # put CHEMBL or DB ID eg 'CHEMBL98'
 repo_candidate = 'CHEMBL941'
+
 # target number, for selecting which drug target to align to the potential
 # parasite targets. 
 # 0 is the first one (could be the only one), 1 the second one...
