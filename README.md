@@ -53,8 +53,8 @@ A. This README is formatted in GitHub markdown, please open it on GitHub. I will
 
 ##Instructions  
 * clone the repository  
-* modify the config.py file according to your needs  
-* install dependencies: BioPython, ArchSchema, SMSD, MODELLER
+* modify the config.py file according to your needs ()
+* install dependencies: BioPython, ArchSchema, SMSD, MODELLER (only for step 10)  
   
 
 ##License  
