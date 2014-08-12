@@ -97,6 +97,7 @@ import sys, re, string, fnmatch, shutil
 from urllib2 import urlopen, HTTPError
 #import urllib2
 
+from urllib import urlretrieve
 # linecache for jumping to specific lines
 import linecache
 
@@ -112,6 +113,10 @@ class AutoVivification(dict):
       except KeyError:
           value = self[item] = type(self)()
           return value
+
+import gzip
+import xml.dom.minidom
+
 ############################################################################
 
 
@@ -600,7 +605,7 @@ def uniprot_to_arch(uniprot_list,architecture):
 
               architect_list.append(item)
 
-          # this is the case of just one entry, no dots
+          # this is the case of just one entry
           else:
             architect_list.append(line_split[2])
 
@@ -1915,7 +1920,7 @@ def run_tcoffee(fasta_file):
   try:
     subprocess.call("t_coffee " + str(fasta_file) + 
                     " -email=" + str(c.your_email) + 
-                    ' -quiet=t_coffee.log', shell=True)
+                    " -quiet=" + str(c.t_coffee), shell=True)
     # get list from lines in molDescriptors output
 
 
@@ -2042,6 +2047,76 @@ def taxa_to_species(taxa_list, species_map):
 
   # return string of species
   return species
+############################################################################
+
+
+
+
+############################################################################
+### RES_NUMB_MAP
+############################################################################
+# return 2 residue numbers maps
+# umap = uniprot:pdb /  pmap = pdb:uniprot
+# module modified from 'siftPasser' (Nick Furnham)
+
+def res_numb_map(doc):
+  umap = {}
+  pmap = {}
+  c = {}
+  d = {}
+  pres = None
+  ures = None
+  #Data struc: {chain:{uni_res:pdb_res}}
+  for e in doc.childNodes[0].childNodes:
+    if e.nodeType == e.ELEMENT_NODE and e.localName == "entity":
+      chain = ""
+      #chain = str(e._attrs["entityId"].value)
+      for f in e.childNodes:
+        if f.nodeType == f.ELEMENT_NODE and f.localName == "segment":
+          for g in f.childNodes:
+            if (g.nodeType == g.ELEMENT_NODE and 
+                g.localName == "listResidue"):
+              for h in g.childNodes:
+                if h.localName == "residue":
+                  for i in h.childNodes:
+                    if (i.localName == "crossRefDb" 
+                        and i._attrs["dbSource"].value == "PDB"):
+                      try:
+                        pres = int(i._attrs["dbResNum"].value)
+                        chain = str(i._attrs["dbChainId"].value)
+                      except:
+                        pres = int(i._attrs["dbResNum"].value[:-1])
+                        chain = str(i._attrs["dbChainId"].value)
+                    if (i.localName == "crossRefDb" and 
+                        i._attrs["dbSource"].value == "UniProt"):
+                      ures = int(i._attrs["dbResNum"].value)
+                  if ures != None and pres != None:
+                    c[ures]=pres
+                    d[pres]=ures
+                    ures = None
+                    pres = None
+          
+      umap[chain] = c
+      pmap[chain] = d
+      c = {}
+      d = {}
+
+  return umap, pmap
+############################################################################
+
+
+
+
+############################################################################
+### DRUG_TO_PDB_RES_NUMB
+############################################################################
+# from drug list get 
+def drug_to_pdb_re_numb():
+
+  pass
+
+
+
 ############################################################################
 
 
@@ -2665,7 +2740,7 @@ def main():
     chembl_cluster = run_or_pickle("7_chembl_cluster", run_smsd, 
                                   chembl_id_smi_opt, cc_smi_filt,
                                   "pair_2dic", c.sim_threshold, chembl_to_cc)
-
+    logger.info(chembl_cluster)
     # move output file to current dir
     mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
 
@@ -2677,7 +2752,7 @@ def main():
 
     # get the list of drugs from cluster dic
     chembl_cluster_list = flatten_dic(chembl_cluster, "keys")
-    #logger.info(len(chembl_cluster_list))
+    # logger.info(chembl_cluster_list)
 
     # find how it relates to the maps
     # chembl_repo_map - big map
@@ -2690,16 +2765,6 @@ def main():
     filter_txt('chembl_drugs.txt', '7_chembl_clust_excel.txt', 'CHEMBL_ID', 
                chembl_cluster_list)
 
-    #logger.info(chembl_repo_map['CHEMBL973'])
-
-
-    # # tanimoto 0.9
-    # chembl_cc_09 = run_or_pickle("7_chembl_cc_09", run_smsd,
-    #                               chembl_id_smi_opt,cc_smi_filt,"pair", 0.9)
-    # # tanimoto 1.0
-    # chembl_cc_1 = run_or_pickle("7_chembl_cc_1", run_smsd,
-    #                               chembl_id_smi_opt,cc_smi_filt,"pair", 1.0)
-    # #logger.info(chembl_cc_02)
     
     new_dic = AutoVivification()
 
@@ -2847,6 +2912,22 @@ def main():
   if c.steps > (step-1):
     logger.info('------------------------- STEP ' + str(step) + ' ' +
                 '-------------------------')
+    
+    pdb_list = ['2gqg','1d3h']
+
+    for pdb in pdb_list:
+
+      ftp_url = ("ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/xml/" + 
+                    pdb + ".xml.gz")
+      f = gzip.open(urlretrieve(ftp_url)[0])
+      doc = xml.dom.minidom.parse(f)
+      logger.info(doc)
+      f.close()
+
+      uni_pdb, pdb_uni = res_numb_map(doc)
+      logger.info(pdb_uni)
+
+
 
     # info retrieval and alignment
     logger.info('We wish to investigate the repositioning candidate ' + 
@@ -2908,14 +2989,14 @@ def main():
       # add db cluster here!
 
     # get uniprot to align
-    logger.info(lucky_uniprot.keys()[c.repo_target_no])
+    # logger.info(lucky_uniprot.keys()[c.repo_target_no])
     
 
     # display full_map or partial_map
-    logger.info('The mapping dictionary for the drug is ' + 
-               str(partial_map))
+    # logger.info('The mapping dictionary for the drug is ' + 
+    #            str(partial_map))
 
-    logger.info(len(full_map.values()))
+    # logger.info(len(full_map.values()))
     # targets we are interested in
     logger.info('The drug was mapped to ' + str(len(full_map)) + 
                 ' drug target(s), ' + str(full_map.keys()))
@@ -2991,8 +3072,6 @@ def main():
                 ' homology model of the sequence ' + c.model_seq + 
                 ', using the template ' + c.model_xray + 
                 ' and the alignment file ' + c.model_align + '.')
-
-
 
 
     # run modeller
