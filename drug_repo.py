@@ -2136,12 +2136,11 @@ def drug_to_res_numb():
 
 def struct_maps(repox, clust_het, uni_pdb, pdb_cc):
 
-  # pass
-
-  # filtered version of big map, with only structural info
+  # filtered version of big map, with only targets with structural info
+  # drug: target: arch : target
   map1 = AutoVivification()
 
-  #
+  # drug: target:pdb:het
   map2 = AutoVivification()
 
   logger.info(uni_pdb)
@@ -2149,45 +2148,88 @@ def struct_maps(repox, clust_het, uni_pdb, pdb_cc):
     # dict for uniprot to pdbs
     lucky_uniprot = {}
 
-    # each het group listed (drug or analogue)
-    for het in clust_het[drug]:
-      # each uniprot
-      for protein in repox[drug]:
-        # list to store pdbs
-        lucky_pdb = []
-        logger.info(protein)
 
 
-        if protein in uni_pdb:
-          # each pdb associated with them
-          for pdb in uni_pdb[protein]:
-            #logger.info(pdb)
-            if het in pdb_cc[pdb]:
-              lucky_pdb.append(pdb)
+    for protein in repox[drug]:
+      if protein in uni_pdb:
+            # each pdb associated with them
+            for pdb in uni_pdb[protein]:
 
-        logger.info(lucky_pdb)
+              good_hets = []
 
-        # check list is not empty
-        if lucky_pdb:
-          # populate dictionary proteins:list of pdbs
-          lucky_uniprot[protein] = lucky_pdb
-      
+              for listed_het in pdb_cc[pdb]:
+                # logger.info(listed_het)
+                if listed_het in clust_het[drug]:
 
-    # for each uniprot in the dic
-    for uniprot_id in lucky_uniprot:
-      # populate map1 for each drug
-      map1[drug][uniprot_id] = repox[drug][uniprot_id]
+                  good_hets.append(listed_het)
 
 
-    # map2[drug] = drug_map
+              # just in case
+              if good_hets:
+
+                good_hets = list(set(good_hets))
+                # logger.info(pdb)
+                # logger.info(good_hets)
+                map1[drug][protein] = repox[drug][protein]
+                
+                map2[drug][protein][pdb] = good_hets
+
+
+
+
+
+  # logger.info(map2)
+
+
+
+    # # each het group listed (drug or analogue)
+    # for het in clust_het[drug]:
+    #   # each uniprot
+    #   for protein in repox[drug]:
+    #     # list to store pdbs
+    #     lucky_pdb = []
+    #     logger.info(protein)
+
+
+    #     if protein in uni_pdb:
+    #       # each pdb associated with them
+    #       for pdb in uni_pdb[protein]:
+
+    #         #logger.info(pdb)
+
+    #         # check if het is included
+    #         if het in pdb_cc[pdb]:
+    #           lucky_pdb.append(pdb)
+            
+
+
+    #           # hets_in_pdb.append(het)
+    #           # # check the pdb is listed already
+    #           # map2[drug][protein][pdb] = hets_in_pdb
+
+
+
+    #     logger.info(lucky_pdb)
+
+    #     # check list is not empty
+    #     if lucky_pdb:
+    #       # populate dictionary proteins:list of pdbs
+    #       lucky_uniprot[protein] = lucky_pdb
+
+
+       
+
+    # # for each uniprot in the dic
+    # for uniprot_id in lucky_uniprot:
+    #   # populate map1 for each drug
+    #   map1[drug][uniprot_id] = repox[drug][uniprot_id]
+
+      # for pdb_id in lucky_uniprot[uniprot_id]:
+      #   map2[drug][uniprot_id][pdb_id] = 
+
+
 
   return map1, map2
-  # # drugbank drug
-  # # check format
-  # elif drugbank_format.match(c.repo_candidate):
-  #   if c.repo_candidate in drugbank_repo_map:
-  #     full_map = drugbank_repo_map[c.repo_candidate]
-
 
 ############################################################################
 
@@ -2998,7 +3040,7 @@ def main():
       # gzip will not open ftp, urlretrieve it's needed
       f = gzip.open(urlretrieve(ftp_url)[0])
       doc = xml.dom.minidom.parse(f)
-      logger.info(doc)
+      # logger.info(doc)
       f.close()
 
       uni_pdb, pdb_uni = res_numb_map(doc)
@@ -3017,79 +3059,29 @@ def main():
     struct_maps(drugbank_repo_map, drugbank_cluster,
                 uniprot_pdb_w_lig, pdb_cc_dic))
 
-    # logger.info(drugbank_struct_map)
+    logger.info(drugbank_struct_map)
 
-
-
-    # info retrieval and alignment
-    logger.info('We wish to investigate the repositioning candidate ' + 
-                c.repo_candidate + '.')
-
-    # full_map = ('empty! Please check you have picked the right ID ' +
-    #             'in the config.py file.')
-
-    # # chembl id format
-    # chembl_format = re.compile('CHEMBL.*')
-
-    # # drugbank id format
-    # drugbank_format = re.compile('DB.*')
-
-    # # chembl drug
-    # # check format
-    # if chembl_format.match(c.repo_candidate):
-    #   # full map
-    #   if c.repo_candidate in chembl_repo_map:
-    #     full_map = chembl_repo_map[c.repo_candidate]
-
-    #   # het group in cluster
-    #   if c.repo_candidate in chembl_cluster:
-    #     ref_het = chembl_cluster[c.repo_candidate]
-
-
-    #   # find which pdb has het group(s)
-    #   for het in ref_het:
-    #     # each uniprot (only ones associated with small mol)
-    #     for protein in chembl_dic_uni_drugs[c.repo_candidate]:
-    #       # list to store pdbs
-    #       lucky_pdb = []
-
-    #       #logger.info(protein)
-    #       # each pdb associated with them
-    #       for pdb in uniprot_pdb_w_lig[protein]:
-    #         #logger.info(pdb)
-    #         if het in pdb_cc_dic[pdb]:
-    #           lucky_pdb.append(pdb)
-
-    #       # check list is not empty
-    #       if lucky_pdb:
-    #         lucky_uniprot[protein] = lucky_pdb
-    #         for uniprot_id in lucky_uniprot:
-    #           partial_map[uniprot_id] = full_map[uniprot_id]
-
-
-    # # drugbank drug
-    # # check format
-    # elif drugbank_format.match(c.repo_candidate):
-    #   if c.repo_candidate in drugbank_repo_map:
-    #     full_map = drugbank_repo_map[c.repo_candidate]
 
 
     # DRUG REPOSITIONING CANDIDATE!!
-    
+    # info retrieval and alignment
+    logger.info('We wish to investigate the repositioning candidate ' + 
+                c.repo_candidate + '.')
     # chembl id format
     chembl_format = re.compile('CHEMBL.*')
-
     # drugbank id format
     drugbank_format = re.compile('DB.*')
+
+
 
     # CHEMBL
     if chembl_format.match(c.repo_candidate):
       # display chembl_struct_map, map with only structural 
       logger.info('The mapping dictionary for the drug is ' + 
                  str(chembl_struct_map[c.repo_candidate]))
+      logger.info(chembl_het_map[c.repo_candidate])
 
-
-
+    # DRUGBANK
     elif drugbank_format.match(c.repo_candidate):
       # display chembl_struct_map, map with only structural 
       logger.info('The mapping dictionary for the drug is ' + 
