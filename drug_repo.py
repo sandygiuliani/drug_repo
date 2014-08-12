@@ -2108,13 +2108,85 @@ def res_numb_map(doc):
 
 
 ############################################################################
-### DRUG_TO_PDB_RES_NUMB
+### DRUG_TO_RES_NUMB
 ############################################################################
-# from drug list get 
-def drug_to_pdb_re_numb():
+# from drug mapping file get list or residue numbers (uniprot numbering)
+# that interact with the drug
+
+def drug_to_res_numb():
 
   pass
 
+
+
+############################################################################
+
+
+
+
+############################################################################
+### STRUCT_MAPS
+############################################################################
+#take chembl or drugbank cluster (drg to het)
+# 
+# return dictionary drug:target:pdb:het
+# struct_maps(
+  # chembl_repo_map, chembl_cluster,
+#                 uniprot_pdb_w_lig, pdb_cc_dic))
+
+def struct_maps(repox, clust_het, uni_pdb, pdb_cc):
+
+  # pass
+
+  # filtered version of big map, with only structural info
+  map1 = AutoVivification()
+
+  #
+  map2 = AutoVivification()
+
+  logger.info(uni_pdb)
+  for drug in clust_het:
+    # dict for uniprot to pdbs
+    lucky_uniprot = {}
+
+    # each het group listed (drug or analogue)
+    for het in clust_het[drug]:
+      # each uniprot
+      for protein in repox[drug]:
+        # list to store pdbs
+        lucky_pdb = []
+        logger.info(protein)
+
+
+        if protein in uni_pdb:
+          # each pdb associated with them
+          for pdb in uni_pdb[protein]:
+            #logger.info(pdb)
+            if het in pdb_cc[pdb]:
+              lucky_pdb.append(pdb)
+
+        logger.info(lucky_pdb)
+
+        # check list is not empty
+        if lucky_pdb:
+          # populate dictionary proteins:list of pdbs
+          lucky_uniprot[protein] = lucky_pdb
+      
+
+    # for each uniprot in the dic
+    for uniprot_id in lucky_uniprot:
+      # populate map1 for each drug
+      map1[drug][uniprot_id] = repox[drug][uniprot_id]
+
+
+    # map2[drug] = drug_map
+
+  return map1, map2
+  # # drugbank drug
+  # # check format
+  # elif drugbank_format.match(c.repo_candidate):
+  #   if c.repo_candidate in drugbank_repo_map:
+  #     full_map = drugbank_repo_map[c.repo_candidate]
 
 
 ############################################################################
@@ -2766,6 +2838,10 @@ def main():
                chembl_cluster_list)
 
     
+
+
+    # check below mathces or get rid of it
+
     new_dic = AutoVivification()
 
     for item in chembl_repo_map:
@@ -2888,12 +2964,12 @@ def main():
     mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '8_db5_cluster.txt')
 
     # sum of all the 5 dics!
-    tot_db = dict(db1_cluster.items() + db2_cluster.items() + 
+    drugbank_cluster = dict(db1_cluster.items() + db2_cluster.items() + 
                   db3_cluster.items() + db4_cluster.items() + 
                   db5_cluster.items())
 
     logger.info('We have clustered the DrugBank drugs, to obtain ' + 
-                str(len(tot_db)) + ' drugs mapped to at least ' +
+                str(len(drugbank_cluster)) + ' drugs mapped to at least ' +
                 'a chemical component with Tanimoto similarity above ' +
                 str(c.sim_threshold) + 
                 ' (other similarity thresholds written to file).')
@@ -2919,13 +2995,29 @@ def main():
 
       ftp_url = ("ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/xml/" + 
                     pdb + ".xml.gz")
+      # gzip will not open ftp, urlretrieve it's needed
       f = gzip.open(urlretrieve(ftp_url)[0])
       doc = xml.dom.minidom.parse(f)
       logger.info(doc)
       f.close()
 
       uni_pdb, pdb_uni = res_numb_map(doc)
-      logger.info(pdb_uni)
+      # logger.info(pdb_uni)
+
+
+
+    # map chembl drugs to target to pdb to het
+    chembl_struct_map, chembl_het_map = (
+    struct_maps(chembl_repo_map, chembl_cluster,
+                uniprot_pdb_w_lig, pdb_cc_dic))
+    
+    
+    # drugbank
+    drugbank_struct_map, drugbank_het_map = (
+    struct_maps(drugbank_repo_map, drugbank_cluster,
+                uniprot_pdb_w_lig, pdb_cc_dic))
+
+    # logger.info(drugbank_struct_map)
 
 
 
@@ -2933,125 +3025,134 @@ def main():
     logger.info('We wish to investigate the repositioning candidate ' + 
                 c.repo_candidate + '.')
 
-    full_map = ('empty! Please check you have picked the right ID ' +
-                'in the config.py file.')
-    ref_het = ('-')
+    # full_map = ('empty! Please check you have picked the right ID ' +
+    #             'in the config.py file.')
 
-    lucky_uniprot = {}
+    # # chembl id format
+    # chembl_format = re.compile('CHEMBL.*')
 
-    partial_map = {}
+    # # drugbank id format
+    # drugbank_format = re.compile('DB.*')
 
+    # # chembl drug
+    # # check format
+    # if chembl_format.match(c.repo_candidate):
+    #   # full map
+    #   if c.repo_candidate in chembl_repo_map:
+    #     full_map = chembl_repo_map[c.repo_candidate]
+
+    #   # het group in cluster
+    #   if c.repo_candidate in chembl_cluster:
+    #     ref_het = chembl_cluster[c.repo_candidate]
+
+
+    #   # find which pdb has het group(s)
+    #   for het in ref_het:
+    #     # each uniprot (only ones associated with small mol)
+    #     for protein in chembl_dic_uni_drugs[c.repo_candidate]:
+    #       # list to store pdbs
+    #       lucky_pdb = []
+
+    #       #logger.info(protein)
+    #       # each pdb associated with them
+    #       for pdb in uniprot_pdb_w_lig[protein]:
+    #         #logger.info(pdb)
+    #         if het in pdb_cc_dic[pdb]:
+    #           lucky_pdb.append(pdb)
+
+    #       # check list is not empty
+    #       if lucky_pdb:
+    #         lucky_uniprot[protein] = lucky_pdb
+    #         for uniprot_id in lucky_uniprot:
+    #           partial_map[uniprot_id] = full_map[uniprot_id]
+
+
+    # # drugbank drug
+    # # check format
+    # elif drugbank_format.match(c.repo_candidate):
+    #   if c.repo_candidate in drugbank_repo_map:
+    #     full_map = drugbank_repo_map[c.repo_candidate]
+
+
+    # DRUG REPOSITIONING CANDIDATE!!
+    
     # chembl id format
     chembl_format = re.compile('CHEMBL.*')
 
     # drugbank id format
     drugbank_format = re.compile('DB.*')
 
-    # chembl drug
-    # check format
+    # CHEMBL
     if chembl_format.match(c.repo_candidate):
-      # full map
-      if c.repo_candidate in chembl_repo_map:
-        full_map = chembl_repo_map[c.repo_candidate]
-
-      # het group in cluster
-      if c.repo_candidate in chembl_cluster:
-        ref_het = chembl_cluster[c.repo_candidate]
+      # display chembl_struct_map, map with only structural 
+      logger.info('The mapping dictionary for the drug is ' + 
+                 str(chembl_struct_map[c.repo_candidate]))
 
 
-      # find which pdb has het group(s)
-      for het in ref_het:
-        # each uniprot (only ones associated with small mol)
-        for protein in chembl_dic_uni_drugs[c.repo_candidate]:
-          # list to store pdbs
-          lucky_pdb = []
 
-          #logger.info(protein)
-          # each pdb associated with them
-          for pdb in uniprot_pdb_w_lig[protein]:
-            #logger.info(pdb)
-            if het in pdb_cc_dic[pdb]:
-              lucky_pdb.append(pdb)
-
-          # check list is not empty
-          if lucky_pdb:
-            lucky_uniprot[protein] = lucky_pdb
-            for uniprot_id in lucky_uniprot:
-              partial_map[uniprot_id] = full_map[uniprot_id]
-
-
-    # drugbank drug
-    # check format
     elif drugbank_format.match(c.repo_candidate):
-      if c.repo_candidate in drugbank_repo_map:
-        full_map = drugbank_repo_map[c.repo_candidate]
+      # display chembl_struct_map, map with only structural 
+      logger.info('The mapping dictionary for the drug is ' + 
+                 str(drugbank_struct_map[c.repo_candidate]))
 
-      # add db cluster here!
 
-    # get uniprot to align
-    # logger.info(lucky_uniprot.keys()[c.repo_target_no])
+
+    # # logger.info(len(full_map.values()))
+    # # targets we are interested in
+    # logger.info('The drug was mapped to ' + str(len(full_map)) + 
+    #             ' drug target(s), ' + str(full_map.keys()))
+
+    # logger.info('Of these targets, we are only interested in ' +
+    #             str(len(lucky_uniprot)) + 
+    #             ' - the one(s) that have crystal structure(s) in complex' + 
+    #             ' with ' + str(ref_het) + ', the het group(s) ' +
+    #             'the drug is associated to in the clustering.')
+
+    # logger.info('The target(s), associated with their pdb ids, are: ' +
+    #             str(lucky_uniprot))
+
+
+    # # drug target to focus on
+    # target_to_align = lucky_uniprot.keys()[c.repo_target_no]
+
+    # # if there is more than oen target, inform on which one we are focusing on
+    # # can change the target number in config file, default is the first one
+    # if len(lucky_uniprot) > 1:
+    #   logger.info('We are focusing on target number ' + 
+    #               str(c.repo_target_no + 1) + ', ' + 
+    #               target_to_align + '.')
+
+
+    # # get list of uniprots, the drug targets and all the ones mapped to it
+    # uniprot_to_align = []
+    # # add all targets
+    # for arch in partial_map[target_to_align]:
+    #   for uni in partial_map[target_to_align][arch]:
+    #     uniprot_to_align.append(uni)
+    #   # logger.info(partial_map[target_to_align][arch])
     
+    # #get rid of duplicates
+    # uniprot_to_align = list(set(uniprot_to_align))
 
-    # display full_map or partial_map
-    # logger.info('The mapping dictionary for the drug is ' + 
-    #            str(partial_map))
-
-    # logger.info(len(full_map.values()))
-    # targets we are interested in
-    logger.info('The drug was mapped to ' + str(len(full_map)) + 
-                ' drug target(s), ' + str(full_map.keys()))
-
-    logger.info('Of these targets, we are only interested in ' +
-                str(len(lucky_uniprot)) + 
-                ' - the one(s) that have crystal structure(s) in complex' + 
-                ' with ' + str(ref_het) + ', the het group(s) ' +
-                'the drug is associated to in the clustering.')
-
-    logger.info('The target(s), associated with their pdb ids, are: ' +
-                str(lucky_uniprot))
-
-
-    # drug target to focus on
-    target_to_align = lucky_uniprot.keys()[c.repo_target_no]
-
-    # if there is more than oen target, inform on which one we are focusing on
-    # can change the target number in config file, default is the first one
-    if len(lucky_uniprot) > 1:
-      logger.info('We are focusing on target number ' + 
-                  str(c.repo_target_no + 1) + ', ' + 
-                  target_to_align + '.')
-
-
-    # get list of uniprots, the drug targets and all the ones mapped to it
-    uniprot_to_align = []
-    # add all targets
-    for arch in partial_map[target_to_align]:
-      for uni in partial_map[target_to_align][arch]:
-        uniprot_to_align.append(uni)
-      # logger.info(partial_map[target_to_align][arch])
+    # # logger.info(len(uniprot_to_align))
+    # logger.info('We are aligning it to all the ' + species_string +
+    #             ' targets that were found to be related to it, (' +
+    #             str(len(uniprot_to_align)) + ' unique targets).')
     
-    #get rid of duplicates
-    uniprot_to_align = list(set(uniprot_to_align))
+    # # add the drug target at the beginning of the list
+    # uniprot_to_align.insert(0, target_to_align) 
+    # # logger.info(uniprot_to_align)
 
-    # logger.info(len(uniprot_to_align))
-    logger.info('We are aligning it to all the ' + species_string +
-                ' targets that were found to be related to it, (' +
-                str(len(uniprot_to_align)) + ' unique targets).')
+    # #write fasta file from list of uniprots, simply returns name of the file
+    # alignment_name = run_or_pickle('9_align', uniprot_to_fasta, 
+    #                                 uniprot_to_align)
     
-    # add the drug target at the beginning of the list
-    uniprot_to_align.insert(0, target_to_align) 
-    # logger.info(uniprot_to_align)
-
-    #write fasta file from list of uniprots, simply returns name of the file
-    alignment_name = run_or_pickle('9_align', uniprot_to_fasta, 
-                                    uniprot_to_align)
-    
-    logger.info('We have written a fasta file, ' + alignment_name +
-                ', with the protein sequences not aligned.')
+    # logger.info('We have written a fasta file, ' + alignment_name +
+    #             ', with the protein sequences not aligned.')
 
 
-    # align list of uniprot with t-coffee
-    run_tcoffee(str(alignment_name))
+    # # align list of uniprot with t-coffee
+    # run_tcoffee(str(alignment_name))
 
   
     logger.info('----------------------------------------------------------')
