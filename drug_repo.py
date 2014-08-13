@@ -2108,16 +2108,181 @@ def res_numb_map(doc):
 
 
 ############################################################################
-### DRUG_TO_RES_NUMB
+### DRUG_TARG_RES_FILTER
 ############################################################################
 # from drug mapping file get list or residue numbers (uniprot numbering)
 # that interact with the drug
+# drug_het_map drug:target:pdb:het
 
-def drug_to_res_numb():
+def drug_targ_res_filter(drug_het_map, drug_arch_target):
+ 
+  # get pfam
+  # these will be pdb numbering!!
+  pfam_lines = file_to_lines(c.pdb_to_pfam)
+  
+  # get CATH
+  # this will be uniprot numbering!!
+  cath_lines = file_to_lines(c.uniprot_cath)
 
-  pass
+  drug_het_map = {'CHEMBL941':{'P00519': {'3pyy': ['STI'], '2hyy': ['STI']}, 'P10721': {'1t46': ['STI']}}}
+
+  # drug:targt:cath:schistotarg
+  drug_filt = AutoVivification()
+
+  # logger.info(drug_het_map)
+  for drug in drug_het_map:
+
+    # list in which to store res
+    res_list = []
+    
+    for target in drug_het_map[drug]:
+
+      # list of good domains! to save because there is
+      # at least one of the pdbs that has that domain interacting with drug!
+      good_dom = []
+
+      for pdb in drug_het_map[drug][target]:
+        
+        pdb_upper = pdb.upper()
+        
+    
+        # logger.info(pdb_upper)
+        # dict for het to chain ID to residue
+        het_ch_res = AutoVivification()
+        
+        ####################################
+        # retreive SIFTS for uniprot-pdb res mapping
+        ftp_url = ("ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/xml/" + 
+                      pdb + ".xml.gz")
+        # gzip will not open ftp, urlretrieve it's needed
+        f = gzip.open(urlretrieve(ftp_url)[0])
+        doc = xml.dom.minidom.parse(f)
+        # logger.info(doc)
+        f.close()
+
+        # get the two dics
+        uni_pdb, pdb_uni = res_numb_map(doc)
+        # logger.info(pdb_uni)
+        ####################################
 
 
+        #call pdbsum
+        # logger.info(pdb)
+        pdb_m = str(pdb[1]+pdb[2])
+        # logger.info(pdb_m)
+        logger.info(drug_het_map[drug][target][pdb])
+        psum = urlopen('http://www.ebi.ac.uk/thornton-srv/databases/PDBsum/' +
+                       pdb_m + '/' + pdb + '/grow.out')
+        
+        psum_read = psum.readlines()
+        # logger.info(psum_read)
+        
+
+        for i in range(1,len(psum_read)):
+          # logger.info(psum_read[i])
+          # split tab
+          splitline = psum_read[i].split(" ")
+          splitline = filter(None, splitline)
+          het_name = splitline[11]
+          chain_name = splitline[3]
+          resnum = splitline[4] 
+          
+          # line with het group!
+          # logger.info(drug_het_map[drug][target][pdb])
+          # check the het gropu is one of the ones we want
+          if het_name in drug_het_map[drug][target][pdb]:
+
+            
+            # check if it is already in there
+            if het_name in het_ch_res:
+
+              # check if chain name is already there
+              if chain_name in het_ch_res[het_name]:
+                # check if residue number is already there
+                if resnum in het_ch_res[het_name][chain_name]:
+                  # do nothing, it is already listed
+                  pass
+                # the chain is there, we need to add the res
+                else:
+                  het_ch_res[het_name][chain_name].append(resnum)
+
+              # chain is not there
+              else:
+                res_list = []
+                # res_list.append(resnum)
+                het_ch_res[het_name][chain_name] = res_list
+            
+            # het is not in the dic, add res as list
+            else:
+              res_list = []
+              # res_list.append(resnum)
+              het_ch_res[het_name][chain_name] = res_list
+
+          # het name is not of interested, skip the line
+          else:
+            pass
+
+
+        # het:chain:resnum of interacting residues for each pdb
+        logger.info(het_ch_res)
+
+
+        # the map for input, architectures!!!!
+        logger.info(drug_arch_target[drug][target])
+
+        # for this pdb, loop over het
+        # for het in het_ch_res:
+        #   # loop over chain
+        #   for chain in het_ch_res[het]:
+        #     # each res
+        #     for res in het_ch_res[het][res]:
+
+        #       # add residue to the list for this pdb entry
+        #       # these are 
+        #       res_list.append(pdb_uni[chain][res])
+
+
+
+        #pfam - pdb numbering!!!
+        for pfam_line in pfam_lines:
+
+          line_split = pfam_line.split("\t")
+          if line_split[0] == pdb_upper:
+            logger.info(line_split)
+
+
+        # get CATH - uniprot numbering!!
+
+        for cath_line in cath_lines:
+          cath_split = cath_line.split("\t")
+          if cath_split[0] == target:
+            logger.info(cath_split)
+
+
+
+          ######################################
+
+
+    good_dom = ['2.30.30.40']  
+
+    logger.info(' The good dom are ' + str(good_dom))
+    # is there at least one good dom
+    if good_dom:
+      # get rid of duplicates
+      good_dom = list(set(good_dom))
+
+      # check each domain in our mapping file
+      for arch in drug_arch_target[drug][target]:
+
+        # if the arch is one of the good ones
+        if arch in good_dom:
+          drug_filt[drug][target][arch] = (
+                                      drug_arch_target[drug][target][arch])
+
+    # logger.info(pdb_uni)
+
+  logger.info('The filt dictionary with only good entries is' + str(drug_filt))
+  return drug_filt
 
 ############################################################################
 
@@ -2143,7 +2308,7 @@ def struct_maps(repox, clust_het, uni_pdb, pdb_cc):
   # drug: target:pdb:het
   map2 = AutoVivification()
 
-  logger.info(uni_pdb)
+  # logger.info(uni_pdb)
   for drug in clust_het:
     # dict for uniprot to pdbs
     lucky_uniprot = {}
@@ -2173,59 +2338,6 @@ def struct_maps(repox, clust_het, uni_pdb, pdb_cc):
                 map1[drug][protein] = repox[drug][protein]
                 
                 map2[drug][protein][pdb] = good_hets
-
-
-
-
-
-  # logger.info(map2)
-
-
-
-    # # each het group listed (drug or analogue)
-    # for het in clust_het[drug]:
-    #   # each uniprot
-    #   for protein in repox[drug]:
-    #     # list to store pdbs
-    #     lucky_pdb = []
-    #     logger.info(protein)
-
-
-    #     if protein in uni_pdb:
-    #       # each pdb associated with them
-    #       for pdb in uni_pdb[protein]:
-
-    #         #logger.info(pdb)
-
-    #         # check if het is included
-    #         if het in pdb_cc[pdb]:
-    #           lucky_pdb.append(pdb)
-            
-
-
-    #           # hets_in_pdb.append(het)
-    #           # # check the pdb is listed already
-    #           # map2[drug][protein][pdb] = hets_in_pdb
-
-
-
-    #     logger.info(lucky_pdb)
-
-    #     # check list is not empty
-    #     if lucky_pdb:
-    #       # populate dictionary proteins:list of pdbs
-    #       lucky_uniprot[protein] = lucky_pdb
-
-
-       
-
-    # # for each uniprot in the dic
-    # for uniprot_id in lucky_uniprot:
-    #   # populate map1 for each drug
-    #   map1[drug][uniprot_id] = repox[drug][uniprot_id]
-
-      # for pdb_id in lucky_uniprot[uniprot_id]:
-      #   map2[drug][uniprot_id][pdb_id] = 
 
 
 
@@ -3030,22 +3142,8 @@ def main():
   if c.steps > (step-1):
     logger.info('------------------------- STEP ' + str(step) + ' ' +
                 '-------------------------')
+
     
-    pdb_list = ['2gqg','1d3h']
-
-    for pdb in pdb_list:
-
-      ftp_url = ("ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/xml/" + 
-                    pdb + ".xml.gz")
-      # gzip will not open ftp, urlretrieve it's needed
-      f = gzip.open(urlretrieve(ftp_url)[0])
-      doc = xml.dom.minidom.parse(f)
-      # logger.info(doc)
-      f.close()
-
-      uni_pdb, pdb_uni = res_numb_map(doc)
-      # logger.info(pdb_uni)
-
 
 
     # map chembl drugs to target to pdb to het
@@ -3053,13 +3151,22 @@ def main():
     struct_maps(chembl_repo_map, chembl_cluster,
                 uniprot_pdb_w_lig, pdb_cc_dic))
     
+    logger.info(len(chembl_struct_map))
+    logger.info(chembl_het_map['CHEMBL941'])
     
     # drugbank
     drugbank_struct_map, drugbank_het_map = (
     struct_maps(drugbank_repo_map, drugbank_cluster,
                 uniprot_pdb_w_lig, pdb_cc_dic))
+    logger.info(len(drugbank_struct_map))
+    logger.info(len(drugbank_het_map))
+    logger.info('check why these two dont match with prev!!!')
+    # logger.info(drugbank_struct_map)
 
-    logger.info(drugbank_struct_map)
+    # filter the struc_map to get rid of domains that are not 
+    # interacting with the drug
+    chembl_filter_map = drug_targ_res_filter(chembl_het_map, chembl_struct_map)
+
 
 
 
@@ -3077,15 +3184,23 @@ def main():
     # CHEMBL
     if chembl_format.match(c.repo_candidate):
       # display chembl_struct_map, map with only structural 
-      logger.info('The mapping dictionary for the drug is ' + 
-                 str(chembl_struct_map[c.repo_candidate]))
-      logger.info(chembl_het_map[c.repo_candidate])
+      struct_map = chembl_struct_map[c.repo_candidate]
+      # logger.info(chembl_het_map[c.repo_candidate])
+      het_map = chembl_het_map[c.repo_candidate]
 
     # DRUGBANK
     elif drugbank_format.match(c.repo_candidate):
       # display chembl_struct_map, map with only structural 
-      logger.info('The mapping dictionary for the drug is ' + 
-                 str(drugbank_struct_map[c.repo_candidate]))
+      struct_map = drugbank_struct_map[c.repo_candidate]
+      het_map = drugbank_het_map[c.repo_candidate]
+
+  
+    logger.info('The mapping dictionary for the drug is ' + 
+                 str(struct_map))
+
+    logger.info('The het dictionary for the drug is ' + 
+                 str(het_map))
+
 
 
 
