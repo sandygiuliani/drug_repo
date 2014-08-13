@@ -2124,24 +2124,29 @@ def drug_targ_res_filter(drug_het_map, drug_arch_target):
   # this will be uniprot numbering!!
   cath_lines = file_to_lines(c.uniprot_cath)
 
-  drug_het_map = {'CHEMBL941':{'P00519': {'3pyy': ['STI'], '2hyy': ['STI']}, 'P10721': {'1t46': ['STI']}}}
-
+  # overwrite drug_het_map for testing!!
+  # drug_het_map = 
+  # {'CHEMBL1560':{'P12821': {'4c2p': ['X8Z'], '1uzf': ['MCO']}}}
+  
   # drug:targt:cath:schistotarg
   drug_filt = AutoVivification()
 
   # logger.info(drug_het_map)
   for drug in drug_het_map:
-
+    logger.info(drug)
     # list in which to store res
     res_list = []
     
     for target in drug_het_map[drug]:
+      logger.info(target)
 
       # list of good domains! to save because there is
       # at least one of the pdbs that has that domain interacting with drug!
+      # keep adding for each pdb
       good_dom = []
 
       for pdb in drug_het_map[drug][target]:
+        logger.info('we are looking at pdb ' + str(pdb))
         
         pdb_upper = pdb.upper()
         
@@ -2162,7 +2167,7 @@ def drug_targ_res_filter(drug_het_map, drug_arch_target):
 
         # get the two dics
         uni_pdb, pdb_uni = res_numb_map(doc)
-        # logger.info(pdb_uni)
+        # logger.info(uni_pdb)
         ####################################
 
 
@@ -2170,7 +2175,7 @@ def drug_targ_res_filter(drug_het_map, drug_arch_target):
         # logger.info(pdb)
         pdb_m = str(pdb[1]+pdb[2])
         # logger.info(pdb_m)
-        logger.info(drug_het_map[drug][target][pdb])
+        # logger.info(drug_het_map[drug][target][pdb])
         psum = urlopen('http://www.ebi.ac.uk/thornton-srv/databases/PDBsum/' +
                        pdb_m + '/' + pdb + '/grow.out')
         
@@ -2223,65 +2228,119 @@ def drug_targ_res_filter(drug_het_map, drug_arch_target):
             pass
 
 
-        # het:chain:resnum of interacting residues for each pdb
-        logger.info(het_ch_res)
-
-
-        # the map for input, architectures!!!!
-        logger.info(drug_arch_target[drug][target])
-
-        # for this pdb, loop over het
-        # for het in het_ch_res:
-        #   # loop over chain
-        #   for chain in het_ch_res[het]:
-        #     # each res
-        #     for res in het_ch_res[het][res]:
-
-        #       # add residue to the list for this pdb entry
-        #       # these are 
-        #       res_list.append(pdb_uni[chain][res])
-
-
-
+        pfam_numb = AutoVivification()
         #pfam - pdb numbering!!!
         for pfam_line in pfam_lines:
 
           line_split = pfam_line.split("\t")
           if line_split[0] == pdb_upper:
-            logger.info(line_split)
+            # logger.info(line_split)
+            # get the pfam id
+            pfam_id = line_split[4].split(".")[0]
+            p_chain = line_split[1]
+            # logger.info(line_split[2])
+            if line_split[2].isdigit():
+
+              p_start = int(line_split[2])
+
+              if line_split[3].isdigit():
+                p_end = int(line_split[3])
+                pfam_numb[pfam_id][p_chain] = (p_start, p_end)
+
+              else:
+                logger.info(str(line_split[3]) + '!!!!')
+            
+            else:
+              logger.info(str(line_split[2]) + '!!!!')
+            # p_end = int(line_split[3])
+            # # logger.info(pfam_id)
+            # pfam_numb[pfam_id][p_chain] = (p_start, p_end)
+
+        # logger.info(pfam_numb)
 
 
-        # get CATH - uniprot numbering!!
-
+        # get CATH - uniprot numbering!! -> is converted into pdb
+        cath_numb = AutoVivification()
         for cath_line in cath_lines:
           cath_split = cath_line.split("\t")
           if cath_split[0] == target:
-            logger.info(cath_split)
+            # logger.info(cath_line)
+            cath_id = cath_split[3]
+            if cath_split[4].isdigit():
+              start_uni = int(cath_split[4])
+              if cath_split[5].strip("\n").isdigit():
+                end_uni = int(cath_split[5].strip("\n"))
+
+                for chain in uni_pdb:
+                  # if entirely contained in pdb
+                  if start_uni in uni_pdb[chain] and end_uni in uni_pdb[chain]:
+                    start_pdb = uni_pdb[chain][start_uni]
+                    end_pdb = uni_pdb[chain][end_uni]
+                    cath_numb[cath_id][chain] = (start_pdb, end_pdb)
+
+                  # partial, no end
+                  elif (start_uni in uni_pdb[chain] and 
+                        (not end_uni in uni_pdb[chain])):
+                    start_pdb = uni_pdb[chain][start_uni]
+                    end_pdb = max(uni_pdb[chain].values())
+                    cath_numb[cath_id][chain] = (start_pdb, end_pdb)
+                  # partial, no start
+                  elif ((not start_uni in uni_pdb[chain]) and 
+                        (end_uni in uni_pdb[chain])):
+                    start_pdb = min(uni_pdb[chain].values())
+                    end_pdb = uni_pdb[chain][end_uni]
+                    cath_numb[cath_id][chain] = (start_pdb, end_pdb)
+              
+              else:
+                logger.info(str(cath_split[5]) + '!!!!')
+            else:
+                logger.info(str(cath_split[4]) + '!!!!')
 
 
+        # logger.info(cath_numb)
+
+        # sum of dictionaries
+        arch_numb = dict(pfam_numb.items() + cath_numb.items())
+        # logger.info('the sum of dics is' + str(arch_numb))
+
+        # check for each residue if they are in the ranges?
+        for het in het_ch_res:
+          # loop over chain
+          for chain in het_ch_res[het]:
+            # each res we have in the list of interacting residues
+            for res in het_ch_res[het][chain]:
+              # loop over cath/pfam
+              for domain in arch_numb:
+                for chain in arch_numb[domain]:
+
+                  if (int(res) < arch_numb[domain][chain][1] and 
+                      int(res) > arch_numb[domain][chain][0]):
+                    good_dom.append(domain)
+              
 
           ######################################
 
+      # still in the target loop, (for each drug) get the good targets
+      # could be different for each target!
 
-    good_dom = ['2.30.30.40']  
+      # is there at least one good dom
+      if good_dom:
+        # get rid of duplicates
+        good_dom = list(set(good_dom))
+        # logger.info(' The good dom for target '+ str(target)
+         # + ' are '+str(good_dom))
+        # check each domain in our mapping file
+        for arch in drug_arch_target[drug][target]:
 
-    logger.info(' The good dom are ' + str(good_dom))
-    # is there at least one good dom
-    if good_dom:
-      # get rid of duplicates
-      good_dom = list(set(good_dom))
-
-      # check each domain in our mapping file
-      for arch in drug_arch_target[drug][target]:
-
-        # if the arch is one of the good ones
-        if arch in good_dom:
-          drug_filt[drug][target][arch] = (
-                                      drug_arch_target[drug][target][arch])
+          # if the arch is one of the good ones
+          if arch in good_dom:
+            drug_filt[drug][target][arch] = (
+                                        drug_arch_target[drug][target][arch])
 
     # logger.info(pdb_uni)
 
-  logger.info('The filt dictionary with only good entries is' + str(drug_filt))
+  # filtered dictionaries with only entries that have domain interacting
+  # with the drug
   return drug_filt
 
 ############################################################################
@@ -2968,30 +3027,27 @@ def main():
                                   "pair_2dic", c.sim_threshold, chembl_to_cc)
     logger.info(chembl_cluster)
     # move output file to current dir
-    mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', '7_chembl_cluster.txt')
+    mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', c.chembl_clust_sim_scores)
 
     logger.info('We have clustered the ChEMBL drugs, to obtain ' + 
                 str(len(chembl_cluster)) + ' drugs mapped to at least ' +
                 'a chemical component with Tanimoto similarity above ' +
                 str(c.sim_threshold) + 
-                ' (other similarity thresholds written to file).')
+                ' (other similarity thresholds written to ' +
+                  str(c.chembl_clust_sim_scores) + ').')
 
     # get the list of drugs from cluster dic
     chembl_cluster_list = flatten_dic(chembl_cluster, "keys")
     # logger.info(chembl_cluster_list)
 
-    # find how it relates to the maps
-    # chembl_repo_map - big map
-    # chembl_schisto_filt_map - only ones with annotated schisto targ
-    #logger.info(chembl_schisto_filt_map)
-    #this = filter_dic_from_list(chembl_schisto_filt_map,chembl_cluster_list)
-    #logger.info(this)
     
-    # write filtered txt csv file to be imported in excel
-    filter_txt('chembl_drugs.txt', '7_chembl_clust_excel.txt', 'CHEMBL_ID', 
-               chembl_cluster_list)
+    logger.info('We have written to file ' + str(c.chembl_cluster) +
+                ' the info from ChEMBL regarding the clustered drugs' +
+                ', to be imported in excel.')
 
-    
+    # write filtered txt csv file to be imported in excel
+    filter_txt('chembl_drugs.txt', c.chembl_cluster, 'CHEMBL_ID', 
+               chembl_cluster_list)
 
 
     # check below mathces or get rid of it
@@ -3014,6 +3070,93 @@ def main():
     whatevs = list(set(whatevs))
     logger.info(len(whatevs))
     
+    # map chembl drugs to target to pdb to het
+    chembl_struct_map, chembl_het_map = (
+                                struct_maps(chembl_repo_map, chembl_cluster,
+                                            uniprot_pdb_w_lig, pdb_cc_dic))
+    
+    # chembl_struct_map ---> drug:target:arch:schisto target
+    # chembl_het_map ----> drug: target: pdb: het
+
+    # get list of schisto targets
+    schis_targ = []
+    for drug in chembl_struct_map:
+      for tar in chembl_struct_map[drug]:
+        for ar in chembl_struct_map[drug][tar]:
+          for sch in chembl_struct_map[drug][tar][ar]:
+            schis_targ.append(sch)
+
+    schis_targ = list(set(schis_targ))
+    
+    logger.info('At this stage we have obtained ' + 
+                str(len(chembl_struct_map)) + ' drugs, mapped to ' +
+                str(len(schis_targ)) +
+                ' ' + species_string + ' targets.')
+
+    # at this stage it is all the ones with struct info, but all domains!!
+
+    # logger.info(chembl_struct_map)
+    # logger.info(chembl_het_map)
+    
+    logger.info('We are now filtering the results to obtain ' +
+                'a refined dictionary of drugs mapped to potential ' + 
+                species_string + ' targets. We will only include the ' +
+                'domains that are known to interact with drug' +
+                ', or a close analogue.')
+    
+    # splitting chembl_het_map in chunks
+    items1,items2,items3 = \
+                        zip(*izip_longest(*[iter(chembl_het_map.items())]*3))
+    ch_het1 = dict(item for item in items1 if item is not None)
+    ch_het2 = dict(item for item in items2 if item is not None)
+    ch_het3 = dict(item for item in items3 if item is not None)
+
+    logger.info('We have split the chembl entries into chunks of ' +
+            str(len(ch_het1)) + ', ' + str(len(ch_het2)) + ' and ' +
+            str(len(ch_het3)) + ', for easier processing.')
+
+    # filter the struc_map to get rid of domains that are not 
+    # interacting with the drug
+    chembl_filt_map1 = run_or_pickle("7_chembl_filt_map1", 
+                                      drug_targ_res_filter, 
+                                      ch_het1, chembl_struct_map)
+
+    # logger.info(len(chembl_filt_map1))
+
+    chembl_filt_map2 = run_or_pickle("7_chembl_filt_map2", 
+                                      drug_targ_res_filter, 
+                                      ch_het2, chembl_struct_map)
+    # logger.info(len(chembl_filt_map2))
+
+    chembl_filt_map3 = run_or_pickle("7_chembl_filt_map3", 
+                                      drug_targ_res_filter, 
+                                      ch_het3, chembl_struct_map)
+
+    # logger.info(len(chembl_filt_map3))
+
+    chembl_filt_map = dict(chembl_filt_map1.items() + 
+                      chembl_filt_map2.items() + chembl_filt_map3.items())
+
+    # logger.info(len(chembl_filt_map))
+
+    # logger.info('The refined dictionary for ChEMBL is: ' +
+    #             str(chembl_filt_map))
+    
+    schis_targ = []
+    for drug in chembl_filt_map:
+      for tar in chembl_filt_map[drug]:
+        for ar in chembl_filt_map[drug][tar]:
+          for sch in chembl_filt_map[drug][tar][ar]:
+            schis_targ.append(sch)
+    
+    schis_targ = list(set(schis_targ))
+    
+    logger.info('At this stage we have obtained ' + 
+                str(len(chembl_filt_map)) + ' drugs, mapped to '
+                + str(len(schis_targ)) +
+                ' ' + species_string + ' targets.')
+
+
     logger.info('----------------------------------------------------------')
 
   else:
@@ -3144,16 +3287,6 @@ def main():
                 '-------------------------')
 
     
-
-
-    # map chembl drugs to target to pdb to het
-    chembl_struct_map, chembl_het_map = (
-    struct_maps(chembl_repo_map, chembl_cluster,
-                uniprot_pdb_w_lig, pdb_cc_dic))
-    
-    logger.info(len(chembl_struct_map))
-    logger.info(chembl_het_map['CHEMBL941'])
-    
     # drugbank
     drugbank_struct_map, drugbank_het_map = (
     struct_maps(drugbank_repo_map, drugbank_cluster,
@@ -3162,10 +3295,6 @@ def main():
     logger.info(len(drugbank_het_map))
     logger.info('check why these two dont match with prev!!!')
     # logger.info(drugbank_struct_map)
-
-    # filter the struc_map to get rid of domains that are not 
-    # interacting with the drug
-    chembl_filter_map = drug_targ_res_filter(chembl_het_map, chembl_struct_map)
 
 
 
