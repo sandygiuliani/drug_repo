@@ -3049,26 +3049,6 @@ def main():
     filter_txt('chembl_drugs.txt', c.chembl_cluster, 'CHEMBL_ID', 
                chembl_cluster_list)
 
-
-    # check below mathces or get rid of it
-
-    new_dic = AutoVivification()
-
-    for item in chembl_repo_map:
-      if item in chembl_cluster_list:
-        new_dic[item] = chembl_repo_map[item]
-
-    
-    whatevs = []
-    for thing in new_dic:
-      for targ  in new_dic[thing]:
-        for arc in new_dic[thing][targ]:
-          for uni in new_dic[thing][targ][arc]:
-            whatevs.append(uni)
-
-    logger.info(len(whatevs))
-    whatevs = list(set(whatevs))
-    logger.info(len(whatevs))
     
     # map chembl drugs to target to pdb to het
     chembl_struct_map, chembl_het_map = (
