@@ -869,6 +869,14 @@ def flatten_dic(dic, keys_or_val):
   elif keys_or_val == "keys":
     flat_list = dic.keys()
 
+  # fourth level complex dic
+  elif keys_or_val == "values_4":
+    flat_list = []
+    for a in dic:
+      for b in dic[a]:
+        for c in dic[a][b]:
+          for d in dic[a][b][c]:
+            flat_list.append(d)
 
   # rm duplicates
   flat_list = list(set(flat_list))
@@ -876,6 +884,7 @@ def flatten_dic(dic, keys_or_val):
   #rm white spaces
   flat_list = [x.strip(' ') for x in flat_list]
 
+  # sort
   flat_list.sort()
 
   return flat_list
@@ -1507,8 +1516,7 @@ def run_smsd(query, target, flag, threshold, dic_map=None):
   # flag = 'batch' for batch comparison, query is dictionary,
   # target is sdf file
 
-
-    # run SMSD
+  # run SMSD
   # can also include cwd=SMSD_PATH together with shell=True in the command
   # for instance:
   # sh ./SMSD.sh -Q SMI -q \"CCCCC\" -T SMI -t \"CCCN\" -O SMI -o test.smi
@@ -2369,13 +2377,13 @@ def struct_maps(repox, clust_het, uni_pdb, pdb_cc):
 
   # logger.info(uni_pdb)
   for drug in clust_het:
-    logger.info(drug)
+    # logger.info(drug)
     # dict for uniprot to pdbs
     lucky_uniprot = {}
 
 
     for protein in repox[drug]:
-      logger.info(protein)
+      # logger.info(protein)
       if protein in uni_pdb:
             # each pdb associated with them
             for pdb in uni_pdb[protein]:
@@ -2402,6 +2410,124 @@ def struct_maps(repox, clust_het, uni_pdb, pdb_cc):
 
 
   return map1, map2
+
+############################################################################
+
+
+
+############################################################################
+### PERCENT_IDENTITY
+############################################################################
+# from map get average percent identity after alignment
+# map drug:target:arc:target
+# return drug target: average identity score
+
+def percent_identity(drug_targ_map):
+  from Bio import pairwise2
+  from Bio.SubsMat import MatrixInfo as matlist
+
+  matrix = matlist.blosum62
+  gap_open = -10
+  gap_extend = -0.5
+
+  # number_alignments = 0
+  #overwrite map
+  # drug_targ_map = {'CHEMBL98': {'Q92769': {'3.40.800.20': ['G4LW33', 'G4LW32','G4VAN3'], 'PF00850': ['G4LW33']}}}
+ 
+  # dictionary for each target to store average identity score
+  
+  # to rerun tonight
+  targets_average_scores = {'P14324': [25, 28, 23, 15, 32], 'P00519': [11, 24, 10, 25, 18, 20, 19, 21, 18, 24, 22, 23, 14, 13, 7, 18, 17, 6, 23, 23, 23, 16, 13, 16, 18, 20, 18, 14, 17, 15, 24, 25, 16, 18, 23, 20, 25, 21, 17, 24, 6, 18, 23, 25, 20, 23, 22, 18, 25, 23, 24, 23, 15, 17, 18, 26, 23, 21, 23, 20, 25, 20, 21, 19, 3, 3, 22, 16, 23, 23, 17, 19, 24, 25, 24, 11, 23, 23, 21, 22, 16, 17, 15, 14, 21, 24, 28, 24, 25, 23, 14, 19, 22, 21, 22, 22, 21, 16, 20, 22, 19, 20, 16, 23, 20, 24, 23, 23, 23, 24, 23, 25, 14, 20, 20, 20, 5, 13, 19, 20, 23, 19, 19, 19, 13, 24, 19, 24, 25, 17, 22, 18, 20, 4, 11], 'P10827': [16, 15, 18, 24, 16, 15, 24, 23, 18, 14, 22, 17, 24, 24, 15, 25, 22, 23, 22, 22, 25], 'O76074': [21, 13, 23, 23, 26, 24, 26], 'P12931': [18, 24, 17, 20, 25, 24, 24, 26, 24, 24, 25, 23, 21, 19, 12, 25, 23, 10, 24, 21, 23, 23, 20, 23, 25, 23, 23, 21, 24, 25, 21, 23, 26, 25, 24, 24, 25, 24, 23, 22, 11, 24, 24, 21, 24, 23, 27, 24, 21, 22, 22, 24, 22, 26, 25, 20, 23, 26, 23, 25, 20, 24, 24, 27, 7, 7, 25, 22, 24, 19, 24, 26, 23, 21, 20, 18, 23, 17, 28, 23, 23, 23, 22, 22, 25, 18, 20, 25, 25, 24, 23, 24, 24, 23, 24, 25, 25, 22, 24, 27, 24, 26, 22, 21, 23, 22, 22, 17, 24, 20, 21, 22, 22, 24, 23, 25, 9, 21, 25, 24, 21, 23, 23, 24, 20, 19, 25, 23, 22, 23, 25, 24, 14, 8, 18], 'P10275': [21, 20, 22, 24, 22, 19, 17, 24, 22, 20, 22, 20, 24, 19, 19, 23, 16, 22, 25, 22, 23], 'P27487': [20, 14, 25, 23, 18, 17, 18, 18, 24, 24, 25, 26, 19, 25, 19, 26, 23, 20, 28, 22, 22, 17, 25, 16, 21, 16, 22, 24, 21], 'P03372': [18, 17, 20, 27, 19, 16, 23, 27, 20, 18, 24, 18, 26, 22, 17, 24, 21, 23, 25, 24, 24], 'P35968': [10, 23, 9, 25, 16, 18, 17, 20, 18, 22, 21, 21, 13, 11, 6, 17, 16, 5, 21, 22, 21, 17, 12, 15, 17, 19, 17, 13, 15, 14, 25, 23, 15, 16, 21, 18, 23, 19, 17, 24, 5, 16, 22, 24, 18, 22, 21, 16, 24, 23, 22, 23, 14, 16, 16, 24, 22, 20, 22, 18, 25, 18, 19, 19, 3, 3, 24, 14, 23, 24, 17, 18, 22, 24, 25, 10, 22, 24, 21, 22, 15, 17, 14, 13, 20, 24, 24, 22, 23, 22, 13, 17, 22, 19, 20, 22, 20, 14, 18, 21, 18, 19, 14, 24, 19, 23, 25, 24, 21, 24, 25, 26, 13, 18, 19, 19, 4, 13, 18, 18, 23, 18, 18, 18, 12, 25, 17, 21, 25, 15, 21, 17, 21, 3, 10]}
+
+  # for drug in drug_targ_map:
+  for drug in ['CHEMBL98', 'CHEMBL973']:
+    logger.info(drug)
+    for targ in drug_targ_map[drug]:
+      # check it in not in there already
+      
+      target_identity_scores = []
+
+      if targ not in targets_average_scores:
+        logger.info(targ)
+        # list identity score for each target
+        # logger.info(targ)
+
+        # write fasta drug target
+        try:
+          # get handle
+          handle = ExPASy.get_sprot_raw(targ)
+          # swissprot read
+          targ_record = SwissProt.read(handle)
+
+          # sequence
+          targ_seq = targ_record.sequence
+          
+        except HTTPError:
+          logger.error('We cannot access ExPASy!')
+          logger.warning('We are exiting the program.')
+          sys.exit()
+
+
+        # logger.info(targ_seq)
+        
+        # get uniwue list of proteins to align to this target
+        # because there will be duplicates!
+        protein_list = []
+        
+        for arch in drug_targ_map[drug][targ]:
+          for schi in drug_targ_map[drug][targ][arch]:
+            protein_list.append(schi)
+
+
+        logger.info(len(protein_list))
+        protein_list = list(set(protein_list))
+        logger.info(len(protein_list))  
+
+        # each schisto protein
+        for prot in protein_list:
+
+          try:
+              # get handle
+              handle = ExPASy.get_sprot_raw(prot)
+              # swissprot read
+              record = SwissProt.read(handle)
+
+              # sequence
+              seq = record.sequence
+              
+
+          except HTTPError:
+            logger.error('We cannot access ExPASy!')
+            logger.warning('We are exiting the program.')
+            sys.exit()
+
+          # logger.info(seq)
+          
+          # alns = pairwise2.align.globalds(targ_seq, seq, matrix, gap_open, gap_extend)
+          alns = pairwise2.align.globalxx(targ_seq, seq)
+
+          percent = int(alns[0][2]) * 100 / int(alns[0][4])
+          # logger.info(percent)
+          target_identity_scores.append(percent)
+
+      # if target is already in there, do nothing
+      else:
+        pass
+      # logger.info(target_identity_scores)
+      # target_average = sum(target_identity_scores)/len(target_identity_scores)
+      # logger.info('the average for one target is'+str(target_average))
+      # logger.info(target_average)
+
+      # only if there is something in the list
+      if target_identity_scores:
+        # add list to the dictionary
+        targets_average_scores[targ] = target_identity_scores
+        logger.info(targets_average_scores)
+
+  
+  return targets_average_scores
+
+
 
 ############################################################################
 
@@ -2484,6 +2610,10 @@ def main():
     # generate chembl dictionary
     chembl_dic = run_or_pickle("1_chembl_dic", process_chembl, c.chembl_input)
 
+    # for drug in chembl_dic:
+    #   for target in chembl_dic[drug]:
+    #     if target == 'Q962H3':
+    #       logger.info(drug)
     #logger.info(chembl_dic)
     # get list of uniprot ids from chembl_dic
     chembl_uniprot_list = run_or_pickle("1_chembl_uniprot_list",
@@ -2491,12 +2621,27 @@ def main():
 
     logger.info(str(len(chembl_dic)) + ' ChEMBL drugs could be mapped to ' +
                  str(len(chembl_uniprot_list)) + ' unique UniProt ID.')
+    
+    taxa_chembl = run_or_pickle("1_human_chembl", expasy_dic, 
+                                  chembl_uniprot_list, "taxa")
+    human_chembl = taxa_chembl['6183']
 
+    logger.info(taxa_chembl)
+    # for taxa in taxa_chembl:
+    #   logger.info(taxa)
+    # logger.info(taxa_chembl)
+
+    percent_chembl_human = round(float(len(human_chembl)) / 
+                          float(len(chembl_uniprot_list)) * 100)
+
+    logger.info('Of these targets, ' + str(len(human_chembl)) + 
+            ' are human proteins (the ' + str(percent_chembl_human) + ' %).')
 
     # generate drugbank_dictionary
     drugbank_dic = run_or_pickle("1_drugbank_dic", process_drugbank, 
                                 c.drugbank_input)
 
+    # logger.info(drugbank_dic)
     #logger.info(len(drugbank_dic))
 
     # get list of uniprot ids from drugbank
@@ -2679,13 +2824,18 @@ def main():
                 ' mapping so far, one for ChEMBL and one for DrugBank.')
 
     # generate big map for chembl drugs
+    # drug: target: arch: targ
     chembl_repo_map = run_or_pickle("4_chembl_repo_map", chembl_repo, 
                                     chembl_dic, cath_dic,
                                     uniprot_schisto_cath_dic, pfam_dic, 
                                     uniprot_schisto_pfam_dic)
     # logger.debug(len(chembl_repo_map))
+    chembl_repo_schisto_list = flatten_dic(chembl_repo_map, 'values_4')
+
+
     logger.info('We have built the ChEMBL map, mapping ' +
-                str(len(chembl_repo_map)) + ' ChEMBL drugs to potential ' +
+                str(len(chembl_repo_map)) + ' ChEMBL drugs to ' +
+                str(len(chembl_repo_schisto_list)) + ' unique ' +
                 species_string + ' targets.')
 
     # list of drugs that are in the map, to be used in part 6
@@ -2734,9 +2884,9 @@ def main():
                                               filt_schisto_map, 
                                               drugbank_repo_map,
                                               uniprot_schisto_filt)
-    for item in drugbank_schisto_filt_map:
+    # for item in drugbank_schisto_filt_map:
 
-        logger.info(item)
+    #     logger.info(item)
 
     logger.info('----------------------------------------------------------')
 
@@ -3065,91 +3215,97 @@ def main():
                chembl_cluster_list)
 
     
-    # # map chembl drugs to target to pdb to het
-    # chembl_struct_map, chembl_het_map = (
-    #                             struct_maps(chembl_repo_map, chembl_cluster,
-    #                                         uniprot_pdb_w_lig, pdb_cc_dic))
+    # map chembl drugs to target to pdb to het
+    chembl_struct_map, chembl_het_map = (
+                                struct_maps(chembl_repo_map, chembl_cluster,
+                                            uniprot_pdb_w_lig, pdb_cc_dic))
     
-    # # chembl_struct_map ---> drug:target:arch:schisto target
-    # # chembl_het_map ----> drug: target: pdb: het
+    # chembl_struct_map ---> drug:target:arch:schisto target
+    # chembl_het_map ----> drug: target: pdb: het
 
-    # # get list of schisto targets
-    # schis_targ = []
-    # for drug in chembl_struct_map:
-    #   for tar in chembl_struct_map[drug]:
-    #     for ar in chembl_struct_map[drug][tar]:
-    #       for sch in chembl_struct_map[drug][tar][ar]:
-    #         schis_targ.append(sch)
+    # get list of schisto targets
+    schis_targ = []
+    for drug in chembl_struct_map:
+      for tar in chembl_struct_map[drug]:
+        for ar in chembl_struct_map[drug][tar]:
+          for sch in chembl_struct_map[drug][tar][ar]:
+            schis_targ.append(sch)
 
-    # schis_targ = list(set(schis_targ))
+    schis_targ = list(set(schis_targ))
     
-    # logger.info('At this stage we have obtained ' + 
-    #             str(len(chembl_struct_map)) + ' drugs, mapped to ' +
-    #             str(len(schis_targ)) +
-    #             ' ' + species_string + ' targets.')
+    logger.info('At this stage we have obtained ' + 
+                str(len(chembl_struct_map)) + ' drugs, mapped to ' +
+                str(len(schis_targ)) +
+                ' ' + species_string + ' targets.')
 
-    # # at this stage it is all the ones with struct info, but all domains!!
+    # at this stage it is all the ones with struct info, but all domains!!
 
-    # # logger.info(chembl_struct_map)
-    # # logger.info(chembl_het_map)
+    # logger.info(chembl_struct_map)
+    # logger.info(chembl_het_map)
     
-    # logger.info('We are now filtering the results to obtain ' +
-    #             'a refined dictionary of drugs mapped to potential ' + 
-    #             species_string + ' targets. We will only include the ' +
-    #             'domains that are known to interact with drug' +
-    #             ', or a close analogue.')
+    logger.info('We are now filtering the results to obtain ' +
+                'a refined dictionary of drugs mapped to potential ' + 
+                species_string + ' targets. We will only include the ' +
+                'domains that are known to interact with drug' +
+                ', or a close analogue.')
     
-    # # splitting chembl_het_map in chunks
-    # items1,items2,items3 = \
-    #                     zip(*izip_longest(*[iter(chembl_het_map.items())]*3))
-    # ch_het1 = dict(item for item in items1 if item is not None)
-    # ch_het2 = dict(item for item in items2 if item is not None)
-    # ch_het3 = dict(item for item in items3 if item is not None)
+    # splitting chembl_het_map in chunks
+    items1,items2,items3 = \
+                        zip(*izip_longest(*[iter(chembl_het_map.items())]*3))
+    ch_het1 = dict(item for item in items1 if item is not None)
+    ch_het2 = dict(item for item in items2 if item is not None)
+    ch_het3 = dict(item for item in items3 if item is not None)
 
-    # logger.info('We have split the chembl entries into chunks of ' +
-    #         str(len(ch_het1)) + ', ' + str(len(ch_het2)) + ' and ' +
-    #         str(len(ch_het3)) + ', for easier processing.')
+    logger.info('We have split the chembl entries into chunks of ' +
+            str(len(ch_het1)) + ', ' + str(len(ch_het2)) + ' and ' +
+            str(len(ch_het3)) + ', for easier processing.')
 
-    # # filter the struc_map to get rid of domains that are not 
-    # # interacting with the drug
-    # chembl_filt_map1 = run_or_pickle("7_chembl_filt_map1", 
-    #                                   drug_targ_res_filter, 
-    #                                   ch_het1, chembl_struct_map)
+    # filter the struc_map to get rid of domains that are not 
+    # interacting with the drug
+    chembl_filt_map1 = run_or_pickle("7_chembl_filt_map1", 
+                                      drug_targ_res_filter, 
+                                      ch_het1, chembl_struct_map)
 
-    # # logger.info(len(chembl_filt_map1))
+    # logger.info(len(chembl_filt_map1))
 
-    # chembl_filt_map2 = run_or_pickle("7_chembl_filt_map2", 
-    #                                   drug_targ_res_filter, 
-    #                                   ch_het2, chembl_struct_map)
-    # # logger.info(len(chembl_filt_map2))
+    chembl_filt_map2 = run_or_pickle("7_chembl_filt_map2", 
+                                      drug_targ_res_filter, 
+                                      ch_het2, chembl_struct_map)
+    # logger.info(len(chembl_filt_map2))
 
-    # chembl_filt_map3 = run_or_pickle("7_chembl_filt_map3", 
-    #                                   drug_targ_res_filter, 
-    #                                   ch_het3, chembl_struct_map)
+    chembl_filt_map3 = run_or_pickle("7_chembl_filt_map3", 
+                                      drug_targ_res_filter, 
+                                      ch_het3, chembl_struct_map)
 
-    # # logger.info(len(chembl_filt_map3))
+    # logger.info(len(chembl_filt_map3))
 
-    # chembl_filt_map = dict(chembl_filt_map1.items() + 
-    #                   chembl_filt_map2.items() + chembl_filt_map3.items())
+    chembl_filt_map = dict(chembl_filt_map1.items() + 
+                      chembl_filt_map2.items() + chembl_filt_map3.items())
 
-    # # logger.info(len(chembl_filt_map))
+    # logger.info(len(chembl_filt_map))
 
-    # # logger.info('The refined dictionary for ChEMBL is: ' +
-    # #             str(chembl_filt_map))
+    # logger.info('The refined dictionary for ChEMBL is: ' +
+    #             str(chembl_filt_map))
     
-    # schis_targ = []
-    # for drug in chembl_filt_map:
-    #   for tar in chembl_filt_map[drug]:
-    #     for ar in chembl_filt_map[drug][tar]:
-    #       for sch in chembl_filt_map[drug][tar][ar]:
-    #         schis_targ.append(sch)
+    schis_targ = []
+    for drug in chembl_filt_map:
+      # logger.info(chembl_filt_map[drug])
+      for tar in chembl_filt_map[drug]:
+        for ar in chembl_filt_map[drug][tar]:
+          for sch in chembl_filt_map[drug][tar][ar]:
+            schis_targ.append(sch)
     
-    # schis_targ = list(set(schis_targ))
+    schis_targ = list(set(schis_targ))
     
-    # logger.info('At this stage we have obtained ' + 
-    #             str(len(chembl_filt_map)) + ' drugs, mapped to '
-    #             + str(len(schis_targ)) +
-    #             ' ' + species_string + ' targets.')
+    logger.info('At this stage we have obtained ' + 
+                str(len(chembl_filt_map)) + ' drugs, mapped to '
+                + str(len(schis_targ)) +
+                ' ' + species_string + ' targets.')
+
+
+    percent_identity_chembl = run_or_pickle('7_chembl_percent_identity', 
+                                          percent_identity, chembl_filt_map)
+
 
 
     logger.info('----------------------------------------------------------')
@@ -3194,6 +3350,7 @@ def main():
     # obtain drug to cc dictionary, merging three dics
     drugbank_to_cc = merge_dic(drugbank_dic,uniprot_filt, pdb_cc_dic)
     # logger.info(drugbank_to_cc)
+
     
     logger.info('We have filtered the drugs, as before, to obtain ' + 
                 str(len(drugbank_to_cc)) +
@@ -3270,16 +3427,27 @@ def main():
     #     logger.info(item)
 
     # OVERWRITE CLUSTER!!!
-    drugbank_cluster = {'DB07791':['FRV']}
+    # drugbank_cluster = {'DB07791':['FRV']}
     # logger.info(drugbank_repo_map)
     # for drug in drugbank_repo_map:
     #   if drugbank_repo_map[drug] == {{}}:
     #     logger.info('WTFFFFF')
-    logger.info(drugbank_repo_map['DB00463'])
+    # logger.info(drugbank_repo_map['DB00463'])
+
+    # quick fix for drugbank
+    drugbank_repo_map2 = AutoVivification()
+    for db_id in drugbank_repo_map:
+      # logger.info(db_id)
+      db_strip = db_id.strip(' ')
+      # logger.info(db_strip)
+      drugbank_repo_map2[db_strip] = drugbank_repo_map[db_id]
+
+
+
     # for item in drugbank_repo_map:
     #   logger.info(item)
     drugbank_struct_map, drugbank_het_map = (
-                  struct_maps(drugbank_repo_map, drugbank_cluster,
+                  struct_maps(drugbank_repo_map2, drugbank_cluster,
                     uniprot_pdb_w_lig, pdb_cc_dic))
     
     logger.info(len(drugbank_cluster))
@@ -3291,6 +3459,75 @@ def main():
     logger.info(len(drugbank_het_map))
     logger.info('check why these two dont match with prev!!!')
     # logger.info(drugbank_struct_map)
+
+
+    # items1,items2,items3 = \
+    #                     zip(*izip_longest(*[iter(drugbank_het_map.items())]*5))
+    # db_het1 = dict(item for item in items1 if item is not None)
+    # db_het2 = dict(item for item in items2 if item is not None)
+    # db_het3 = dict(item for item in items3 if item is not None)
+    # db_het4 = dict(item for item in items4 if item is not None)
+    # db_het5 = dict(item for item in items5 if item is not None)
+    # db_het6 = dict(item for item in items6 if item is not None)
+    # db_het7 = dict(item for item in items7 if item is not None)
+    # db_het8 = dict(item for item in items8 if item is not None)
+    # db_het9 = dict(item for item in items9 if item is not None)
+    # db_het10 = dict(item for item in items10 if item is not None)
+
+
+    # logger.info('We have split the chembl entries into chunks of ' +
+    #         str(len(ch_het1)) + ', ' + str(len(ch_het2)) + ' and ' +
+    #         str(len(ch_het3)) + ', for easier processing.')
+
+    # # filter the struc_map to get rid of domains that are not 
+    # # interacting with the drug
+    # db_filt_map1 = run_or_pickle("8_db_filt_map1", 
+    #                                   drug_targ_res_filter, 
+    #                                   db_het1, drugbank_struct_map)
+
+    # # logger.info(len(chembl_filt_map1))
+
+    # db_filt_map2 = run_or_pickle("8_db_filt_map2", 
+    #                                   drug_targ_res_filter, 
+    #                                   db_het2, drugbank_struct_map)
+    # # logger.info(len(chembl_filt_map2))
+
+    # db_filt_map3 = run_or_pickle("8_db_filt_map3", 
+    #                                   drug_targ_res_filter, 
+    #                                   db_het3, cdrugbank_struct_map)
+
+    # # logger.info(len(chembl_filt_map3))
+
+    # db_filt_map4 = run_or_pickle("8_db_filt_map4", 
+    #                                   drug_targ_res_filter, 
+    #                                   db_het4, cdrugbank_struct_map)
+
+    # db_filt_map5 = run_or_pickle("8_db_filt_map5", 
+    #                                   drug_targ_res_filter, 
+    #                                   db_het5, cdrugbank_struct_map)
+    # db_filt_map6 = run_or_pickle("8_db_filt_map6", 
+    #                                   drug_targ_res_filter, 
+    #                                   db_het6, cdrugbank_struct_map)
+
+    # db_filt_map7 = run_or_pickle("8_db_filt_map7", 
+    #                               drug_targ_res_filter, 
+    #                               db_het7, cdrugbank_struct_map)
+
+    # db_filt_map8 = run_or_pickle("8_db_filt_map8", 
+    #                               drug_targ_res_filter, 
+    #                           db_het8, cdrugbank_struct_map)
+
+    # db_filt_map9 = run_or_pickle("8_db_filt_map9", 
+    #                           drug_targ_res_filter, 
+    #                       db_het9, cdrugbank_struct_map)
+
+
+    # db_filt_map10 = run_or_pickle("8_db_filt_map10", 
+    #                           drug_targ_res_filter, 
+    #                       db_het10, cdrugbank_struct_map)
+
+    # chembl_filt_map = dict(chembl_filt_map1.items() + 
+    #                   chembl_filt_map2.items() + chembl_filt_map3.items())
 
 
 
@@ -3311,10 +3548,6 @@ def main():
     logger.info('------------------------- STEP ' + str(step) + ' ' +
                 '-------------------------')
 
-    
-
-
-
     # DRUG REPOSITIONING CANDIDATE!!
     # info retrieval and alignment
     logger.info('We wish to investigate the repositioning candidate ' + 
@@ -3333,6 +3566,8 @@ def main():
       # logger.info(chembl_het_map[c.repo_candidate])
       het_map = chembl_het_map[c.repo_candidate]
 
+      filt_map = chembl_filt_map[c.repo_candidate]
+
     # DRUGBANK
     elif drugbank_format.match(c.repo_candidate):
       # display chembl_struct_map, map with only structural 
@@ -3346,10 +3581,31 @@ def main():
     logger.info('The het dictionary for the drug is ' + 
                  str(het_map))
 
+    logger.info('The filtered dictionary for the drug is ' + 
+               str(filt_map))
 
 
+    # for targ in filt_map:
+    #   logger.info(targ)
+    #   for arc in filt_map[targ]:
+    #     logger.info(arc)
 
+    # fooz = []
+    # for drug in chembl_filt_map:
+    #   if drug == 'CHEMBL941' or drug == 'CHEMBL1421':
+    #     for targ in chembl_filt_map[drug]:
+    #       for arch in chembl_filt_map[drug][targ]:
+    #         for schis in chembl_filt_map[drug][targ][arc]:
+    #           # logger.info(schis)
+    #           fooz.append(schis)
+
+    # fooz = list(set(fooz))
+    # logger.info(len(fooz))
+    # isit = 'G4VP53' in fooz
+    # logger.info(isit)
     # # logger.info(len(full_map.values()))
+
+
     # # targets we are interested in
     # logger.info('The drug was mapped to ' + str(len(full_map)) + 
     #             ' drug target(s), ' + str(full_map.keys()))
