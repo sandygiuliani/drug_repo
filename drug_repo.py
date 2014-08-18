@@ -145,15 +145,13 @@ from Bio import ExPASy
 # import swissprot for parsing swissprot plain text files
 from Bio import SwissProt
 ############################################################################
+  
 
 
 
 ############################################################################
 ### IMPORT MODELLER
 ############################################################################
-# import modeller for homology modelling
-
-# check if the step of the pipeline that requires modeller needs to run
 if c.steps >= c.modeller_step:
 
   try:
@@ -164,15 +162,14 @@ if c.steps >= c.modeller_step:
 
   except ImportError:
     logger.error('MODELLER cannot be found!')
-    logger.info('Please check it is properly installed, ' +
-                'or change the number of steps of the pipeline to run' +
-                ' in config.py to be lower than ' + str(c.modeller_step))
+    logger.info('Please check it is properly installed' +
+                ', set a number of steps less than ' + str(c.modeller_step) +
+                ' in the configuration file.')
     
     logger.warning('The program is aborted.')
     # exit script
     sys.exit()
-
-# ############################################################################
+############################################################################
 
 
 
@@ -2003,14 +2000,14 @@ def run_or_pickle(function_return_obj, function_name, arg1 = None,
 ############################################################################
 ### TAXA_TO_SPECIES
 ############################################################################
-# return string of species from taxa ids, to be used for logging purposes
+# return list of species from taxa ids, to be used for logging purposes
 
 def taxa_to_species(taxa_list, species_map):
 
   species_lst = []
 
   # string to be used in the loggers
-  species = ''
+  # species = ''
 
   # regex starts with 'N='
   starts_n = re.compile('N=.*')  
@@ -2038,23 +2035,55 @@ def taxa_to_species(taxa_list, species_map):
     # print species_string
     species_lst.append(species_string)
 
-  # string 'species' lists the species
-  if len(species_lst) == 1:
-    species = str(species_lst[0])
+  # # string 'species' lists the species
+  # if len(species_lst) == 1:
+  #   species = str(species_lst[0])
 
-  if len(species_lst) == 2:
-    species = (species_lst[0] + ' and ' + species_lst[1])
+  # if len(species_lst) == 2:
+  #   species = (species_lst[0] + ' and ' + species_lst[1])
 
-  if len(species_lst) > 2:
-    for i in range(0,(len(species_lst)-2)):
-      species = (species + species_lst[i] + ', ') 
+  # if len(species_lst) > 2:
+  #   for i in range(0,(len(species_lst)-2)):
+  #     species = (species + species_lst[i] + ', ') 
 
-    species = (species + species_lst[len(species_lst)-2] + ' and ')
-    species = (species + species_lst[len(species_lst)-1])
+  #   species = (species + species_lst[len(species_lst)-2] + ' and ')
+  #   species = (species + species_lst[len(species_lst)-1])
 
 
   # return string of species
-  return species
+  return species_lst
+############################################################################
+
+
+
+
+############################################################################
+### LST_TO_STRING
+############################################################################
+  
+def lst_to_string(input_list):
+
+  # string
+  final_string = ''
+
+
+  # string 'species' lists the species
+  if len(input_list) == 1:
+    final_string = str(input_list[0])
+
+  if len(input_list) == 2:
+    final_string = (input_list[0] + ' and ' + input_list[1])
+
+  if len(input_list) > 2:
+    for i in range(0,(len(input_list)-2)):
+      final_string = (final_string + input_list[i] + ', ') 
+
+    final_string = (final_string + input_list[len(input_list)-2] + ' and ')
+    final_string = (final_string + input_list[len(input_list)-1])
+
+
+  return final_string
+
 ############################################################################
 
 
@@ -2437,10 +2466,15 @@ def percent_identity(drug_targ_map):
   # dictionary for each target to store average identity score
   
   # to rerun tonight
-  targets_average_scores = {'P14324': [25, 28, 23, 15, 32], 'P00519': [11, 24, 10, 25, 18, 20, 19, 21, 18, 24, 22, 23, 14, 13, 7, 18, 17, 6, 23, 23, 23, 16, 13, 16, 18, 20, 18, 14, 17, 15, 24, 25, 16, 18, 23, 20, 25, 21, 17, 24, 6, 18, 23, 25, 20, 23, 22, 18, 25, 23, 24, 23, 15, 17, 18, 26, 23, 21, 23, 20, 25, 20, 21, 19, 3, 3, 22, 16, 23, 23, 17, 19, 24, 25, 24, 11, 23, 23, 21, 22, 16, 17, 15, 14, 21, 24, 28, 24, 25, 23, 14, 19, 22, 21, 22, 22, 21, 16, 20, 22, 19, 20, 16, 23, 20, 24, 23, 23, 23, 24, 23, 25, 14, 20, 20, 20, 5, 13, 19, 20, 23, 19, 19, 19, 13, 24, 19, 24, 25, 17, 22, 18, 20, 4, 11], 'P10827': [16, 15, 18, 24, 16, 15, 24, 23, 18, 14, 22, 17, 24, 24, 15, 25, 22, 23, 22, 22, 25], 'O76074': [21, 13, 23, 23, 26, 24, 26], 'P12931': [18, 24, 17, 20, 25, 24, 24, 26, 24, 24, 25, 23, 21, 19, 12, 25, 23, 10, 24, 21, 23, 23, 20, 23, 25, 23, 23, 21, 24, 25, 21, 23, 26, 25, 24, 24, 25, 24, 23, 22, 11, 24, 24, 21, 24, 23, 27, 24, 21, 22, 22, 24, 22, 26, 25, 20, 23, 26, 23, 25, 20, 24, 24, 27, 7, 7, 25, 22, 24, 19, 24, 26, 23, 21, 20, 18, 23, 17, 28, 23, 23, 23, 22, 22, 25, 18, 20, 25, 25, 24, 23, 24, 24, 23, 24, 25, 25, 22, 24, 27, 24, 26, 22, 21, 23, 22, 22, 17, 24, 20, 21, 22, 22, 24, 23, 25, 9, 21, 25, 24, 21, 23, 23, 24, 20, 19, 25, 23, 22, 23, 25, 24, 14, 8, 18], 'P10275': [21, 20, 22, 24, 22, 19, 17, 24, 22, 20, 22, 20, 24, 19, 19, 23, 16, 22, 25, 22, 23], 'P27487': [20, 14, 25, 23, 18, 17, 18, 18, 24, 24, 25, 26, 19, 25, 19, 26, 23, 20, 28, 22, 22, 17, 25, 16, 21, 16, 22, 24, 21], 'P03372': [18, 17, 20, 27, 19, 16, 23, 27, 20, 18, 24, 18, 26, 22, 17, 24, 21, 23, 25, 24, 24], 'P35968': [10, 23, 9, 25, 16, 18, 17, 20, 18, 22, 21, 21, 13, 11, 6, 17, 16, 5, 21, 22, 21, 17, 12, 15, 17, 19, 17, 13, 15, 14, 25, 23, 15, 16, 21, 18, 23, 19, 17, 24, 5, 16, 22, 24, 18, 22, 21, 16, 24, 23, 22, 23, 14, 16, 16, 24, 22, 20, 22, 18, 25, 18, 19, 19, 3, 3, 24, 14, 23, 24, 17, 18, 22, 24, 25, 10, 22, 24, 21, 22, 15, 17, 14, 13, 20, 24, 24, 22, 23, 22, 13, 17, 22, 19, 20, 22, 20, 14, 18, 21, 18, 19, 14, 24, 19, 23, 25, 24, 21, 24, 25, 26, 13, 18, 19, 19, 4, 13, 18, 18, 23, 18, 18, 18, 12, 25, 17, 21, 25, 15, 21, 17, 21, 3, 10]}
+  # targets_average_scores = {'P14324': [25, 28, 23, 15, 32],
+   # 'P00519': [11, 24, 10, 25, 18, 20, 19, 21, 18, 24, 22, 23, 14, 
+   # 13, 7, 18, 17, 6, 23, 23, 23, 16, 13, 16, 18, 20, 18, 14, 17, 15, 
+   # 24, 25, 16, 18, 23, 20, 25, 21, 17, 24, 6, 18, 23, 25, 20, 23, 22,
+    # 18, 25, 23, 24, 23, 15, 17, 18, 26, 23, 21, 23, 20, 25, 20, 21, 19, 
+    # 3, 3, 22, 16, 23, 23, 17, 19, 24, 25, 24, 11, 23, 23, 21, 22, 16, 17, 15, 14, 21, 24, 28, 24, 25, 23, 14, 19, 22, 21, 22, 22, 21, 16, 20, 22, 19, 20, 16, 23, 20, 24, 23, 23, 23, 24, 23, 25, 14, 20, 20, 20, 5, 13, 19, 20, 23, 19, 19, 19, 13, 24, 19, 24, 25, 17, 22, 18, 20, 4, 11], 'P10827': [16, 15, 18, 24, 16, 15, 24, 23, 18, 14, 22, 17, 24, 24, 15, 25, 22, 23, 22, 22, 25], 'O76074': [21, 13, 23, 23, 26, 24, 26], 'P12931': [18, 24, 17, 20, 25, 24, 24, 26, 24, 24, 25, 23, 21, 19, 12, 25, 23, 10, 24, 21, 23, 23, 20, 23, 25, 23, 23, 21, 24, 25, 21, 23, 26, 25, 24, 24, 25, 24, 23, 22, 11, 24, 24, 21, 24, 23, 27, 24, 21, 22, 22, 24, 22, 26, 25, 20, 23, 26, 23, 25, 20, 24, 24, 27, 7, 7, 25, 22, 24, 19, 24, 26, 23, 21, 20, 18, 23, 17, 28, 23, 23, 23, 22, 22, 25, 18, 20, 25, 25, 24, 23, 24, 24, 23, 24, 25, 25, 22, 24, 27, 24, 26, 22, 21, 23, 22, 22, 17, 24, 20, 21, 22, 22, 24, 23, 25, 9, 21, 25, 24, 21, 23, 23, 24, 20, 19, 25, 23, 22, 23, 25, 24, 14, 8, 18], 'P10275': [21, 20, 22, 24, 22, 19, 17, 24, 22, 20, 22, 20, 24, 19, 19, 23, 16, 22, 25, 22, 23], 'P27487': [20, 14, 25, 23, 18, 17, 18, 18, 24, 24, 25, 26, 19, 25, 19, 26, 23, 20, 28, 22, 22, 17, 25, 16, 21, 16, 22, 24, 21], 'P03372': [18, 17, 20, 27, 19, 16, 23, 27, 20, 18, 24, 18, 26, 22, 17, 24, 21, 23, 25, 24, 24], 'P35968': [10, 23, 9, 25, 16, 18, 17, 20, 18, 22, 21, 21, 13, 11, 6, 17, 16, 5, 21, 22, 21, 17, 12, 15, 17, 19, 17, 13, 15, 14, 25, 23, 15, 16, 21, 18, 23, 19, 17, 24, 5, 16, 22, 24, 18, 22, 21, 16, 24, 23, 22, 23, 14, 16, 16, 24, 22, 20, 22, 18, 25, 18, 19, 19, 3, 3, 24, 14, 23, 24, 17, 18, 22, 24, 25, 10, 22, 24, 21, 22, 15, 17, 14, 13, 20, 24, 24, 22, 23, 22, 13, 17, 22, 19, 20, 22, 20, 14, 18, 21, 18, 19, 14, 24, 19, 23, 25, 24, 21, 24, 25, 26, 13, 18, 19, 19, 4, 13, 18, 18, 23, 18, 18, 18, 12, 25, 17, 21, 25, 15, 21, 17, 21, 3, 10]}
 
-  # for drug in drug_targ_map:
-  for drug in ['CHEMBL98', 'CHEMBL973']:
+  for drug in drug_targ_map:
+  # for drug in ['CHEMBL98', 'CHEMBL973']:
     logger.info(drug)
     for targ in drug_targ_map[drug]:
       # check it in not in there already
@@ -2570,8 +2604,12 @@ def main():
     logger.warning('The program is aborted.')
     sys.exit()
   else:
+    
+    species_list = taxa_to_species(c.taxa, c.spec_list)
+
     # create string of species
-    species_string = taxa_to_species(c.taxa, c.spec_list)
+    species_string = lst_to_string(species_list)
+
     # check the species string is not empty
     if species_string == '':
       logger.error('We could not find the species you have selected in the' +
@@ -2624,9 +2662,9 @@ def main():
     
     taxa_chembl = run_or_pickle("1_human_chembl", expasy_dic, 
                                   chembl_uniprot_list, "taxa")
-    human_chembl = taxa_chembl['6183']
+    human_chembl = taxa_chembl['9606']
 
-    logger.info(taxa_chembl)
+    # logger.info(taxa_chembl)
     # for taxa in taxa_chembl:
     #   logger.info(taxa)
     # logger.info(taxa_chembl)
@@ -2711,6 +2749,23 @@ def main():
     # generate list, flatten it and rm duplicates
     cath_list = run_or_pickle("2_cath_list", flatten_dic, cath_dic, "values")
 
+    # unipr = []
+    # listy = []
+    # # get only chembl ones
+    # for uni in cath_dic:
+    #   if uni in chembl_uniprot_list:
+    #     listy.append(cath_dic[uni])
+    #     unipr.append(uni)
+
+    # logger.info(listy)
+    # listy = list(itertools.chain(*list(listy)))
+    # logger.info(listy)
+    # listy = list(set(listy))
+    # logger.info(len(listy))
+    # unipr = list(set(unipr))
+    # logger.info(len(unipr))
+    # logger.info(unipr)
+
     logger.info('We have mapped ' + str(len(cath_dic)) + ' uniprot ids to ' +
                 str(len(cath_list)) + ' CATH ids.')
 
@@ -2722,7 +2777,27 @@ def main():
 
     # generate list, flatten it and rm duplicates
     pfam_list = run_or_pickle("2_pfam_list", flatten_dic, pfam_dic, "values")
+
+
     
+    # unipr2 = []
+    # listy = []
+    # # get only chembl ones
+    # for uni in pfam_dic:
+    #   if uni in chembl_uniprot_list:
+    #     listy.append(pfam_dic[uni])
+    #     unipr2.append(uni)
+
+    # # logger.info(listy)
+    # listy = list(itertools.chain(*list(listy)))
+    # # logger.info(listy)
+    # listy = list(set(listy))
+    # logger.info(len(listy))
+    # unipr2 = list(set(unipr2))
+    # logger.info(len(unipr2))
+
+
+
     logger.info('We have mapped ' + str(len(pfam_dic)) + ' uniprot ids to ' +
                 str(len(pfam_list)) + ' Pfam ids.')
   
@@ -2747,8 +2822,27 @@ def main():
     uniprot_schisto_cath_dic = run_or_pickle("3_uniprot_schisto_cath_dic", 
                                             arch_to_uniprot, cath_list, 
                                             "cath")
-    #DEBUG
-    # logger.info(uniprot_schisto_cath_dic)
+    
+    # unipr_sc = []
+
+    # arc_sc = []
+
+    # for arc in uniprot_schisto_cath_dic:
+    #   # logger.info(uniprot)
+    #   if arc in listy:
+    #     arc_sc.append(arc)
+    #     unipr_sc.append(uniprot_schisto_cath_dic[arc])
+
+    # # logger.info(arc_sch)
+    # unipr_sc = list(itertools.chain(*list(unipr_sc)))
+    # unipr_sc = list(set(unipr_sc))
+    # logger.info(len(unipr_sc))
+    # arc_sc = list(set(arc_sc))
+    # logger.info(len(arc_sc))
+
+    # uniprot1 = unipr_sc
+
+
 
     # generate list, flatten it and rm duplicates
     uniprot_schisto_cath_list = run_or_pickle("3_uniprot_schisto_cath_list",
@@ -2764,6 +2858,30 @@ def main():
                                             arch_to_uniprot, pfam_list, 
                                             "pfam")
     #logger.debug(len(uniprot_schisto_pfam_dic))
+
+    # unipr_sc = []
+
+    # arc_sc = []
+
+    # for arc in uniprot_schisto_pfam_dic:
+    #   # logger.info(uniprot)
+    #   if arc in listy:
+    #     arc_sc.append(arc)
+    #     unipr_sc.append(uniprot_schisto_pfam_dic[arc])
+
+    # # logger.info(arc_sch)
+    # unipr_sc = list(itertools.chain(*list(unipr_sc)))
+    # unipr_sc = list(set(unipr_sc))
+    # logger.info(len(unipr_sc))
+    # arc_sc = list(set(arc_sc))
+    # logger.info(len(arc_sc))
+
+    # uniprot2 = unipr_sc
+
+    # uniprotmax = list(set(uniprot1 + uniprot2))
+    # logger.info(len(uniprotmax))
+
+
 
     # generate list, flatten it and rm duplicates
     uniprot_schisto_pfam_list = run_or_pickle("3_uniprot_schisto_pfam_list",
@@ -2831,6 +2949,15 @@ def main():
                                     uniprot_schisto_pfam_dic)
     # logger.debug(len(chembl_repo_map))
     chembl_repo_schisto_list = flatten_dic(chembl_repo_map, 'values_4')
+
+    drugtarg = []
+
+    for drug in chembl_repo_map:
+      for tar in chembl_repo_map[drug]:
+        drugtarg.append(tar)
+
+    drugtarg = list(set(drugtarg))
+    logger.info(len(drugtarg))
 
 
     logger.info('We have built the ChEMBL map, mapping ' +
@@ -3003,6 +3130,13 @@ def main():
                                 uniprot_pdb_dic, tot_drug_targ)
 
     #logger.info(uniprot_filt)
+    count = 0
+    for uni in uniprot_filt:
+      if uni in drugtarg:
+        count = count +1
+
+    logger.info(count)
+
 
     logger.info('Of those targets, ' + str(len(uniprot_filt)) + 
                 ' have at least one pdb structure associated to them.')
@@ -3027,6 +3161,7 @@ def main():
                                       pdb_w_lig_list, "include")
     #logger.info(uniprot_pdb_w_lig)
 
+
     ###
     # get list of uniprot from dic above
     uniprot_w_lig_list = uniprot_pdb_w_lig.keys()
@@ -3037,6 +3172,8 @@ def main():
     # get the pdb list from the dic above
     pdb_w_lig = run_or_pickle("6_pdb_w_lig", list_second_level_dic,
                                   uniprot_pdb_w_lig)
+
+
     
     logger.info('Of those, ' + str(len(uniprot_pdb_w_lig)) +
                 ' have at least one pdb structure ' +
@@ -3303,8 +3440,8 @@ def main():
                 ' ' + species_string + ' targets.')
 
 
-    percent_identity_chembl = run_or_pickle('7_chembl_percent_identity', 
-                                          percent_identity, chembl_filt_map)
+    # percent_identity_chembl = run_or_pickle('7_chembl_percent_identity', 
+    #                                       percent_identity, chembl_filt_map)
 
 
 
@@ -3681,6 +3818,7 @@ def main():
                 ' homology model of the sequence ' + c.model_seq + 
                 ', using the template ' + c.model_xray + 
                 ' and the alignment file ' + c.model_align + '.')
+    
 
 
     # run modeller

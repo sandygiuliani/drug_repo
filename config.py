@@ -24,6 +24,10 @@ your_email = "sandraxgiuliani@gmail.com"
 # integer between 0 and 10
 # eg steps = 6 will run all steps up to (and including) 6
 steps = 8
+
+# step of the pipeline that requires modeller
+# only change this if you have shuffled the main function!
+modeller_step = 10
 ############################################################################
 
 
@@ -77,8 +81,79 @@ smsd_path = "/home/sandra/SMSD1.6"
 
 
 ############################################################################
+### SETS AND FILTERING SETTINGS
+############################################################################
+# which sets to analyse
+sets = ['A']
+
+dataset_dic = {'A': 'ChEMBL', 'B': 'DrugBank'}
+
+
+# filtering settings
+
+# define list of clinical phases you are interested in 
+# (only applies to ChEMBL set)
+# eg. '4', '3', '' (empty string for the unknown phase)
+chembl_phases = ['4']
+
+# define molecule types you are interested in
+chembl_mol_type = ['Synthetic Small Molecule']
+############################################################################
+
+
+
+
+############################################################################
+### CLUSTERING SETTINGS
+############################################################################
+# define similarity threshold for clustering
+# e.g. 0.9
+sim_threshold = 0.9
+# check if float
+#logger.info(isinstance(SIM_THRESHOLD, float))
+############################################################################
+
+
+
+
+############################################################################
+### REPOSITIONING CANDIDATE
+############################################################################
+# repositioning candidate to be examined
+
+# put CHEMBL or DB ID eg 'CHEMBL98', 'DB03292'
+repo_candidate = 'CHEMBL98'
+
+# target number, for selecting which drug target to align to the potential
+# parasite targets. 
+# 0 is the first one (could be the only one), 1 the second one...
+repo_target_no = 0
+############################################################################
+
+
+
+
+############################################################################
+### HOMOLOGY MODEL
+############################################################################
+# number of homology models to make
+model_no = 10
+# alignment file - has to be in PIR format
+model_align = '1d3h_schma.ali'
+# template name - PDB ID of the crystal structure
+model_xray = '1d3h'
+# sequence to model name - arbitrary name, but has to match in the .ali file
+model_seq = 'schma'
+############################################################################
+
+
+
+
+############################################################################
 ### INPUT_FILES
 ############################################################################
+# input files (refer to README for source)
+
 # drug file from ChEMBL ('Browse drugs') 'chembl_drugs.txt'
 # number of drugs should be 10406
 chembl_input = 'chembl_drugs.txt'
@@ -113,6 +188,12 @@ cc_smi = "Components-smiles-oe.smi"
 
 # location of the species codes to species names mapping file 
 spec_list = 'speclist.txt'
+
+# pdb to pfam residue mapping
+pdb_to_pfam = 'pdb_pfam_mapping.txt'
+
+# uniprot to cath residue mapping
+uniprot_cath = 'arch_schema_cath.tsv'
 ############################################################################
 
 
@@ -128,67 +209,14 @@ spec_list = 'speclist.txt'
 # log
 log_name = 'dr_log.log'
 
+#tcoffee log
+t_coffee = 'dr_tcoffee.log'
 
+# chembl similarity scores written to file
+chembl_clust_sim_scores = 'dr_chembl_clust_sim_scores.txt'
 
-############################################################################
+# chembl cluster to be imported in excel
+# clustered drugs with info from chembl! (no mapping info)
+chembl_cluster = 'dr_chembl_clust_excel.txt'
 
-
-
-
-############################################################################
-### CHEMBL FILTERING SETTINGS
-############################################################################
-# define list of clinical phases you are interested in 
-# (only applies to ChEMBL set)
-# eg. '4', '3', '' (empty string for the unknown phase)
-chembl_phases = ['4']
-
-# define molecule types you are interested in
-chembl_mol_type = ['Synthetic Small Molecule']
-############################################################################
-
-
-
-
-############################################################################
-### CLUSTERING SETTINGS
-############################################################################
-# define similarity threshold for clustering
-# e.g. 0.9
-sim_threshold = 0.9
-# check if float
-#logger.info(isinstance(SIM_THRESHOLD, float))
-############################################################################
-
-
-
-
-############################################################################
-### REPOSITIONING CANDIDATE
-############################################################################
-# repositioning candidate to be examined
-
-# put CHEMBL or DB ID eg 'CHEMBL98'
-repo_candidate = 'CHEMBL941'
-
-# target number, for selecting which drug target to align to the potential
-# parasite targets. 
-# 0 is the first one (could be the only one), 1 the second one...
-repo_target_no = 0
-############################################################################
-
-
-
-
-############################################################################
-### HOMOLOGY MODEL
-############################################################################
-# number of homology models to make
-model_no = 10
-# alignment file - has to be in PIR format
-model_align = '1d3h_schma.ali'
-# template name - PDB ID of the crystal structure
-model_xray = '1d3h'
-# sequence to model name - arbitrary name, but has to match in the .ali file
-model_seq = 'schma'
 ############################################################################
