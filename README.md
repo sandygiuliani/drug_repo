@@ -42,7 +42,10 @@ A. This README is formatted in GitHub markdown, please open it on GitHub. I will
 |  Components-smiles-oa.smi  |   chemical components dictionary in smiles format; downloaded from [RCSB Ligand Expo Downloads](http://ligand-expo.rcsb.org/ld-download.html), in the SMILES/InChi data files (if necessary, stereo versions and CACTVS-generated versions available)  |  20/06/2014 | 
 |  pointless_het.csv  |  contains list of 'pointless' het ligands, including aminoacids, nucleotides, metals and crystallographic solvets/aids     |  n/a | 
 |all.sdf|DrugBank drugs in sdf format; downloaded from [DrugBank](http://www.drugbank.ca/downloads#structures)|16/07/2014 |
-|speclist.txt| taxonomic codes and mnemonic codes for all species; downloaded from [UniProt]( http://www.uniprot.org/docs/speclist.txt)|07/06/2014|  
+|speclist.txt| taxonomic codes and mnemonic codes for all species; downloaded from [UniProt](http://www.uniprot.org/docs/speclist.txt)|07/06/2014|  
+|pdb_pfam_mapping.txt| PDB IDs to Pfam domains and residue numbers; downloaded from [EBI](ftp://ftp.ebi.ac.uk/pub/databases/Pfam/mappings/)| 20/08/2014 |  
+|arch_schema_cath.tsv|UniProt IDs to CATH domains and residue numbers, downloaded from [Gene3D](ftp://ftp.biochem.ucl.ac.uk/pub/gene3d_data/CURRENT_RELEASE/)|20/08/2014 |  
+
   
 
 ##Requirements   
@@ -53,8 +56,9 @@ A. This README is formatted in GitHub markdown, please open it on GitHub. I will
 
 ##Instructions  
 * clone the repository  
-* modify the config.py file according to your needs ()
-* install dependencies: BioPython, ArchSchema, SMSD, MODELLER (only for step 10)  
+* install dependencies: Python, BioPython, ArchSchema/archindex, SMSD, MODELLER (only for step 10)  
+* modify the config.py file according to your needs  
+* run the script (>python drug_repo.py)
   
 
 ##License  
