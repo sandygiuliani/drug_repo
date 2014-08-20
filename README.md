@@ -52,11 +52,12 @@ A. This README is formatted in GitHub markdown, please open it on GitHub. I will
 * BioPhython - Freely available on the [BioPython website](http://biopython.org/)(we have used release 1.64)  
 * ArchIndex/ArchSchema - kindly provided by Dr Laskowski. For more information, please visit the [ArchSchema website](http://www.ebi.ac.uk/thornton-srv/databases/archschema), or read the [main reference for ArchSchema](http://www.ncbi.nlm.nih.gov/pubmed/20299327)  
 * SMSD (Small Molecule Subgraph Detector). For more information, please visit the [SMSD website](http://www.ebi.ac.uk/thornton-srv/software/SMSD/), the [GitHub repository](https://github.com/asad/SMSD), or read the [main reference for SMSD](http://www.jcheminf.com/content/1/1/12)  
+* MODELLER, for homology modelling (only for step 10). See [MODELLER website](https://salilab.org/modeller/)  
 
 
 ##Instructions  
 * clone the repository  
-* install dependencies: Python, BioPython, ArchSchema/archindex, SMSD, MODELLER (only for step 10)  
+* check requirements
 * modify the config.py file according to your needs  
 * run the script (>python drug_repo.py)
   
