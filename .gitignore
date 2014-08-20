@@ -26,3 +26,6 @@ dr_*
 *.ini
 *.rsr
 *.sch
+
+# arch_schema_cath
+arch_schema_cath.tsv
