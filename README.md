@@ -44,7 +44,7 @@ A. This README is formatted in GitHub markdown, please open it on GitHub. I will
 |all.sdf|DrugBank drugs in sdf format; downloaded from [DrugBank](http://www.drugbank.ca/downloads#structures)|16/07/2014 |
 |speclist.txt| taxonomic codes and mnemonic codes for all species; downloaded from [UniProt](http://www.uniprot.org/docs/speclist.txt)|07/06/2014|  
 |pdb_pfam_mapping.txt| PDB IDs to Pfam domains and residue numbers; downloaded from [EBI](ftp://ftp.ebi.ac.uk/pub/databases/Pfam/mappings/)| 20/08/2014 |  
-|arch_schema_cath.tsv|UniProt IDs to CATH domains and residue numbers, downloaded from [Gene3D](ftp://ftp.biochem.ucl.ac.uk/pub/gene3d_data/CURRENT_RELEASE/)|20/08/2014 |  
+  
 
   
 
@@ -53,6 +53,7 @@ A. This README is formatted in GitHub markdown, please open it on GitHub. I will
 * ArchIndex/ArchSchema - kindly provided by Dr Laskowski. For more information, please visit the [ArchSchema website](http://www.ebi.ac.uk/thornton-srv/databases/archschema), or read the [main reference for ArchSchema](http://www.ncbi.nlm.nih.gov/pubmed/20299327)  
 * SMSD (Small Molecule Subgraph Detector). For more information, please visit the [SMSD website](http://www.ebi.ac.uk/thornton-srv/software/SMSD/), the [GitHub repository](https://github.com/asad/SMSD), or read the [main reference for SMSD](http://www.jcheminf.com/content/1/1/12)  
 * MODELLER, for homology modelling (only for step 10). See [MODELLER website](https://salilab.org/modeller/)  
+* arch_schema_cath.tsv (UniProt IDs to CATH domains and residue numbers), to be downloaded from [Gene3D](ftp://ftp.biochem.ucl.ac.uk/pub/gene3d_data/CURRENT_RELEASE/) 
 
 
 ##Instructions  
