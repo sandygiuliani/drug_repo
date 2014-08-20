@@ -5,7 +5,7 @@
 
 
 ############################################################################
-### PERSONAL_INFO
+### PERSONAL INFO
 ############################################################################
 # what is your name?
 your_name = "Sandra"
@@ -69,12 +69,14 @@ taxa = ['SCHMA']
 # path to archindex binary
 # old path "./../archSchema/bin/archindex" still valid on mac
 # new path on linux machine "./../Arch/archindex"
-archindex_path = "./../Arch/archindex"
+archindex_path = "./../archSchema/bin/archindex"
 
 # absolute path to SMSD directory (where SMSD.sh is)
 # 1.5.1 - first version I have used (from sourceforge)
 # 1.6 - version sent by Asad that should handle multiple sdf and keep ids
-smsd_path = "/home/sandra/SMSD1.6"
+# "/home/sandra/SMSD1.6" on linux
+# /Users/sandragiuliani/SMSD1.6 on mac
+smsd_path = "/Users/sandragiuliani/SMSD1.6"
 ############################################################################
 
 
@@ -84,12 +86,14 @@ smsd_path = "/home/sandra/SMSD1.6"
 ### SETS AND FILTERING SETTINGS
 ############################################################################
 # which sets to analyse
-sets = ['A']
+# e.g. ['A'] -> just ChEMBL
+# e.g. ['A', 'B'] -> both ChEMBL and DrugBank
+sets = ['A', 'B']
 
 dataset_dic = {'A': 'ChEMBL', 'B': 'DrugBank'}
 
 
-# filtering settings
+# chembl filter settings
 
 # define list of clinical phases you are interested in 
 # (only applies to ChEMBL set)
@@ -109,8 +113,6 @@ chembl_mol_type = ['Synthetic Small Molecule']
 # define similarity threshold for clustering
 # e.g. 0.9
 sim_threshold = 0.9
-# check if float
-#logger.info(isinstance(SIM_THRESHOLD, float))
 ############################################################################
 
 
@@ -122,7 +124,7 @@ sim_threshold = 0.9
 # repositioning candidate to be examined
 
 # put CHEMBL or DB ID eg 'CHEMBL98', 'DB03292'
-repo_candidate = 'CHEMBL98'
+repo_candidate = 'CHEMBL973'
 
 # target number, for selecting which drug target to align to the potential
 # parasite targets. 
@@ -156,7 +158,8 @@ model_seq = 'schma'
 
 # drug file from ChEMBL ('Browse drugs') 'chembl_drugs.txt'
 # number of drugs should be 10406
-chembl_input = 'chembl_drugs.txt'
+# FOR TESTING, use 'chembl_drugs_test.txt'
+chembl_input = 'chembl_drugs_test.txt'
 
 # define CHEMBL_TARGETS as the target file from ChEMBL ('Browse drug targets')
 # number of drugs associated with targets should be 2007
@@ -168,7 +171,8 @@ chembl_uniprot = 'chembl_uniprot_mapping.txt'
 # define DRUGBANK_INPUT as the DrugBank Drug Target Identifiers
 # either: all_target_ids_all.csv (all drugs, 4,026 entries),
 # or: small_molecule_target_ids_all.csv (small molecule drugs, 3,899 entries)
-drugbank_input = 'small_molecule_target_ids_all.csv'
+# FOR TESTING, use 'small_molecule_target_ids_all_test.csv'
+drugbank_input = 'small_molecule_target_ids_all_test.csv'
 
 # define sdf file with drugbank drugs (contains smiles)
 drugbank_sdf = 'all.sdf'
@@ -205,6 +209,7 @@ uniprot_cath = 'arch_schema_cath.tsv'
 # define names of output files, they will be overwritten every time
 # if you do not want that to happen, add a timestamp to the file names
 # 'dr' stands for drug repositioning
+# other temporary files will also be named dr_*
 
 # log
 log_name = 'dr_log.log'
@@ -218,5 +223,4 @@ chembl_clust_sim_scores = 'dr_chembl_clust_sim_scores.txt'
 # chembl cluster to be imported in excel
 # clustered drugs with info from chembl! (no mapping info)
 chembl_cluster = 'dr_chembl_clust_excel.txt'
-
 ############################################################################
