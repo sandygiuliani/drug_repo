@@ -23,7 +23,7 @@ your_email = "sandraxgiuliani@gmail.com"
 # define which steps of the pipeline you wish to run
 # integer between 0 and 10
 # eg steps = 6 will run all steps up to (and including) 6
-steps = 9
+steps = 4
 
 # step of the pipeline that requires modeller
 # only change this if you have shuffled the main function!
