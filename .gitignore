@@ -19,6 +19,9 @@ test*
 # .pyc files
 *.pyc
 
+# output files
+dr_*
+
 # various extensions produced by modeller
 *.ini
 *.rsr
