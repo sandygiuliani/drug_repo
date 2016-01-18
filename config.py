@@ -88,7 +88,7 @@ smsd_path = "/Users/sandragiuliani/SMSD1.6"
 # which sets to analyse
 # e.g. ['A'] -> just ChEMBL
 # e.g. ['A', 'B'] -> both ChEMBL and DrugBank
-sets = ['A', 'B']
+sets = ['A']
 
 dataset_dic = {'A': 'ChEMBL', 'B': 'DrugBank'}
 
@@ -159,7 +159,7 @@ model_seq = 'schma'
 # drug file from ChEMBL ('Browse drugs') 'chembl_drugs.txt'
 # number of drugs should be 10406
 # FOR TESTING, use 'chembl_drugs_test.txt'
-chembl_input = 'chembl_drugs_test.txt'
+chembl_input = 'chembl_drugs.txt'
 
 # define CHEMBL_TARGETS as the target file from ChEMBL ('Browse drug targets')
 # number of drugs associated with targets should be 2007
@@ -172,7 +172,7 @@ chembl_uniprot = 'chembl_uniprot_mapping.txt'
 # either: all_target_ids_all.csv (all drugs, 4,026 entries),
 # or: small_molecule_target_ids_all.csv (small molecule drugs, 3,899 entries)
 # FOR TESTING, use 'small_molecule_target_ids_all_test.csv'
-drugbank_input = 'small_molecule_target_ids_all_test.csv'
+drugbank_input = 'small_molecule_target_ids_all.csv'
 
 # define sdf file with drugbank drugs (contains smiles)
 drugbank_sdf = 'all.sdf'
