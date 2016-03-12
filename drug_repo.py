@@ -2994,7 +2994,7 @@ def main():
                                       chembl_dic, cath_dic,
                                       uniprot_schisto_cath_dic, pfam_dic, 
                                       uniprot_schisto_pfam_dic)
-      # logger.debug(len(chembl_repo_map))
+      #logger.info(chembl_repo_map)
       # number of unique targets
       chembl_repo_schisto_list = flatten_dic(chembl_repo_map, 'values_4')
 
@@ -3156,6 +3156,8 @@ def main():
     if 'A' in c.sets:
       chembl_drug_targ = run_or_pickle("6_chembl_drug_targ", 
                                     list_second_level_dic, chembl_repo_map)
+      #logger.info(chembl_drug_targ)
+
     else:
       chembl_drug_targ = []
 
@@ -3177,7 +3179,7 @@ def main():
     # make dictionary uniprot to pdb
     uniprot_pdb_dic = run_or_pickle("6_uniprot_pdb_dic", csv_to_dic, 
                                     c.uniprot_pdb)
-    #logger.debug(uniprot_pdb_dic)
+    #logger.info(uniprot_pdb_dic)
 
     # this is dictionary of drug targets that have at least one pdb structure
     uniprot_filt = run_or_pickle("6_uniprot_filt", filter_dic_from_list, 
@@ -3212,7 +3214,7 @@ def main():
     ###
     # get list of uniprot from dic above
     uniprot_w_lig_list = uniprot_pdb_w_lig.keys()
-    #logger.info(len(uniprot_w_lig_list))
+    logger.info(uniprot_w_lig_list)
 
     ###
 
@@ -3234,6 +3236,8 @@ def main():
     pdb_cc_dic = run_or_pickle("6_pdb_cc_dic", filter_dic_from_list, 
                                   pdb_lig_filt_dic, pdb_w_lig)
 
+    #logger.info(pdb_cc_dic['2ivu'])
+
 
     # finally obtain the list of cc we need! - the ones that are in the pdbs
     # this is the list of cc we need to try and match to the drugs cc!!
@@ -3247,13 +3251,15 @@ def main():
     # get cc to smiles dictionary
     cc_smiles = run_or_pickle("6_cc_smiles", smi_to_dic, c.cc_smi, 1, 0)
 
-    #logger.info(len(cc_smiles))
+    #logger.info(cc_smiles['ZD6'])
 
 
     # dic of cc we ar interested in, mapped to their smiles
     cc_smi_filt = run_or_pickle("6_cc_smi_filt", filter_dic_from_list, 
                                 cc_smiles, cc_list)
     
+    #logger.info(cc_smi_filt['ZD6'])
+
     logger.info('We have mapped ' + str(len(cc_smi_filt)) + 
                 ' of these chemical components to their smiles.')
     
@@ -3283,7 +3289,7 @@ def main():
       chembl_id_smi_dic = run_or_pickle("7_chembl_id_smi_dic", txt_to_dic, 
                                         c.chembl_input, "CHEMBL_ID",
                                         "CANONICAL_SMILES")
-      #logger.debug(len(chembl_id_smi_dic))
+      #logger.info(chembl_id_smi_dic)
       
 
       # filter dictionary to only drugs that are in chembl_repo_drug_list
@@ -3293,6 +3299,8 @@ def main():
                                           chembl_id_smi_dic,
                                           chembl_repo_drug_list)
       
+
+
       logger.info('We have mapped the ' + str(len(chembl_id_smi_filt)) +
                   ' ChEMBL drugs to their smiles.')
 
@@ -3300,24 +3308,24 @@ def main():
       # filter chembl_dic to only the 783 drugs, using chembl_repo_drug_list
       chembl_dic_mapped_drugs = filter_dic_from_list(chembl_dic, 
                                 chembl_repo_drug_list)
-      #logger.info(len(chembl_dic_mapped_drugs))
+      #logger.info(chembl_dic_mapped_drugs)
       # filter out the uniprots, using uniprot_w_lig_list
       chembl_dic_uni_drugs = exclude_values_from_dic(chembl_dic_mapped_drugs, 
                             uniprot_w_lig_list, "include")
-      #logger.info(len(chembl_dic_uni_drugs))
+      #logger.info(chembl_dic_uni_drugs)
       chembl_uni_drugs_list = chembl_dic_uni_drugs.keys()
       #logger.info(len(chembl_uni_drugs_list))
       # filter chembl_id_smi_filt to what obtained above
       chembl_id_smi_opt = filter_dic_from_list(chembl_id_smi_filt, 
                           chembl_uni_drugs_list) 
-      #logger.info(len(chembl_id_smi_opt))
+      #logger.info(chembl_id_smi_opt)
       
 
       # obtain drug to cc dictionary, merging three dics
       # this is all the drugs in the map, pointing to the cc in the pdbs of
       # of their targets
       chembl_to_cc = merge_dic(chembl_dic,uniprot_filt, pdb_cc_dic)
-      #logger.info(len(chembl_to_cc))
+      logger.info(chembl_to_cc)
 
 
       logger.info('We have filtered out the ChEMBL drugs that ' +
@@ -3354,7 +3362,7 @@ def main():
                                     chembl_id_smi_opt, cc_smi_filt,
                                     "pair_2dic", c.sim_threshold, 
                                     chembl_to_cc)
-      # logger.info(chembl_cluster)
+      logger.info(chembl_cluster)
       # move output file to current dir
       mv_file(c.smsd_path, 'smsd_run_pair_2dic.txt', 
               c.chembl_clust_sim_scores)

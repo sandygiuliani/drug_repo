@@ -23,7 +23,7 @@ your_email = "sandraxgiuliani@gmail.com"
 # define which steps of the pipeline you wish to run
 # integer between 0 and 10
 # eg steps = 6 will run all steps up to (and including) 6
-steps = 9
+steps = 8
 
 # step of the pipeline that requires modeller
 # only change this if you have shuffled the main function!
@@ -112,7 +112,7 @@ chembl_mol_type = ['Synthetic Small Molecule']
 ############################################################################
 # define similarity threshold for clustering
 # e.g. 0.9
-sim_threshold = 0.9
+sim_threshold = 0.5
 ############################################################################
 
 
@@ -159,7 +159,7 @@ model_seq = 'schma'
 # drug file from ChEMBL ('Browse drugs') 'chembl_drugs.txt'
 # number of drugs should be 10406
 # FOR TESTING, use 'chembl_drugs_test.txt'
-chembl_input = 'chembl_drugs.txt'
+chembl_input = 'chembl_drugs_test.txt'
 
 # define CHEMBL_TARGETS as the target file from ChEMBL ('Browse drug targets')
 # number of drugs associated with targets should be 2007
