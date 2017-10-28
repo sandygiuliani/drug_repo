@@ -48,7 +48,7 @@ A. This README is formatted in GitHub markdown, please open it on GitHub. I will
 
   
 
-##Requirements   
+## Requirements   
 * BioPhython - Freely available on the [BioPython website](http://biopython.org/)(we have used release 1.64)  
 * ArchIndex/ArchSchema - kindly provided by Dr Laskowski. For more information, please visit the [ArchSchema website](http://www.ebi.ac.uk/thornton-srv/databases/archschema), or read the [main reference for ArchSchema](http://www.ncbi.nlm.nih.gov/pubmed/20299327)  
 * SMSD (Small Molecule Subgraph Detector). For more information, please visit the [SMSD website](http://www.ebi.ac.uk/thornton-srv/software/SMSD/), the [GitHub repository](https://github.com/asad/SMSD), or read the [main reference for SMSD](http://www.jcheminf.com/content/1/1/12)  
@@ -56,23 +56,23 @@ A. This README is formatted in GitHub markdown, please open it on GitHub. I will
 * arch_schema_cath.tsv (UniProt IDs to CATH domains and residue numbers), to be downloaded from ftp://ftp.biochem.ucl.ac.uk/pub/gene3d_data/CURRENT_RELEASE/  
 
 
-##Instructions  
+## Instructions  
 * clone the repository  
 * check requirements
 * modify the config.py file according to your needs  
 * run the script (>python drug_repo.py)
   
 
-##License  
+## License  
 Copyright &copy; 2014 Sandra Giuliani  
 This repository is licensed under the terms of the MIT license. Please see the [license file](LICENSE.md) for more information. The MIT license is approved by the [Open Source Initiative](http://opensource.org/licenses)  
   
 
 
-##Disclaimer   
+## Disclaimer   
 THIS IS A WORK IN PROGRESS. The main script (drug_repo.py) is currently being developed at the [London School of Hygiene and Tropical Medicine](http://www.lshtm.ac.uk/), under the supervision of Dr Nick Furnham.   
   
 
-##Contact     
+## Contact     
 Feedback is very welcome, please drop me a line at: sandraxgiuliani [at] gmail [dot] com  
 You might also want to follow me on Twitter [@sandygiuliani](https://twitter.com/sandygiuliani) or visit my [personal website](http://www.sandragiuliani.com/).  
